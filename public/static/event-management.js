@@ -596,7 +596,8 @@ async function autoFillSeating() {
     });
     sortedGroups.sort((a, b) => b.size - a.size);
     
-    let seated = 0;
+    // Collect all seating assignments
+    const seatings = [];
     
     // Try to seat groups together
     for (const table of allTables) {
@@ -617,33 +618,48 @@ async function autoFillSeating() {
             for (let j = 0; j < toSeat; j++) {
                 const person = groupData.people.shift();
                 
-                try {
-                    const data = { tableId: table.id };
-                    
-                    if (person.type === 'rsvp') {
-                        data.rsvpId = person.id;
-                    } else {
-                        data.guestId = person.id;
-                    }
-                    
-                    await axios.post(`/api/events/${currentEvent.id}/seating`, data);
-                    seated++;
-                    availableSeats--;
-                } catch (error) {
-                    console.error('Error auto-seating:', error);
+                const seatingData = { tableId: table.id };
+                
+                if (person.type === 'rsvp') {
+                    seatingData.rsvpId = person.id;
+                } else {
+                    seatingData.guestId = person.id;
                 }
+                
+                seatings.push(seatingData);
+                availableSeats--;
             }
         }
     }
     
-    // Remove empty groups
-    sortedGroups.forEach((g, idx) => {
-        if (g.people.length === 0) {
-            sortedGroups.splice(idx, 1);
-        }
-    });
+    if (seatings.length === 0) {
+        showToast('לא ניתן להושיב אורחים נוספים', 'warning');
+        return;
+    }
     
-    showToast(`${seated} אורחים הושבו אוטומטית לפי קבוצות`, 'success');
+    // Send bulk request
+    try {
+        const response = await axios.post(
+            `/api/events/${currentEvent.id}/seating/bulk`,
+            { seatings }
+        );
+        
+        if (response.data.success) {
+            const seated = response.data.results.length;
+            showToast(`${seated} אורחים הושבו אוטומטית לפי קבוצות`, 'success');
+            
+            if (response.data.errors && response.data.errors.length > 0) {
+                console.warn('Some seating errors:', response.data.errors);
+            }
+        } else {
+            showToast(response.data.error || 'שגיאה בהושבה אוטומטית', 'error');
+        }
+    } catch (error) {
+        console.error('Error auto-seating:', error);
+        const errorMsg = error.response?.data?.error || 'שגיאה בהושבה אוטומטית';
+        showToast(errorMsg, 'error');
+    }
+    
     loadSeating();
 }
 

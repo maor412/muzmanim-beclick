@@ -156,6 +156,99 @@ seatingRouter.post('/events/:eventId/seating', zValidator('json', createSeatingS
 });
 
 /**
+ * POST /api/events/:eventId/seating/bulk
+ * יצירת סידור הושבה מרובה (bulk seating)
+ */
+seatingRouter.post('/events/:eventId/seating/bulk', async (c) => {
+  const db = initDb(c.env.DB);
+  const userId = c.get('userId') as string;
+  const eventId = c.req.param('eventId');
+  const data = await c.req.json();
+
+  try {
+    const event = await db.select().from(events).where(eq(events.id, eventId)).get();
+    
+    if (!event) {
+      throw new AppError(404, 'אירוע לא נמצא', 'EVENT_NOT_FOUND');
+    }
+
+    const user = await db.query.users.findFirst({
+      where: (users, { eq }) => eq(users.clerkId, userId)
+    });
+
+    if (!user || event.ownerUserId !== user.id) {
+      throw new AppError(403, 'אין לך הרשאה', 'FORBIDDEN');
+    }
+
+    // Validate bulk data
+    if (!Array.isArray(data.seatings) || data.seatings.length === 0) {
+      throw new AppError(400, 'נתוני הושבה לא תקינים', 'INVALID_DATA');
+    }
+
+    const results = [];
+    const errors = [];
+
+    for (const item of data.seatings) {
+      try {
+        // Check table capacity
+        const table = await db.select().from(tables).where(eq(tables.id, item.tableId)).get();
+        
+        if (!table) {
+          errors.push({ item, error: 'שולחן לא נמצא' });
+          continue;
+        }
+
+        const currentSeats = await db.select().from(seating).where(eq(seating.tableId, item.tableId)).all();
+        
+        if (currentSeats.length >= table.capacity) {
+          errors.push({ item, error: 'השולחן מלא' });
+          continue;
+        }
+
+        const seatingId = generateId();
+        await db.insert(seating).values({
+          id: seatingId,
+          eventId,
+          tableId: item.tableId,
+          rsvpId: item.rsvpId || null,
+          guestId: item.guestId || null,
+          seatIndex: item.seatIndex || null,
+          notes: item.notes || null
+        });
+
+        results.push({ id: seatingId, tableId: item.tableId });
+      } catch (err) {
+        errors.push({ item, error: String(err) });
+      }
+    }
+
+    await logAudit(c, 'BULK_CREATE_SEATING', 'seating', eventId, { 
+      successCount: results.length,
+      errorCount: errors.length 
+    });
+
+    return c.json({
+      success: true,
+      message: `${results.length} אורחים הושבו בהצלחה`,
+      results,
+      errors: errors.length > 0 ? errors : undefined
+    }, 201);
+
+  } catch (error) {
+    console.error('Error bulk creating seating:', error);
+    
+    if (error instanceof AppError) {
+      return c.json({ success: false, error: error.message }, error.statusCode);
+    }
+    
+    return c.json({ 
+      success: false, 
+      error: 'שגיאה ביצירת סידור הושבה' 
+    }, 500);
+  }
+});
+
+/**
  * DELETE /api/seating/:id
  * מחיקת סידור הושבה
  */
