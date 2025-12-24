@@ -185,6 +185,68 @@ guestsRouter.post('/events/:eventId/guests/bulk', zValidator('json', bulkGuestsS
 });
 
 /**
+ * PUT /api/guests/:id
+ * עדכון אורח
+ */
+guestsRouter.put('/:id', zValidator('json', updateGuestSchema), async (c) => {
+  const db = initDb(c.env.DB);
+  const userId = c.get('userId') as string;
+  const guestId = c.req.param('id');
+  const body = c.req.valid('json');
+
+  try {
+    const guest = await db.select().from(guests).where(eq(guests.id, guestId)).get();
+    
+    if (!guest) {
+      throw new AppError(404, 'אורח לא נמצא', 'GUEST_NOT_FOUND');
+    }
+
+    const event = await db.select().from(events).where(eq(events.id, guest.eventId)).get();
+    
+    if (!event) {
+      throw new AppError(404, 'אירוע לא נמצא', 'EVENT_NOT_FOUND');
+    }
+
+    const user = await db.query.users.findFirst({
+      where: (users, { eq }) => eq(users.clerkId, userId)
+    });
+
+    if (!user || event.ownerUserId !== user.id) {
+      throw new AppError(403, 'אין לך הרשאה', 'FORBIDDEN');
+    }
+
+    await db.update(guests)
+      .set({
+        ...body,
+        updatedAt: new Date().toISOString()
+      })
+      .where(eq(guests.id, guestId));
+
+    await logAudit(c, 'UPDATE_GUEST', 'guest', guestId, body);
+
+    const updatedGuest = await db.select().from(guests).where(eq(guests.id, guestId)).get();
+
+    return c.json({
+      success: true,
+      message: 'האורח עודכן בהצלחה',
+      data: updatedGuest
+    });
+
+  } catch (error) {
+    console.error('Error updating guest:', error);
+    
+    if (error instanceof AppError) {
+      return c.json({ success: false, error: error.message }, error.statusCode);
+    }
+    
+    return c.json({ 
+      success: false, 
+      error: 'שגיאה בעדכון אורח' 
+    }, 500);
+  }
+});
+
+/**
  * DELETE /api/guests/:id
  * מחיקת אורח
  */

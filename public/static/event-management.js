@@ -1000,11 +1000,166 @@ function showAddTableModal() {
 }
 
 function viewRsvp(id) {
-    showToast('צפייה ב-RSVP - בפיתוח', 'info');
+    const rsvp = allRsvps.find(r => r.id === id);
+    if (!rsvp) {
+        showToast('RSVP לא נמצא', 'error');
+        return;
+    }
+    
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+    modal.innerHTML = `
+        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-2xl w-full mx-4 max-h-screen overflow-y-auto">
+            <div class="flex justify-between items-start mb-6">
+                <h2 class="text-2xl font-bold text-gray-800">פרטי RSVP</h2>
+                <button onclick="this.closest('.fixed').remove()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
+            
+            <div class="space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <p class="text-sm text-gray-600 mb-1">שם מלא</p>
+                        <p class="font-bold text-lg">${rsvp.fullName}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600 mb-1">טלפון</p>
+                        <p class="font-bold">${rsvp.phone || 'לא צוין'}</p>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <p class="text-sm text-gray-600 mb-1">סטטוס</p>
+                        <p class="font-bold ${rsvp.status === 'confirmed' ? 'text-green-600' : 'text-red-600'}">
+                            <i class="fas fa-${rsvp.status === 'confirmed' ? 'check-circle' : 'times-circle'} ml-1"></i>
+                            ${rsvp.status === 'confirmed' ? 'מגיע' : 'לא מגיע'}
+                        </p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600 mb-1">מספר מגיעים</p>
+                        <p class="font-bold">${rsvp.attendingCount || 0}</p>
+                    </div>
+                </div>
+                
+                ${rsvp.mealChoice ? `
+                    <div>
+                        <p class="text-sm text-gray-600 mb-1">בחירת מנה</p>
+                        <p class="font-semibold">${rsvp.mealChoice}</p>
+                    </div>
+                ` : ''}
+                
+                ${rsvp.allergies ? `
+                    <div>
+                        <p class="text-sm text-gray-600 mb-1">אלרגיות</p>
+                        <p class="font-semibold">${rsvp.allergies}</p>
+                    </div>
+                ` : ''}
+                
+                ${rsvp.comment ? `
+                    <div>
+                        <p class="text-sm text-gray-600 mb-1">הערות</p>
+                        <p class="font-semibold">${rsvp.comment}</p>
+                    </div>
+                ` : ''}
+                
+                <div class="pt-4 border-t">
+                    <p class="text-sm text-gray-500">נשלח בתאריך: ${new Date(rsvp.createdAt).toLocaleDateString('he-IL')}</p>
+                </div>
+            </div>
+            
+            <div class="mt-6">
+                <button onclick="this.closest('.fixed').remove()" class="w-full bg-gray-300 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-400 transition font-semibold">
+                    סגור
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
 }
 
-function editGuest(id) {
-    showToast('עריכת מוזמן - בפיתוח', 'info');
+function editGuest(guestId) {
+    const guest = allGuests.find(g => g.id === guestId);
+    if (!guest) {
+        showToast('מוזמן לא נמצא', 'error');
+        return;
+    }
+    
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+    modal.innerHTML = `
+        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">עריכת מוזמן</h2>
+            <form id="edit-guest-form" class="space-y-4">
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-2">שם מלא *</label>
+                    <input type="text" name="fullName" value="${guest.fullName}" required
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent">
+                </div>
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-2">טלפון</label>
+                    <input type="tel" name="phone" value="${guest.phone || ''}"
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                           placeholder="05X-XXXXXXX">
+                </div>
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-2">צד</label>
+                    <input type="text" name="side" value="${guest.side || ''}"
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                           placeholder="חתן/כלה/משותף">
+                </div>
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-2">קבוצה</label>
+                    <input type="text" name="groupLabel" value="${guest.groupLabel || ''}"
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                           placeholder="משפחה/חברים/עבודה">
+                </div>
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-2">הערות</label>
+                    <textarea name="notes" rows="2"
+                              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                              placeholder="הערות נוספות...">${guest.notes || ''}</textarea>
+                </div>
+                <div class="flex space-x-reverse space-x-3 pt-4">
+                    <button type="submit" class="flex-1 bg-gradient-to-r from-blue-500 to-purple-500 text-white px-6 py-3 rounded-lg hover:from-blue-600 hover:to-purple-600 transition font-semibold">
+                        <i class="fas fa-save ml-2"></i>
+                        שמור שינויים
+                    </button>
+                    <button type="button" onclick="this.closest('.fixed').remove()" class="flex-1 bg-gray-300 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-400 transition font-semibold">
+                        ביטול
+                    </button>
+                </div>
+            </form>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    document.getElementById('edit-guest-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const data = {
+            fullName: formData.get('fullName'),
+            phone: formData.get('phone') || '',
+            side: formData.get('side') || '',
+            groupLabel: formData.get('groupLabel') || '',
+            notes: formData.get('notes') || ''
+        };
+        
+        try {
+            const response = await axios.put(`/api/guests/${guestId}`, data);
+            if (response.data.success) {
+                showToast('המוזמן עודכן בהצלחה', 'success');
+                modal.remove();
+                loadGuests();
+            }
+        } catch (error) {
+            console.error('Error updating guest:', error);
+            showToast(error.response?.data?.error || 'שגיאה בעדכון מוזמן', 'error');
+        }
+    });
 }
 
 async function deleteGuest(id) {
