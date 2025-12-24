@@ -1011,7 +1011,263 @@ function showAddGuestModal() {
 }
 
 function showImportModal() {
-    showToast('ייבוא CSV - בפיתוח', 'info');
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 overflow-y-auto';
+    modal.innerHTML = `
+        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-2xl w-full mx-4 my-8">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-800">
+                    <i class="fas fa-file-import ml-2 text-blue-500"></i>
+                    ייבוא רשימת מוזמנים
+                </h2>
+                <button onclick="this.closest('.fixed').remove()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
+            
+            <!-- Instructions -->
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                <h3 class="font-bold text-blue-900 mb-2">
+                    <i class="fas fa-info-circle ml-1"></i>
+                    הוראות שימוש
+                </h3>
+                <ol class="text-sm text-blue-800 space-y-1 mr-4">
+                    <li>1. הורד את קובץ התבנית</li>
+                    <li>2. מלא את הפרטים באקסל/Google Sheets</li>
+                    <li>3. שמור כ-CSV (UTF-8)</li>
+                    <li>4. העלה את הקובץ כאן</li>
+                </ol>
+            </div>
+            
+            <!-- Download Template Button -->
+            <div class="mb-6">
+                <button onclick="downloadTemplate()" 
+                        class="w-full bg-gradient-to-r from-green-500 to-teal-500 text-white px-6 py-3 rounded-lg hover:from-green-600 hover:to-teal-600 transition font-semibold shadow-lg">
+                    <i class="fas fa-download ml-2"></i>
+                    הורד תבנית CSV
+                </button>
+                <p class="text-xs text-gray-500 text-center mt-2">
+                    הורד קובץ דוגמה עם כל העמודות הנדרשות
+                </p>
+            </div>
+            
+            <!-- File Upload -->
+            <div class="mb-6">
+                <label class="block text-gray-700 font-semibold mb-2">
+                    <i class="fas fa-upload ml-1"></i>
+                    העלה קובץ CSV
+                </label>
+                <input type="file" id="csv-file-input" accept=".csv,.txt"
+                       class="w-full px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none cursor-pointer"
+                       onchange="handleFileSelect(event)">
+                <p class="text-xs text-gray-500 mt-2">
+                    תומך בקבצים: CSV, TXT (קידוד UTF-8)
+                </p>
+            </div>
+            
+            <!-- Preview Area -->
+            <div id="import-preview" class="hidden mb-6">
+                <h3 class="font-bold text-gray-800 mb-3">תצוגה מקדימה:</h3>
+                <div class="bg-gray-50 rounded-lg p-4 max-h-60 overflow-y-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="border-b border-gray-300">
+                                <th class="text-right py-2">שם מלא</th>
+                                <th class="text-right py-2">טלפון</th>
+                                <th class="text-right py-2">צד</th>
+                                <th class="text-right py-2">קבוצה</th>
+                            </tr>
+                        </thead>
+                        <tbody id="preview-tbody">
+                        </tbody>
+                    </table>
+                </div>
+                <p id="preview-count" class="text-sm text-gray-600 mt-2"></p>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="flex space-x-reverse space-x-3" id="import-actions">
+                <button onclick="this.closest('.fixed').remove()" 
+                        class="flex-1 bg-gray-300 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-400 transition font-semibold">
+                    סגור
+                </button>
+            </div>
+            
+            <div class="hidden flex space-x-reverse space-x-3" id="import-confirm-actions">
+                <button onclick="confirmImport()" 
+                        class="flex-1 bg-gradient-to-r from-blue-500 to-purple-500 text-white px-6 py-3 rounded-lg hover:from-blue-600 hover:to-purple-600 transition font-semibold">
+                    <i class="fas fa-check ml-2"></i>
+                    אישור וייבוא (<span id="import-count">0</span> מוזמנים)
+                </button>
+                <button onclick="cancelImport()" 
+                        class="flex-1 bg-gray-300 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-400 transition font-semibold">
+                    ביטול
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+}
+
+// Global variable to store parsed CSV data
+let parsedGuestsData = [];
+
+// Download CSV Template
+function downloadTemplate() {
+    const template = [
+        ['שם מלא', 'טלפון', 'צד', 'קבוצה'],
+        ['דוד כהן', '0501234567', 'חתן', 'משפחה'],
+        ['שרה לוי', '0529876543', 'כלה', 'משפחה'],
+        ['יוסי מזרחי', '', 'חתן', 'חברים'],
+        ['רחל אברהם', '0541112233', 'משותף', 'עבודה']
+    ];
+    
+    const csv = template.map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
+    const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'תבנית_מוזמנים.csv';
+    link.click();
+    
+    showToast('תבנית הורדה בהצלחה', 'success');
+}
+
+// Handle File Selection
+function handleFileSelect(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const text = e.target.result;
+            parseCSV(text);
+        } catch (error) {
+            console.error('Error reading file:', error);
+            showToast('שגיאה בקריאת הקובץ', 'error');
+        }
+    };
+    reader.readAsText(file, 'UTF-8');
+}
+
+// Parse CSV Content
+function parseCSV(text) {
+    const lines = text.split('\n').filter(line => line.trim());
+    
+    if (lines.length < 2) {
+        showToast('הקובץ ריק או לא תקין', 'error');
+        return;
+    }
+    
+    // Parse header
+    const headers = parseCSVLine(lines[0]);
+    
+    // Parse data rows
+    parsedGuestsData = [];
+    for (let i = 1; i < lines.length; i++) {
+        const values = parseCSVLine(lines[i]);
+        
+        if (values.length >= 1 && values[0].trim()) {
+            const guest = {
+                fullName: values[0]?.trim() || '',
+                phone: values[1]?.trim() || '',
+                side: values[2]?.trim() || '',
+                groupLabel: values[3]?.trim() || ''
+            };
+            
+            if (guest.fullName) {
+                parsedGuestsData.push(guest);
+            }
+        }
+    }
+    
+    if (parsedGuestsData.length === 0) {
+        showToast('לא נמצאו נתונים תקינים בקובץ', 'error');
+        return;
+    }
+    
+    // Show preview
+    showPreview();
+}
+
+// Parse single CSV line (handles quotes)
+function parseCSVLine(line) {
+    const result = [];
+    let current = '';
+    let inQuotes = false;
+    
+    for (let i = 0; i < line.length; i++) {
+        const char = line[i];
+        
+        if (char === '"') {
+            inQuotes = !inQuotes;
+        } else if (char === ',' && !inQuotes) {
+            result.push(current);
+            current = '';
+        } else {
+            current += char;
+        }
+    }
+    result.push(current);
+    
+    return result;
+}
+
+// Show Preview
+function showPreview() {
+    document.getElementById('import-preview').classList.remove('hidden');
+    document.getElementById('import-actions').classList.add('hidden');
+    document.getElementById('import-confirm-actions').classList.remove('hidden');
+    
+    const tbody = document.getElementById('preview-tbody');
+    const previewCount = Math.min(5, parsedGuestsData.length);
+    
+    tbody.innerHTML = parsedGuestsData.slice(0, previewCount).map(guest => `
+        <tr class="border-b border-gray-200">
+            <td class="py-2">${guest.fullName}</td>
+            <td class="py-2">${guest.phone || '-'}</td>
+            <td class="py-2">${guest.side || '-'}</td>
+            <td class="py-2">${guest.groupLabel || '-'}</td>
+        </tr>
+    `).join('');
+    
+    document.getElementById('preview-count').textContent = 
+        `מציג ${previewCount} מתוך ${parsedGuestsData.length} רשומות`;
+    document.getElementById('import-count').textContent = parsedGuestsData.length;
+}
+
+// Cancel Import
+function cancelImport() {
+    parsedGuestsData = [];
+    document.getElementById('csv-file-input').value = '';
+    document.getElementById('import-preview').classList.add('hidden');
+    document.getElementById('import-actions').classList.remove('hidden');
+    document.getElementById('import-confirm-actions').classList.add('hidden');
+}
+
+// Confirm Import
+async function confirmImport() {
+    if (parsedGuestsData.length === 0) {
+        showToast('אין נתונים לייבוא', 'error');
+        return;
+    }
+    
+    try {
+        const response = await axios.post(`/api/events/${currentEvent.id}/guests/bulk`, parsedGuestsData);
+        
+        if (response.data.success) {
+            showToast(`${parsedGuestsData.length} מוזמנים יובאו בהצלחה!`, 'success');
+            document.querySelector('.fixed').remove();
+            loadGuests();
+            loadSeating();
+        } else {
+            showToast(response.data.error || 'שגיאה בייבוא מוזמנים', 'error');
+        }
+    } catch (error) {
+        console.error('Error importing guests:', error);
+        showToast(error.response?.data?.error || 'שגיאה בייבוא מוזמנים', 'error');
+    }
 }
 
 function showAddTableModal() {
