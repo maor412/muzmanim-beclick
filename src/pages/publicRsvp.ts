@@ -304,15 +304,17 @@ export const publicRsvpPage = (slug: string) => `
             }
 
             const formData = new FormData(e.target);
+            const status = formData.get('status');
+            const plusOnes = status === 'confirmed' ? parseInt(formData.get('plusOnes') || 0) : 0;
+            
             const data = {
                 fullName: formData.get('fullName'),
-                phone: formData.get('phone') || null,
-                status: formData.get('status'),
-                plusOnes: formData.get('status') === 'confirmed' ? parseInt(formData.get('plusOnes') || 0) : 0,
-                mealChoice: formData.get('status') === 'confirmed' ? formData.get('mealChoice') : null,
-                allergies: formData.get('status') === 'confirmed' ? formData.get('allergies') : null,
-                notes: formData.get('notes') || null,
-                consent: formData.get('consent') === 'on'
+                phone: formData.get('phone') || '',  // Empty string instead of null
+                attendingCount: status === 'confirmed' ? plusOnes + 1 : 0,  // Plus 1 for the submitter
+                mealChoice: status === 'confirmed' ? (formData.get('mealChoice') || '') : '',
+                allergies: status === 'confirmed' ? (formData.get('allergies') || '') : '',
+                comment: formData.get('notes') || '',  // 'comment' not 'notes'
+                consentUpdates: formData.get('consent') === 'on'
             };
 
             // Validate
@@ -326,7 +328,7 @@ export const publicRsvpPage = (slug: string) => `
                 return;
             }
 
-            if (data.status === 'confirmed' && eventData.showMealChoice && !data.mealChoice) {
+            if (status === 'confirmed' && eventData.showMealChoice && !data.mealChoice) {
                 alert('אנא בחר מנה');
                 return;
             }
