@@ -6,7 +6,7 @@ import { guests, events, users } from '../db/schema';
 import { requireAuth } from '../middleware/auth';
 import { apiRateLimiter } from '../middleware/rateLimit';
 import { logAudit } from '../middleware/audit';
-import { createGuestSchema, bulkGuestsSchema } from '../lib/validators';
+import { createGuestSchema, updateGuestSchema, bulkGuestsSchema } from '../lib/validators';
 import { generateId, AppError } from '../lib/utils';
 
 type Bindings = {

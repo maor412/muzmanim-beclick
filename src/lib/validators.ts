@@ -55,6 +55,8 @@ export const createGuestSchema = z.object({
   notes: z.string().max(500).optional().or(z.literal(''))
 });
 
+export const updateGuestSchema = createGuestSchema.partial();
+
 export const bulkGuestsSchema = z.array(createGuestSchema);
 
 // ===================================
@@ -106,6 +108,7 @@ export type UpdateEventInput = z.infer<typeof updateEventSchema>;
 export type CreateRsvpInput = z.infer<typeof createRsvpSchema>;
 export type UpdateRsvpInput = z.infer<typeof updateRsvpSchema>;
 export type CreateGuestInput = z.infer<typeof createGuestSchema>;
+export type UpdateGuestInput = z.infer<typeof updateGuestSchema>;
 export type CreateTableInput = z.infer<typeof createTableSchema>;
 export type UpdateTableInput = z.infer<typeof updateTableSchema>;
 export type CreateSeatingInput = z.infer<typeof createSeatingSchema>;
