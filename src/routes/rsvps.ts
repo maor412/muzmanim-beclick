@@ -23,6 +23,49 @@ type Bindings = {
 const rsvpsRouter = new Hono<{ Bindings: Bindings }>();
 
 /**
+ * קבלת פרטי אירוע לטופס RSVP (ציבורי)
+ * GET /api/rsvp/:slug/event
+ */
+rsvpsRouter.get('/:slug/event', async (c) => {
+  const db = initDb(c.env.DB);
+  const slug = c.req.param('slug');
+
+  try {
+    const event = await db.select().from(events).where(eq(events.slug, slug)).get();
+
+    if (!event) {
+      throw new AppError(404, 'אירוע לא נמצא', 'EVENT_NOT_FOUND');
+    }
+
+    // Return only public-facing event details
+    return c.json({
+      success: true,
+      event: {
+        id: event.id,
+        eventName: event.eventName,
+        coupleNames: event.coupleNames,
+        dateTime: event.dateTime,
+        venueName: event.venueName,
+        venueAddress: event.venueAddress,
+        wazeLink: event.wazeLink,
+        notes: event.notes,
+        isRsvpOpen: event.isRsvpOpen,
+        requirePhone: event.requirePhone,
+        showMealChoice: event.showMealChoice,
+        showAllergies: event.showAllergies,
+        showNotes: event.showNotes,
+        allowUpdates: event.allowUpdates,
+        consentMessage: event.consentMessage,
+        slug: event.slug
+      }
+    });
+  } catch (error) {
+    if (error instanceof AppError) throw error;
+    throw new AppError(500, 'שגיאה בטעינת פרטי האירוע', 'SERVER_ERROR');
+  }
+});
+
+/**
  * יצירת RSVP חדש (ציבורי - ללא אימות)
  * POST /api/rsvp/:slug
  */
@@ -61,24 +104,67 @@ rsvpsRouter.post('/:slug', rsvpRateLimiter, zValidator('json', createRsvpSchema)
       throw new AppError(400, 'מספר טלפון נדרש לאירוע זה', 'PHONE_REQUIRED');
     }
 
-    // בדיקת כפילויות (אותו שם + טלפון)
+    // בדיקת כפילויות (אותו שם + טלפון) - Upsert logic
+    let existingRsvp = null;
     if (data.phone) {
       const formattedPhone = formatPhoneE164(data.phone);
-      const existing = await db
+      existingRsvp = await db
         .select()
         .from(rsvps)
         .where(
           and(
             eq(rsvps.eventId, event.id),
-            eq(rsvps.phone, formattedPhone)
+            eq(rsvps.phone, formattedPhone),
+            like(rsvps.fullName, data.fullName.trim())
           )
         )
         .get();
+    } else {
+      // אם אין טלפון, בדוק לפי שם בלבד (פחות אמין)
+      existingRsvp = await db
+        .select()
+        .from(rsvps)
+        .where(
+          and(
+            eq(rsvps.eventId, event.id),
+            eq(rsvps.fullName, data.fullName.trim())
+          )
+        )
+        .get();
+    }
 
-      if (existing && settings?.allowUpdates) {
-        // אם יש הגדרה לאפשר עדכונים, נבצע עדכון במקום יצירה
-        throw new AppError(409, 'נראה שכבר שלחת אישור הגעה. אם ברצונך לעדכן, אנא צור קשר עם בעלי האירוע', 'DUPLICATE_RSVP');
-      }
+    // אם קיים RSVP ו-allowUpdates מופעל, נעדכן במקום ליצור
+    if (existingRsvp && event.allowUpdates) {
+      await db
+        .update(rsvps)
+        .set({
+          status: data.status,
+          plusOnes: data.plusOnes || 0,
+          mealChoice: data.mealChoice,
+          allergies: data.allergies,
+          notes: data.notes,
+          updatedAt: new Date().toISOString()
+        })
+        .where(eq(rsvps.id, existingRsvp.id))
+        .run();
+
+      return c.json({
+        success: true,
+        message: 'אישור ההגעה עודכן בהצלחה',
+        rsvp: {
+          ...existingRsvp,
+          status: data.status,
+          plusOnes: data.plusOnes || 0,
+          mealChoice: data.mealChoice,
+          allergies: data.allergies,
+          notes: data.notes
+        }
+      });
+    }
+
+    // אם קיים RSVP אבל לא מותר לעדכן
+    if (existingRsvp && !event.allowUpdates) {
+      throw new AppError(409, 'נראה שכבר שלחת אישור הגעה. אם ברצונך לעדכן, אנא צור קשר עם בעלי האירוע', 'DUPLICATE_RSVP');
     }
 
     // קבלת IP ו-User Agent

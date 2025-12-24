@@ -28,6 +28,9 @@ import {
 } from './pages/static';
 import { devLoginPage } from './pages/devLogin';
 import { dashboardPage } from './pages/dashboard';
+import { createEventPage } from './pages/createEvent';
+import { eventManagementPage } from './pages/eventManagement';
+import { publicRsvpPage } from './pages/publicRsvp';
 
 type Bindings = {
   DB: D1Database;
@@ -76,52 +79,7 @@ app.get('/api/health', (c) => {
 // Public RSVP page by slug
 app.get('/e/:slug', async (c) => {
   const slug = c.req.param('slug');
-  
-  return c.html(`
-    <!DOCTYPE html>
-    <html lang="he" dir="rtl">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>אישור הגעה | מוזמנים בקליק</title>
-        <script src="https://cdn.tailwindcss.com"></script>
-        <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
-        <style>
-          body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        </style>
-    </head>
-    <body class="bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50 min-h-screen">
-        <div class="container mx-auto px-4 py-8">
-            <div class="max-w-2xl mx-auto">
-                <div class="bg-white rounded-2xl shadow-2xl p-8">
-                    <div class="text-center mb-8">
-                        <i class="fas fa-heart text-pink-500 text-5xl mb-4"></i>
-                        <h1 class="text-4xl font-bold text-gray-800 mb-2">מוזמנים בקליק</h1>
-                        <p class="text-gray-600">טוען את פרטי האירוע...</p>
-                    </div>
-                    <div id="rsvp-form" class="space-y-6">
-                        <!-- תוכן הטופס ייטען דינמית -->
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <script src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"></script>
-        <script>
-          const slug = '${slug}';
-          // הטעינה הדינמית של הטופס תתבצע בצד הקליינט
-          document.getElementById('rsvp-form').innerHTML = \`
-            <p class="text-center text-gray-600">
-              בקרוב: טופס RSVP מלא עם כל השדות הנדרשים
-            </p>
-            <div class="text-center mt-4">
-              <code class="bg-gray-100 px-4 py-2 rounded">Slug: \${slug}</code>
-            </div>
-          \`;
-        </script>
-    </body>
-    </html>
-  `);
+  return c.html(publicRsvpPage(slug));
 });
 
 // Home page
@@ -278,6 +236,12 @@ app.get('/signup', (c) => c.redirect('/dev-login'));
 
 // Dashboard
 app.get('/dashboard', (c) => c.html(dashboardPage));
+
+// Create Event
+app.get('/create-event', (c) => c.html(createEventPage));
+
+// Event Management
+app.get('/event/:id', (c) => c.html(eventManagementPage));
 
 // Global error handler
 app.onError((err, c) => {
