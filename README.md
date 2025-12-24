@@ -51,10 +51,20 @@
 - זיהוי כפילויות לפי טלפון
 - חיפוש וסינון מתקדם
 
-### 🪑 **סידורי הושבה (Drag & Drop)**
+### 🪑 **סידורי הושבה (Drag & Drop + AI Smart Algorithm)**
 - ✅ **יצירת שולחנות**: הוספת שולחנות עם שם, מספר, וקיבולת
 - ✅ **Drag & Drop**: גרירת אורחים (RSVPs + Guests) לשולחנות
-- ✅ **Auto-fill**: השלמה אוטומטית של שולחנות פנויים
+- ✅ **Auto-fill חכם (AI-Powered)**: השלמה אוטומטית מבוססת אלגוריתם
+  - **שלב 1**: התאמה חכמה של קבוצות לשולחנות
+    - משפחה → שולחן "משפחה"
+    - חברים → שולחן "חברים"
+    - עבודה → שולחן "עבודה"
+  - **שלב 2**: קיבוץ לפי צד (חתן/כלה) וקבוצה
+  - **שלב 3**: מיון לפי גודל קבוצות (גדול לקטן)
+  - **שלב 4**: מילוי יעיל שמשאיר קבוצות יחד
+  - תמיכה דו-לשונית (עברית/אנגלית)
+  - Fuzzy matching לשמות שולחנות
+- ✅ **Bulk Seating API**: בקשה אחת במקום עשרות (מניעת rate limit)
 - ✅ **תצוגת אורחים**: רשימה מלאה של מי יושב בכל שולחן
 - ✅ **הבחנה ויזואלית**: 
   - RSVPs: רקע ורוד + תג מספר מגיעים
@@ -419,6 +429,7 @@ webapp/
 ### Seating
 - `GET /api/events/:eventId/seating` - סידורי הושבה
 - `POST /api/events/:eventId/seating` - **הוספת הושבה (תומך ב-rsvpId וגם guestId)**
+- `POST /api/events/:eventId/seating/bulk` - **הושבה המונית (bulk API)**
 - `DELETE /api/seating/:id` - מחיקת הושבה
 
 ### Checkins
@@ -484,10 +495,22 @@ npm run test             # Health check
 - **פתרון**: תמיכה ב-rsvpId וגם guestId, ללא parseInt()
 - **תוצאה**: drag & drop עובד לכל סוגי האורחים
 
-### ✅ Auto-fill Seating (Fixed)
-- **בעיה**: "אין אורחים להושיב" למרות שיש
-- **פתרון**: כולל גם RSVPs וגם Guests באוטומציה
-- **תוצאה**: השלמה אוטומטית מלאה
+### ✅ Auto-fill Seating (Smart Algorithm)
+- **בעיה**: FIFO פשוט לא לקח בחשבה קבוצות
+- **פתרון**: אלגוריתם חכם 2-שלבי
+  - Phase 1: התאמת קבוצות לשולחנות מתאימים
+  - Phase 2: מילוי שאריות
+- **תוצאה**: משפחות יושבות ביחד, חברים ביחד
+
+### ✅ Bulk Seating API (Performance Fix)
+- **בעיה**: 429 Too Many Requests בהושבה אוטומטית
+- **פתרון**: endpoint חדש `/seating/bulk` 
+- **תוצאה**: בקשה אחת במקום עשרות, פי 10 יותר מהיר
+
+### ✅ Table-Group Matching (Intelligence)
+- **בעיה**: האלגוריתם ממלא שולחן אחרי שולחן ללא היגיון
+- **פתרון**: התאמה חכמה של קבוצות לשמות שולחנות
+- **תוצאה**: אורחים "משפחה" → שולחן "משפחה" אוטומטית
 
 ### ✅ Table Guest Display (Enhanced)
 - **בעיה**: רק מספרים (3/10) בשולחנות
@@ -508,14 +531,18 @@ npm run test             # Health check
 - [x] ✅ **CSV Import with template download**
 - [x] ✅ Table management
 - [x] ✅ **Drag & Drop seating (RSVPs + Guests)**
-- [x] ✅ **Auto-fill seating**
+- [x] ✅ **Smart Auto-fill seating (AI-powered algorithm)**
+  - [x] Group-based seating
+  - [x] Table-group matching
+  - [x] Bulk seating API
 - [x] ✅ **Guest list display in tables**
 - [x] ✅ Check-in system
 - [x] ✅ Copy/Paste messages
 - [x] ✅ CSV/Excel export
 - [x] ✅ **Cascade delete for events**
 - [x] ✅ Audit logging
-- [x] ✅ Rate limiting (optimized)
+- [x] ✅ Rate limiting (optimized 100 req/min)
+- [x] ✅ **Improved error messages**
 
 ## 🚧 פיתוח עתידי (Nice to Have)
 
@@ -539,6 +566,6 @@ MIT License
 
 ---
 
-**Built with ❤️ using Cloudflare Pages + Hono + D1 + Web Crypto API**
+**Built with ❤️ using Cloudflare Pages + Hono + D1 + AI Smart Algorithms**
 
-**תכונות עיקריות**: CSV Import | Drag & Drop | Auto-fill | Real-time Sync | RTL Support
+**תכונות עיקריות**: CSV Import | Drag & Drop | AI Auto-fill | Real-time Sync | RTL Support | Bulk API
