@@ -978,12 +978,24 @@ function showAddTableModal() {
     document.getElementById('add-table-form').addEventListener('submit', async (e) => {
         e.preventDefault();
         const formData = new FormData(e.target);
+        
+        // Build data object with proper types
         const data = {
             tableName: formData.get('tableName'),
-            tableNumber: formData.get('tableNumber') ? parseInt(formData.get('tableNumber')) : null,
-            capacity: parseInt(formData.get('capacity')),
             notes: formData.get('notes') || ''
         };
+        
+        // Only add tableNumber if it has a value
+        const tableNumberValue = formData.get('tableNumber');
+        if (tableNumberValue && tableNumberValue.trim() !== '') {
+            data.tableNumber = parseInt(tableNumberValue);
+        }
+        
+        // Only add capacity if it has a value, otherwise use default
+        const capacityValue = formData.get('capacity');
+        if (capacityValue && capacityValue.trim() !== '') {
+            data.capacity = parseInt(capacityValue);
+        }
         
         try {
             const response = await axios.post(`/api/events/${getEventId()}/tables`, data);
