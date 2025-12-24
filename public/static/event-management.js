@@ -2032,7 +2032,7 @@ function generateInsights(rsvps, guests, seating, tables) {
 
 // PDF Export Functions
 
-// Export RSVPs to PDF - Hebrew support with default fonts
+// Export RSVPs to PDF - Full Hebrew support with Rubik font
 function exportRsvpsPDF() {
     try {
         const { jsPDF } = window.jspdf;
@@ -2044,8 +2044,11 @@ function exportRsvpsPDF() {
             return;
         }
         
-        // Use default helvetica font (better Unicode support than custom fonts)
-        doc.setFont('helvetica');
+        // Add Rubik Hebrew font
+        addRubikFont(doc);
+        
+        // Enable RTL mode
+        doc.setR2L(true);
         
         // Add title  
         doc.setFontSize(18);
@@ -2063,13 +2066,13 @@ function exportRsvpsPDF() {
             rsvp.mealChoice === 'meat' ? 'בשר' : rsvp.mealChoice === 'fish' ? 'דג' : rsvp.mealChoice === 'vegan' ? 'צמחוני' : 'לא צוין'
         ]);
         
-        // Create table with Hebrew headers
+        // Create table with Hebrew headers and RTL alignment
         doc.autoTable({
             startY: 30,
             head: [['#', 'שם מלא', 'טלפון', 'סטטוס', 'מלווים', 'בחירת מנה']],
             body: tableData,
             styles: { 
-                font: 'helvetica',
+                font: 'Rubik',
                 fontSize: 10,
                 halign: 'right'  // RTL alignment
             },
@@ -2077,7 +2080,7 @@ function exportRsvpsPDF() {
                 fillColor: [236, 72, 153], 
                 textColor: 255,
                 halign: 'right',
-                font: 'helvetica'
+                font: 'Rubik'
             },
             columnStyles: {
                 0: { halign: 'center' },
@@ -2103,7 +2106,7 @@ function exportRsvpsPDF() {
     }
 }
 
-// Export Guests to PDF - Hebrew support
+// Export Guests to PDF - Full Hebrew support with Rubik font
 function exportGuestsPDF() {
     try {
         const { jsPDF } = window.jspdf;
@@ -2115,8 +2118,9 @@ function exportGuestsPDF() {
             return;
         }
         
-        // Use default helvetica font
-        doc.setFont('helvetica');
+        // Add Rubik Hebrew font
+        addRubikFont(doc);
+        doc.setR2L(true);
         
         // Add title
         doc.setFontSize(18);
@@ -2140,7 +2144,7 @@ function exportGuestsPDF() {
             head: [['#', 'שם מלא', 'טלפון', 'צד', 'קבוצה', 'הערות']],
             body: tableData,
             styles: { 
-                font: 'helvetica',
+                font: 'Rubik',
                 fontSize: 9,
                 halign: 'right'
             },
@@ -2148,7 +2152,7 @@ function exportGuestsPDF() {
                 fillColor: [236, 72, 153], 
                 textColor: 255,
                 halign: 'right',
-                font: 'helvetica'
+                font: 'Rubik'
             },
             columnStyles: {
                 0: { halign: 'center' },
@@ -2176,7 +2180,7 @@ function exportGuestsPDF() {
     }
 }
 
-// Export Seating to PDF - Hebrew support
+// Export Seating to PDF - Full Hebrew support with Rubik font
 function exportSeatingPDF() {
     try {
         const { jsPDF } = window.jspdf;
@@ -2188,8 +2192,9 @@ function exportSeatingPDF() {
             return;
         }
         
-        // Use default helvetica font
-        doc.setFont('helvetica');
+        // Add Rubik Hebrew font
+        addRubikFont(doc);
+        doc.setR2L(true);
         
         // Add title
         doc.setFontSize(18);
@@ -2237,7 +2242,7 @@ function exportSeatingPDF() {
             head: [['שם שולחן', 'מספר', 'שם אורח', 'טלפון', 'תפוסה']],
             body: tableData,
             styles: { 
-                font: 'helvetica',
+                font: 'Rubik',
                 fontSize: 9,
                 halign: 'right'
             },
@@ -2245,7 +2250,7 @@ function exportSeatingPDF() {
                 fillColor: [236, 72, 153], 
                 textColor: 255,
                 halign: 'right',
-                font: 'helvetica'
+                font: 'Rubik'
             },
             columnStyles: {
                 1: { halign: 'center' },
@@ -2256,7 +2261,7 @@ function exportSeatingPDF() {
                 // Add page numbers in Hebrew
                 const pageCount = doc.internal.getNumberOfPages();
                 const pageNum = doc.internal.getCurrentPageInfo().pageNumber;
-                doc.setFont("helvetica");
+                doc.setFont("Rubik");
                 doc.setFontSize(10);
                 doc.text(`עמוד ${pageNum} מתוך ${pageCount}`, 
                     105, doc.internal.pageSize.height - 10, { align: 'center' });
