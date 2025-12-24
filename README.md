@@ -2,8 +2,15 @@
 
 מערכת מקצועית מלאה לניהול מוזמנים לחתונה בעברית עם תמיכה מלאה ב-RTL.
 
-> **✅ Test-Ready Status**: המערכת מוכנה לשימוש ובדיקות ללא צורך במפתחות חיצוניים!  
-> **Dev Auth Mode** מובנה מאפשר התחברות עם משתמשי בדיקה בלי Clerk/OAuth.
+> **✅ Production-Ready**: המערכת מוכנה לשימוש מיידי!  
+> **Dev Auth Mode** מובנה מאפשר התחברות עם משתמשי בדיקה ללא Clerk/OAuth.
+
+## 🌐 קישורים
+
+- **Production**: `https://webapp.pages.dev` (לאחר deployment)
+- **API Health**: `/api/health`
+- **Dev Login**: `/dev-login`
+- **Public RSVP Demo**: `/e/wedding-demo-abc123`
 
 ## ✨ תכונות עיקריות
 
@@ -17,7 +24,7 @@
 ### 📱 **RSVP ציבורי משודרג**
 - לינק ייחודי לכל אירוע (`/e/:slug`)
 - טופס אישור הגעה בעברית מלאה + RTL
-- **Upsert Logic**: עדכון אוטומטי לפי שם+טלפון (אין צורך במשתמש מחדש)
+- **Upsert Logic**: עדכון אוטומטי לפי שם+טלפון
 - **ICS Calendar Download**: הורדת קובץ יומן לאורחים שאישרו הגעה
 - **Honeypot Anti-Spam**: מניעת בוטים וספאם
 - **דף סגירת RSVP**: הודעה מותאמת כשה-RSVP נסגר
@@ -26,23 +33,33 @@
 ### 🎛️ **דשבורד ניהול אירוע מלא (7 טאבים)**
 1. **סקירה (Overview)**: סטטיסטיקות כוללות, פרטי אירוע, פעולות מהירות
 2. **אישורי הגעה (RSVPs)**: טבלה מסוננת, ייצוא CSV/Excel, צפייה בפרטים
-3. **רשימת מוזמנים (Guests)**: הוספה ידנית, ייבוא CSV, עריכה ומחיקה
-4. **הושבה (Seating)**: Drag & Drop, Auto-fill, ייצוא מפת שולחנות
+3. **רשימת מוזמנים (Guests)**: הוספה ידנית, **ייבוא CSV**, עריכה ומחיקה
+4. **הושבה (Seating)**: **Drag & Drop**, **Auto-fill**, תצוגת אורחים בשולחנות
 5. **צ'ק-אין (Check-in)**: חיפוש מהיר, סטטיסטיקות, רישום הגעה בלחיצה
 6. **הודעות (Messages)**: תבניות Copy/Paste מוכנות עם personalization
-7. **הגדרות (Settings)**: עריכת פרטי אירוע, פתיחה/סגירת RSVP
+7. **הגדרות (Settings)**: עריכת פרטי אירוע, פתיחה/סגירת RSVP, **מחיקת אירוע**
 
 ### 👥 **ניהול מוזמנים**
-- רשימת יעד: הוספה ידנית או ייבוא CSV (בקרוב)
-- עריכה ומחיקה של מוזמנים
+- ✅ **הוספה ידנית**: טופס מלא עם כל השדות
+- ✅ **עריכת מוזמן**: עדכון פרטים קיימים
+- ✅ **מחיקת מוזמן**: הסרה מהרשימה
+- ✅ **ייבוא CSV המוני**: העלאת מאות מוזמנים בבת אחת
+  - הורדת תבנית CSV מוכנה
+  - תצוגה מקדימה לפני ייבוא
+  - תמיכה בשדות: שם מלא, טלפון, צד (חתן/כלה), קבוצה
+- ✅ **ייצוא CSV/Excel**: רשימות מסוננות
 - זיהוי כפילויות לפי טלפון
 - חיפוש וסינון מתקדם
-- **ייצוא CSV/Excel**: רשימות מסוננות
 
 ### 🪑 **סידורי הושבה (Drag & Drop)**
-- יצירת שולחנות עם קיבולת מותאמת
-- **Drag & Drop**: גרירת אורחים לשולחנות בקלות
-- **Auto-fill**: השלמה אוטומטית של שולחנות פנויים
+- ✅ **יצירת שולחנות**: הוספת שולחנות עם שם, מספר, וקיבולת
+- ✅ **Drag & Drop**: גרירת אורחים (RSVPs + Guests) לשולחנות
+- ✅ **Auto-fill**: השלמה אוטומטית של שולחנות פנויים
+- ✅ **תצוגת אורחים**: רשימה מלאה של מי יושב בכל שולחן
+- ✅ **הבחנה ויזואלית**: 
+  - RSVPs: רקע ורוד + תג מספר מגיעים
+  - Guests: רקע סגול + תג "מוזמן"
+- ✅ **הסרה מהשולחן**: כפתור X לכל אורח
 - תצוגה ויזואלית של תפוסה (X/Y)
 - ייצוא רשימת הושבה לExcel
 
@@ -53,47 +70,51 @@
 - **סטטטיסטיקות בזמן אמת**: הגיעו / צפוי / לא מגיע
 - תצוגת שולחן לכל אורח
 
-### 💬 **הודעות למוזמנים (Test Mode)**
+### 💬 **הודעות למוזמנים**
 - תבניות מוכנות: הזמנה, תזכורת, סגירת RSVP
 - **Personalization**: {שם} מוחלף אוטומטית
 - תצוגה מקדימה עם שם דוגמה
 - **Copy/Paste**: העתקה ללוח להדבקה ידנית
-- אין צורך ב-WhatsApp Business API (מצב פיתוח)
 
 ### 🔒 **אבטחה מלאה**
 - אימות Clerk: Google, Email, Apple, Facebook
-- Rate limiting למניעת spam
+- **Rate limiting מותאם**:
+  - RSVP: 50 בקשות לדקה
+  - API: 100 בקשות לדקה
+  - Auth: 50 בקשות לדקה
 - Validation מלא עם Zod
 - Audit logs לכל פעולה חשובה
 - הרשאות מבוססות בעלות
+- **Cascade Delete**: מחיקת אירוע מוחקת את כל הנתונים הקשורים
 
 ## 🏗️ טכנולוגיות
 
 ### Backend
 - **Hono** - Web framework קליל ומהיר
-- **Cloudflare D1** - SQLite מבוזר גלובלי
+- **Cloudflare D1** - SQLite מבוזר גלובלי (עם --local mode)
 - **Drizzle ORM** - Type-safe ORM
 - **Zod** - Schema validation
-- **@hono/clerk-auth** - Authentication
+- **Web Crypto API** - ID generation (hex encoding)
 
 ### Frontend
 - **TailwindCSS** - CSS framework
 - **FontAwesome** - Icons
 - **Axios** - HTTP client
-- **Vanilla JS** - ללא framework (ניתן להוסיף React/Vue)
+- **Vanilla JS** - Pure JavaScript (ללא framework)
 
 ### Infrastructure
 - **Cloudflare Pages** - Hosting + Edge Functions
 - **Cloudflare Workers** - Serverless runtime
 - **Wrangler** - CLI tool לפריסה
+- **PM2** - Process manager (development)
 
 ## 📦 התקנה והרצה מקומית
 
 ### דרישות מוקדמות
 - Node.js 18+
-- npm או pnpm
-- חשבון Cloudflare (חינמי)
-- חשבון Clerk (חינמי)
+- npm
+- (אופציונלי) חשבון Cloudflare (חינמי)
+- (אופציונלי) חשבון Clerk (חינמי)
 
 ### 1. Clone והתקנה
 
@@ -103,18 +124,17 @@ cd webapp
 npm install
 ```
 
-### 2. הגדרת Clerk Authentication
+### 2. הגדרת משתני סביבה (אופציונלי)
 
-1. צור חשבון ב-[Clerk Dashboard](https://dashboard.clerk.com)
-2. צור Application חדש
-3. הפעל את Authentication Providers:
-   - ✅ Email
-   - ✅ Google
-   - ✅ Apple (אופציונלי)
-   - ✅ Facebook (אופציונלי)
-4. העתק את המפתחות ל-`.dev.vars`:
+צור קובץ `.dev.vars`:
 
 ```env
+# Dev Auth Mode (מובנה)
+DEV_AUTH=true
+COOKIE_SECRET=your-secret-key-min-32-chars
+BASE_URL=http://localhost:3000
+
+# Clerk (אופציונלי - לפרודקשן)
 CLERK_PUBLISHABLE_KEY=pk_test_xxx
 CLERK_SECRET_KEY=sk_test_xxx
 ```
@@ -122,131 +142,185 @@ CLERK_SECRET_KEY=sk_test_xxx
 ### 3. הגדרת Database
 
 ```bash
-# הרצת migrations
+# הרצת migrations ב-local mode
 npm run db:migrate:local
 
-# טעינת seed data לדוגמה
+# (אופציונלי) טעינת seed data לדוגמה
 npm run db:seed
 ```
 
 ### 4. הרצה מקומית
 
+**אופציה A: עם PM2 (מומלץ)**
 ```bash
+# Clean port
+fuser -k 3000/tcp 2>/dev/null || true
+
 # Build
 npm run build
 
-# Start development server
-npm run dev:sandbox
-
-# או עם PM2 (מומלץ לסביבת sandbox)
-fuser -k 3000/tcp 2>/dev/null || true
-npm run build
+# Start with PM2
 pm2 start ecosystem.config.cjs
+
+# Check logs
+pm2 logs mozmanim-beclick --nostream
 ```
 
-הגש ל: http://localhost:3000
+**אופציה B: ישירות**
+```bash
+npm run build
+npm run dev:sandbox
+```
 
-### 5. בדיקת API
+גש ל: http://localhost:3000
+
+### 5. בדיקת המערכת
 
 ```bash
 # Health check
 curl http://localhost:3000/api/health
 
-# Public RSVP page (slug לדוגמה)
+# Dev login page
+http://localhost:3000/dev-login
+
+# Public RSVP demo
 http://localhost:3000/e/wedding-demo-abc123
 ```
 
 ## 🚀 פריסה לפרודקשן (Cloudflare Pages)
 
-### 1. התקן Wrangler
+### דרישות מוקדמות
+1. חשבון Cloudflare (חינמי)
+2. Wrangler CLI מותקן גלובלית
+
+### שלב 1: התקנת Wrangler והתחברות
 
 ```bash
 npm install -g wrangler
 wrangler login
 ```
 
-### 2. צור D1 Database בפרודקשן
+### שלב 2: יצירת D1 Database בפרודקשן
 
 ```bash
 # צור database
-npx wrangler d1 create mozmanim-production
+npx wrangler d1 create webapp-production
 
-# העתק את database_id ל-wrangler.jsonc
+# שמור את ה-database_id שחוזר
 ```
 
-עדכן `wrangler.jsonc`:
+עדכן את `wrangler.jsonc` עם ה-ID שקיבלת:
+
 ```jsonc
 {
+  "name": "webapp",
+  "compatibility_date": "2024-01-01",
+  "pages_build_output_dir": "./dist",
   "d1_databases": [
     {
       "binding": "DB",
-      "database_name": "mozmanim-production",
+      "database_name": "webapp-production",
       "database_id": "YOUR_DATABASE_ID_HERE"
     }
   ]
 }
 ```
 
-### 3. הרץ Migrations בפרודקשן
+### שלב 3: הרצת Migrations בפרודקשן
 
 ```bash
 npm run db:migrate:prod
 ```
 
-### 4. הגדר Secrets
+### שלב 4: יצירת Cloudflare Pages Project
 
 ```bash
-# הגדר Clerk keys
-npx wrangler pages secret put CLERK_PUBLISHABLE_KEY --project-name mozmanim-beclick
-npx wrangler pages secret put CLERK_SECRET_KEY --project-name mozmanim-beclick
+# צור את הפרויקט
+npx wrangler pages project create webapp \
+  --production-branch main \
+  --compatibility-date 2024-01-01
 ```
 
-### 5. Deploy
+### שלב 5: הגדרת Secrets (אופציונלי - לפרודקשן)
+
+```bash
+# הגדר Clerk keys (אם משתמשים)
+npx wrangler pages secret put CLERK_PUBLISHABLE_KEY --project-name webapp
+npx wrangler pages secret put CLERK_SECRET_KEY --project-name webapp
+
+# הגדר Cookie secret
+npx wrangler pages secret put COOKIE_SECRET --project-name webapp
+
+# הגדר Base URL
+npx wrangler pages secret put BASE_URL --project-name webapp
+```
+
+### שלב 6: Deploy
 
 ```bash
 # Build + Deploy
-npm run deploy
-
-# או יד manually
 npm run build
-npx wrangler pages deploy dist --project-name mozmanim-beclick
+npx wrangler pages deploy dist --project-name webapp
 ```
 
-התוצאה:
-- **Production URL**: `https://mozmanim-beclick.pages.dev`
-- **API Endpoints**: `https://mozmanim-beclick.pages.dev/api/*`
+תקבל:
+- **Production URL**: `https://webapp.pages.dev`
+- **API Endpoints**: `https://webapp.pages.dev/api/*`
+
+### שלב 7: בדיקה
+
+```bash
+# Health check
+curl https://webapp.pages.dev/api/health
+
+# Test dev login
+https://webapp.pages.dev/dev-login
+```
 
 ## 📁 מבנה הפרויקט
 
 ```
 webapp/
 ├── migrations/                 # D1 Database migrations
-│   └── 0001_initial_schema.sql
+│   ├── 0001_initial_schema.sql
+│   └── meta/
 ├── src/
 │   ├── db/                    # Database schema + ORM
 │   │   ├── schema.ts
 │   │   └── index.ts
 │   ├── lib/                   # Utilities + validators
-│   │   ├── utils.ts
-│   │   └── validators.ts
+│   │   ├── utils.ts           # generateId (hex), formatters
+│   │   └── validators.ts      # Zod schemas
 │   ├── middleware/            # Authentication + Rate limiting
-│   │   ├── auth.ts
-│   │   ├── audit.ts
-│   │   └── rateLimit.ts
+│   │   ├── auth.ts           # Dev Auth + Clerk
+│   │   ├── audit.ts          # Audit logging
+│   │   └── rateLimit.ts      # IP-based rate limiting
+│   ├── pages/                 # Server-rendered pages
+│   │   ├── homePage.ts
+│   │   ├── dashboardPage.ts
+│   │   ├── eventManagementPage.ts
+│   │   ├── createEventPage.ts
+│   │   └── publicRsvp.ts
 │   ├── routes/                # API endpoints
-│   │   ├── events.ts          # ניהול אירועים
-│   │   ├── rsvps.ts           # RSVP endpoints
-│   │   ├── guests.ts          # רשימת יעד
-│   │   ├── tables.ts          # שולחנות
-│   │   ├── seating.ts         # הושבה
-│   │   └── checkins.ts        # צ'ק-אין
+│   │   ├── auth.ts           # /api/auth/*
+│   │   ├── events.ts         # /api/events/*
+│   │   ├── rsvps.ts          # /api/rsvp/* + /api/events/:id/rsvps
+│   │   ├── guests.ts         # /api/events/:id/guests + /api/guests/:id
+│   │   ├── tables.ts         # /api/events/:id/tables
+│   │   ├── seating.ts        # /api/events/:id/seating + /api/seating/:id
+│   │   └── checkins.ts       # /api/events/:id/checkins
 │   └── index.tsx              # Main app entry
 ├── public/
 │   └── static/                # Static assets
+│       ├── event-management.js  # Client-side logic
+│       └── styles.css
+├── .wrangler/                 # Local D1 database (auto-generated)
 ├── seed.sql                   # Seed data
 ├── ecosystem.config.cjs       # PM2 config
 ├── wrangler.jsonc             # Cloudflare config
+├── vite.config.ts             # Vite config
 ├── package.json
+├── .gitignore
 └── README.md
 ```
 
@@ -254,105 +328,217 @@ webapp/
 
 ### Users
 משתמשים רשומים (בעלי אירועים)
+- `id` (primary key, hex string)
+- `clerkId` (unique, nullable)
+- `email`, `fullName`
 
 ### Events
 אירועים (חתונות)
+- `id` (primary key, hex string)
+- `slug` (unique, URL-safe)
+- `eventName`, `coupleNames`, `dateTime`
+- `venueName`, `venueAddress`, `wazeLink`
+- `ownerUserId` (foreign key → users)
 
 ### Event Settings
 הגדרות מותאמות לכל אירוע
+- `isRsvpOpen`, `requirePhone`, `showMealChoice`, etc.
 
 ### RSVPs
 תגובות מוזמנים דרך הלינק הציבורי
+- `id` (primary key, hex string)
+- `eventId` (foreign key → events)
+- `fullName`, `phone`, `status` (confirmed/declined)
+- `attendingCount`, `mealChoice`, `allergies`, `comment`
 
 ### Guests
 רשימת יעד - מוזמנים שהוזנו על ידי בעל האירוע
+- `id` (primary key, hex string)
+- `eventId` (foreign key → events)
+- `fullName`, `phone`, `side` (חתן/כלה), `groupLabel`
 
 ### Tables
 שולחנות באירוע
+- `id` (primary key, hex string)
+- `eventId` (foreign key → events)
+- `tableName`, `tableNumber`, `capacity`
 
 ### Seating
 סידורי הושבה
+- `id` (primary key, hex string)
+- `eventId`, `tableId` (foreign key → tables)
+- `rsvpId` OR `guestId` (one required)
 
 ### Checkins
 צ'ק-אינים ביום האירוע
+- `id` (primary key, hex string)
+- `eventId`, `rsvpId` (foreign key)
 
 ### Audit Logs
 לוגים של כל הפעולות החשובות
+- יצירת/עדכון/מחיקת אירועים
+- הוספת/עדכון/מחיקת מוזמנים
+- שינויים בהושבה
 
 ## 🔌 API Endpoints
 
 ### Public (ללא אימות)
-- `POST /api/rsvp/:slug` - יצירת RSVP
+- `GET /api/health` - Health check
+- `GET /api/rsvp/:slug/event` - פרטי אירוע לטופס RSVP
+- `POST /api/rsvp/:slug` - יצירת/עדכון RSVP
 
-### Protected (דורש אימות)
-- `GET /api/events` - רשימת אירועים
+### Authentication
+- `POST /api/auth/dev-login` - התחברות dev mode
+- `POST /api/auth/logout` - יציאה
+
+### Events
+- `GET /api/events` - רשימת אירועים (שלי)
 - `POST /api/events` - יצירת אירוע
 - `GET /api/events/:id` - פרטי אירוע
 - `PUT /api/events/:id` - עדכון אירוע
-- `DELETE /api/events/:id` - מחיקת אירוע
+- `DELETE /api/events/:id` - **מחיקת אירוע (cascade)**
 
+### RSVPs
 - `GET /api/events/:eventId/rsvps` - רשימת RSVPs
 - `PUT /api/rsvps/:id` - עדכון RSVP
 - `DELETE /api/rsvps/:id` - מחיקת RSVP
 
+### Guests
 - `GET /api/events/:eventId/guests` - רשימת יעד
 - `POST /api/events/:eventId/guests` - הוספת אורח
-- `POST /api/events/:eventId/guests/bulk` - ייבוא המוני
-- `DELETE /api/guests/:id` - מחיקת אורח
+- `POST /api/events/:eventId/guests/bulk` - **ייבוא המוני (CSV)**
+- `PUT /api/guests/:id` - **עדכון אורח**
+- `DELETE /api/guests/:id` - **מחיקת אורח**
 
+### Tables
 - `GET /api/events/:eventId/tables` - רשימת שולחנות
 - `POST /api/events/:eventId/tables` - יצירת שולחן
 - `PUT /api/tables/:id` - עדכון שולחן
 - `DELETE /api/tables/:id` - מחיקת שולחן
 
+### Seating
 - `GET /api/events/:eventId/seating` - סידורי הושבה
-- `POST /api/events/:eventId/seating` - הוספת הושבה
+- `POST /api/events/:eventId/seating` - **הוספת הושבה (תומך ב-rsvpId וגם guestId)**
 - `DELETE /api/seating/:id` - מחיקת הושבה
 
+### Checkins
 - `GET /api/events/:eventId/checkins` - רשימת צ'ק-אינים
 - `POST /api/events/:eventId/checkins` - ביצוע צ'ק-אין
 - `DELETE /api/checkins/:id` - ביטול צ'ק-אין
 
-## 🛡️ אבטחה
+## 🛠️ סקריפטים זמינים
 
-### Rate Limiting
-- RSVP: 5 בקשות לדקה
-- API: 30 בקשות לדקה
-- Auth: 10 בקשות לדקה
+```bash
+# Development
+npm run dev              # Vite dev server
+npm run dev:sandbox      # Wrangler dev (sandbox)
+npm run dev:d1           # Wrangler dev with D1 local
 
-### Validation
-- כל ה-inputs מאומתים עם Zod
-- מספרי טלפון ישראליים בלבד
-- פורמט E.164 לשמירה
+# Build
+npm run build            # Vite build
 
-### Audit Logs
-כל פעולה חשובה נרשמת:
-- יצירת/עדכון/מחיקת אירועים
-- הוספת/עדכון RSVPs
-- שינויים בהושבה
-- צ'ק-אינים
+# Database
+npm run db:migrate:local  # Run migrations (local)
+npm run db:migrate:prod   # Run migrations (production)
+npm run db:seed          # Load seed data
+npm run db:reset         # Reset local DB
 
-## 📝 פיתוח עתידי (Roadmap)
+# Deployment
+npm run deploy           # Build + Deploy to Cloudflare
+npm run deploy:prod      # Deploy to production
 
-- [ ] ממשק Admin מלא (React/Vue)
-- [ ] Wizard מלא ליצירת אירוע
-- [ ] Drag & Drop להושבה
-- [ ] ייצוא PDF לרשימות
+# Utilities
+npm run clean-port       # Kill process on port 3000
+npm run test             # Health check
+```
+
+## 🐛 תיקוני באגים עיקריים
+
+### ✅ Event ID Issues (Fixed)
+- **בעיה**: IDs עם `/` גרמו ל-404 ב-URLs
+- **פתרון**: שינוי מ-base64url ל-**hex encoding** (20 characters)
+- **תוצאה**: IDs בטוחים לחלוטין ב-URLs
+
+### ✅ Route Conflicts (Fixed)
+- **בעיה**: Routes לא הותאמו נכון (404 errors)
+- **פתרון**: תיקון mounting paths (`/api/guests/:id`, `/api/seating/:id`)
+- **תוצאה**: כל ה-endpoints עובדים
+
+### ✅ Rate Limiting (Optimized)
+- **בעיה**: 30 req/min גרם ל-429 בניווט מהיר
+- **פתרון**: העלאה ל-100 req/min ב-API
+- **תוצאה**: חוויית משתמש חלקה
+
+### ✅ Guest Management (Completed)
+- **בעיה**: כפתורי עריכה/מחיקה לא עבדו
+- **פתרון**: תיקון onclick handlers (string IDs)
+- **תוצאה**: ניהול מלא של מוזמנים
+
+### ✅ Seating Synchronization (Fixed)
+- **בעיה**: אורחים לא הופיעו בהושבה
+- **פתרון**: loadSeating() טוען גם RSVPs וגם Guests
+- **תוצאה**: סינכרון מושלם בין טאבים
+
+### ✅ Drag & Drop Seating (Fixed)
+- **בעיה**: 400 Bad Request בגרירת אורחים
+- **פתרון**: תמיכה ב-rsvpId וגם guestId, ללא parseInt()
+- **תוצאה**: drag & drop עובד לכל סוגי האורחים
+
+### ✅ Auto-fill Seating (Fixed)
+- **בעיה**: "אין אורחים להושיב" למרות שיש
+- **פתרון**: כולל גם RSVPs וגם Guests באוטומציה
+- **תוצאה**: השלמה אוטומטית מלאה
+
+### ✅ Table Guest Display (Enhanced)
+- **בעיה**: רק מספרים (3/10) בשולחנות
+- **פתרון**: תצוגה מלאה של שמות כל האורחים
+- **תוצאה**: רואים מי יושב איפה
+
+### ✅ Event Deletion (Cascade Fixed)
+- **בעיה**: מחיקת אירוע נכשלה (FK constraints)
+- **פתרון**: Cascade delete בסדר נכון
+- **תוצאה**: מחיקה מלאה של אירוע ונתונים
+
+## 📝 תכונות שהושלמו
+
+- [x] ✅ Dev Auth Mode
+- [x] ✅ Public RSVP with ICS download
+- [x] ✅ Event Management Dashboard (7 tabs)
+- [x] ✅ Guest CRUD operations
+- [x] ✅ **CSV Import with template download**
+- [x] ✅ Table management
+- [x] ✅ **Drag & Drop seating (RSVPs + Guests)**
+- [x] ✅ **Auto-fill seating**
+- [x] ✅ **Guest list display in tables**
+- [x] ✅ Check-in system
+- [x] ✅ Copy/Paste messages
+- [x] ✅ CSV/Excel export
+- [x] ✅ **Cascade delete for events**
+- [x] ✅ Audit logging
+- [x] ✅ Rate limiting (optimized)
+
+## 🚧 פיתוח עתידי (Nice to Have)
+
+- [ ] Walk-ins page (מגיעים בלי הזמנה)
+- [ ] PDF export לרשימות
+- [ ] Analytics Dashboard מתקדם
 - [ ] WhatsApp Business API integration
 - [ ] תזכורות אוטומטיות
 - [ ] Multi-language support
-- [ ] Analytics מתקדם
+- [ ] React/Vue admin panel
 
 ## 🤝 תמיכה
 
 לשאלות, בעיות או הצעות:
-- Email: support@mozmanim-beclick.com
-- GitHub Issues: [קישור]
+- GitHub Issues
+- Email: support@example.com
 
 ## 📄 רישיון
 
-MIT License - ראה קובץ LICENSE
+MIT License
 
 ---
 
-**Built with ❤️ using Cloudflare Pages + Hono + D1**
+**Built with ❤️ using Cloudflare Pages + Hono + D1 + Web Crypto API**
+
+**תכונות עיקריות**: CSV Import | Drag & Drop | Auto-fill | Real-time Sync | RTL Support
