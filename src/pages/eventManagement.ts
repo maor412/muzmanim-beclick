@@ -7,6 +7,8 @@ export const eventManagementPage = `
     <title>ניהול אירוע | מוזמנים בקליק</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
     <style>
       body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
       .tab-active { 
@@ -231,11 +233,15 @@ export const eventManagementPage = `
                 <div class="flex space-x-reverse space-x-3">
                     <button onclick="exportRsvps('csv')" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition">
                         <i class="fas fa-file-csv ml-2"></i>
-                        ייצוא CSV
+                        CSV
                     </button>
                     <button onclick="exportRsvps('excel')" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition">
                         <i class="fas fa-file-excel ml-2"></i>
-                        ייצוא Excel
+                        Excel
+                    </button>
+                    <button onclick="exportRsvpsPDF()" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition">
+                        <i class="fas fa-file-pdf ml-2"></i>
+                        PDF
                     </button>
                 </div>
             </div>
@@ -320,7 +326,11 @@ export const eventManagementPage = `
                     </button>
                     <button onclick="exportGuests('csv')" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition">
                         <i class="fas fa-file-csv ml-2"></i>
-                        ייצוא
+                        CSV
+                    </button>
+                    <button onclick="exportGuestsPDF()" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition">
+                        <i class="fas fa-file-pdf ml-2"></i>
+                        PDF
                     </button>
                     <button onclick="showAddGuestModal()" class="bg-pink-500 text-white px-4 py-2 rounded-lg hover:bg-pink-600 transition">
                         <i class="fas fa-plus ml-2"></i>
@@ -377,7 +387,11 @@ export const eventManagementPage = `
                     </button>
                     <button onclick="exportSeating()" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition">
                         <i class="fas fa-file-excel ml-2"></i>
-                        ייצוא
+                        CSV
+                    </button>
+                    <button onclick="exportSeatingPDF()" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition">
+                        <i class="fas fa-file-pdf ml-2"></i>
+                        PDF
                     </button>
                     <button onclick="showAddTableModal()" class="bg-pink-500 text-white px-4 py-2 rounded-lg hover:bg-pink-600 transition">
                         <i class="fas fa-plus ml-2"></i>

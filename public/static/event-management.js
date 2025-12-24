@@ -1788,6 +1788,145 @@ async function deleteGuest(id) {
     }
 }
 
+// PDF Export Functions
+
+// Export RSVPs to PDF
+function exportRsvpsPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    
+    // Add title
+    doc.setFontSize(18);
+    doc.text(`Event: ${currentEvent.eventName}`, 105, 15, { align: 'center' });
+    doc.setFontSize(12);
+    doc.text(`RSVPs List - ${new Date().toLocaleDateString('he-IL')}`, 105, 23, { align: 'center' });
+    
+    // Prepare data
+    const tableData = allRsvps.map((rsvp, index) => [
+        index + 1,
+        rsvp.fullName,
+        rsvp.phone || 'N/A',
+        rsvp.status === 'confirmed' ? 'Confirmed' : rsvp.status === 'declined' ? 'Declined' : 'Pending',
+        rsvp.attendingCount || 1,
+        rsvp.mealChoice || 'N/A'
+    ]);
+    
+    // Create table
+    doc.autoTable({
+        startY: 30,
+        head: [['#', 'Full Name', 'Phone', 'Status', 'Attending', 'Meal']],
+        body: tableData,
+        styles: { fontSize: 10, font: 'helvetica' },
+        headStyles: { fillColor: [236, 72, 153], textColor: 255 },
+        alternateRowStyles: { fillColor: [245, 245, 245] }
+    });
+    
+    // Save
+    doc.save(`rsvps_${currentEvent.slug}_${Date.now()}.pdf`);
+    showToast('PDF exported successfully!', 'success');
+}
+
+// Export Guests to PDF
+function exportGuestsPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    
+    // Add title
+    doc.setFontSize(18);
+    doc.text(`Event: ${currentEvent.eventName}`, 105, 15, { align: 'center' });
+    doc.setFontSize(12);
+    doc.text(`Guests List - ${new Date().toLocaleDateString('he-IL')}`, 105, 23, { align: 'center' });
+    
+    // Prepare data
+    const tableData = allGuests.map((guest, index) => [
+        index + 1,
+        guest.fullName,
+        guest.phone || 'N/A',
+        guest.side === 'groom' ? 'Groom' : guest.side === 'bride' ? 'Bride' : 'Both',
+        guest.groupLabel || 'Other',
+        guest.notes || 'N/A'
+    ]);
+    
+    // Create table
+    doc.autoTable({
+        startY: 30,
+        head: [['#', 'Full Name', 'Phone', 'Side', 'Group', 'Notes']],
+        body: tableData,
+        styles: { fontSize: 10, font: 'helvetica' },
+        headStyles: { fillColor: [236, 72, 153], textColor: 255 },
+        alternateRowStyles: { fillColor: [245, 245, 245] }
+    });
+    
+    // Add summary
+    const finalY = doc.lastAutoTable.finalY + 10;
+    doc.setFontSize(12);
+    doc.text(`Total Guests: ${allGuests.length}`, 14, finalY);
+    
+    // Save
+    doc.save(`guests_${currentEvent.slug}_${Date.now()}.pdf`);
+    showToast('PDF exported successfully!', 'success');
+}
+
+// Export Seating to PDF
+function exportSeatingPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    
+    // Add title
+    doc.setFontSize(18);
+    doc.text(`Event: ${currentEvent.eventName}`, 105, 15, { align: 'center' });
+    doc.setFontSize(12);
+    doc.text(`Seating Arrangement - ${new Date().toLocaleDateString('he-IL')}`, 105, 23, { align: 'center' });
+    
+    // Prepare data by table
+    const tableData = [];
+    allTables.forEach(table => {
+        const tableSeating = allSeating.filter(s => s.tableId === table.id);
+        
+        tableSeating.forEach(seat => {
+            // Find guest or RSVP
+            const rsvp = allRsvps.find(r => r.id === seat.rsvpId);
+            const guest = allGuests.find(g => g.id === seat.guestId);
+            const person = rsvp || guest;
+            
+            if (person) {
+                tableData.push([
+                    table.tableName,
+                    table.tableNumber || 'N/A',
+                    person.fullName,
+                    person.phone || 'N/A',
+                    rsvp ? `+${rsvp.attendingCount || 1}` : 'Guest'
+                ]);
+            }
+        });
+    });
+    
+    // Create table
+    doc.autoTable({
+        startY: 30,
+        head: [['Table Name', 'Table #', 'Guest Name', 'Phone', 'Attending']],
+        body: tableData,
+        styles: { fontSize: 10, font: 'helvetica' },
+        headStyles: { fillColor: [236, 72, 153], textColor: 255 },
+        alternateRowStyles: { fillColor: [245, 245, 245] },
+        didDrawPage: function(data) {
+            // Add page numbers
+            doc.setFontSize(10);
+            doc.text(`Page ${doc.internal.getNumberOfPages()}`, 105, doc.internal.pageSize.height - 10, { align: 'center' });
+        }
+    });
+    
+    // Add summary
+    const finalY = doc.lastAutoTable.finalY + 10;
+    doc.setFontSize(12);
+    doc.text(`Total Tables: ${allTables.length}`, 14, finalY);
+    doc.text(`Total Seated: ${allSeating.length}`, 14, finalY + 7);
+    
+    // Save
+    doc.save(`seating_${currentEvent.slug}_${Date.now()}.pdf`);
+    showToast('PDF exported successfully!', 'success');
+}
+
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
     loadEvent();
