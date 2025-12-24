@@ -10,6 +10,39 @@ let filteredRsvps = [];
 // Configure axios to send cookies
 axios.defaults.withCredentials = true;
 
+// Hebrew Font Loader for jsPDF (Rubik font from Google Fonts)
+async function loadHebrewFont(doc) {
+    // Using Rubik font - a professional Hebrew font from Google Fonts
+    // Font is loaded via CDN and embedded into PDF
+    const rubikFontUrl = 'https://fonts.gstatic.com/s/rubik/v28/iJWKBXyIfDnIV7nBrXyw023e.woff2';
+    
+    try {
+        // Fetch font
+        const response = await fetch(rubikFontUrl);
+        const fontBlob = await response.blob();
+        
+        // Convert to base64
+        const reader = new FileReader();
+        await new Promise((resolve) => {
+            reader.onload = () => {
+                const base64 = reader.result.split(',')[1];
+                
+                // Add font to jsPDF
+                doc.addFileToVFS('Rubik-Regular.ttf', base64);
+                doc.addFont('Rubik-Regular.ttf', 'Rubik', 'normal');
+                doc.setFont('Rubik');
+                
+                resolve();
+            };
+            reader.readAsDataURL(fontBlob);
+        });
+    } catch (error) {
+        console.error('Failed to load Hebrew font:', error);
+        // Fallback to default font if loading fails
+        showToast('התרחשה בעיה בטעינת הגופן, משתמשים בגופן ברירת מחדל', 'warning');
+    }
+}
+
 // Toast notification
 function showToast(message, type = 'success') {
     const toast = document.createElement('div');
@@ -2010,129 +2043,253 @@ function generateInsights(rsvps, guests, seating, tables) {
 
 // PDF Export Functions
 
-// Export RSVPs to PDF
-function exportRsvpsPDF() {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    
-    // Add title
-    doc.setFontSize(18);
-    doc.text(`Event: ${currentEvent.eventName}`, 105, 15, { align: 'center' });
-    doc.setFontSize(12);
-    doc.text(`RSVPs List - ${new Date().toLocaleDateString('he-IL')}`, 105, 23, { align: 'center' });
-    
-    // Prepare data
-    const tableData = allRsvps.map((rsvp, index) => [
-        index + 1,
-        rsvp.fullName,
-        rsvp.phone || 'N/A',
-        rsvp.status === 'confirmed' ? 'Confirmed' : rsvp.status === 'declined' ? 'Declined' : 'Pending',
-        rsvp.attendingCount || 1,
-        rsvp.mealChoice || 'N/A'
-    ]);
-    
-    // Create table
-    doc.autoTable({
-        startY: 30,
-        head: [['#', 'Full Name', 'Phone', 'Status', 'Attending', 'Meal']],
-        body: tableData,
-        styles: { fontSize: 10, font: 'helvetica' },
-        headStyles: { fillColor: [236, 72, 153], textColor: 255 },
-        alternateRowStyles: { fillColor: [245, 245, 245] }
-    });
-    
-    // Save
-    doc.save(`rsvps_${currentEvent.slug}_${Date.now()}.pdf`);
-    showToast('PDF exported successfully!', 'success');
+// Helper: Convert Hebrew text to readable format for PDF
+function prepareHebrewText(text) {
+    if (!text) return 'N/A';
+    // For now, we'll reverse the text to display correctly in PDF
+    // This is a workaround until we add Hebrew font support
+    return text.split('').reverse().join('');
 }
 
-// Export Guests to PDF
-function exportGuestsPDF() {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    
-    // Add title
-    doc.setFontSize(18);
-    doc.text(`Event: ${currentEvent.eventName}`, 105, 15, { align: 'center' });
-    doc.setFontSize(12);
-    doc.text(`Guests List - ${new Date().toLocaleDateString('he-IL')}`, 105, 23, { align: 'center' });
-    
-    // Prepare data
-    const tableData = allGuests.map((guest, index) => [
-        index + 1,
-        guest.fullName,
-        guest.phone || 'N/A',
-        guest.side === 'groom' ? 'Groom' : guest.side === 'bride' ? 'Bride' : 'Both',
-        guest.groupLabel || 'Other',
-        guest.notes || 'N/A'
-    ]);
-    
-    // Create table
-    doc.autoTable({
-        startY: 30,
-        head: [['#', 'Full Name', 'Phone', 'Side', 'Group', 'Notes']],
-        body: tableData,
-        styles: { fontSize: 10, font: 'helvetica' },
-        headStyles: { fillColor: [236, 72, 153], textColor: 255 },
-        alternateRowStyles: { fillColor: [245, 245, 245] }
-    });
-    
-    // Add summary
-    const finalY = doc.lastAutoTable.finalY + 10;
-    doc.setFontSize(12);
-    doc.text(`Total Guests: ${allGuests.length}`, 14, finalY);
-    
-    // Save
-    doc.save(`guests_${currentEvent.slug}_${Date.now()}.pdf`);
-    showToast('PDF exported successfully!', 'success');
-}
-
-// Export Seating to PDF
-function exportSeatingPDF() {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    
-    // Add title
-    doc.setFontSize(18);
-    doc.text(`Event: ${currentEvent.eventName}`, 105, 15, { align: 'center' });
-    doc.setFontSize(12);
-    doc.text(`Seating Arrangement - ${new Date().toLocaleDateString('he-IL')}`, 105, 23, { align: 'center' });
-    
-    // Prepare data by table
-    const tableData = [];
-    allTables.forEach(table => {
-        const tableSeating = allSeating.filter(s => s.tableId === table.id);
+// Export RSVPs to PDF with Hebrew support
+async function exportRsvpsPDF() {
+    try {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
         
-        tableSeating.forEach(seat => {
-            // Find guest or RSVP
-            const rsvp = allRsvps.find(r => r.id === seat.rsvpId);
-            const guest = allGuests.find(g => g.id === seat.guestId);
-            const person = rsvp || guest;
+        // Load Hebrew font from Google Fonts (Rubik supports Hebrew)
+        await loadHebrewFont(doc);
+        
+        // Add title in Hebrew
+        doc.setFont('Rubik');
+        doc.setFontSize(18);
+        doc.text(`אירוע: ${currentEvent.eventName}`, 105, 15, { align: 'center' });
+        doc.setFontSize(12);
+        doc.text(`רשימת אישורי הגעה - ${new Date().toLocaleDateString('he-IL')}`, 105, 23, { align: 'center' });
+        
+        // Prepare data in Hebrew
+        const tableData = allRsvps.map((rsvp, index) => [
+            index + 1,
+            rsvp.fullName,
+            rsvp.phone || 'אין',
+            rsvp.status === 'confirmed' ? 'מאושר' : rsvp.status === 'declined' ? 'לא מגיע' : 'ממתין',
+            rsvp.attendingCount || 1,
+            rsvp.mealChoice || 'לא צוין'
+        ]);
+        
+        // Create table with Hebrew headers
+        doc.autoTable({
+            startY: 30,
+            head: [['#', 'שם מלא', 'טלפון', 'סטטוס', 'מס\' אורחים', 'מנה']],
+            body: tableData,
+            styles: { 
+                fontSize: 10, 
+                font: 'Rubik',
+                halign: 'right',
+                fontStyle: 'normal'
+            },
+            headStyles: { 
+                fillColor: [236, 72, 153], 
+                textColor: 255,
+                halign: 'center',
+                fontStyle: 'bold'
+            },
+            columnStyles: {
+                0: { halign: 'center' },  // # column centered
+                3: { halign: 'center' },  // Status column centered
+                4: { halign: 'center' }   // Count column centered
+            },
+            alternateRowStyles: { fillColor: [252, 232, 243] }
+        });
+        
+        // Add summary in Hebrew
+        const finalY = doc.lastAutoTable.finalY + 10;
+        doc.setFont('Rubik');
+        doc.setFontSize(12);
+        doc.text(`סה"כ אישורי הגעה: ${allRsvps.length}`, 196, finalY, { align: 'right' });
+        doc.text(`מאושרים: ${allRsvps.filter(r => r.status === 'confirmed').length}`, 196, finalY + 7, { align: 'right' });
+        doc.text(`לא מגיעים: ${allRsvps.filter(r => r.status === 'declined').length}`, 196, finalY + 14, { align: 'right' });
+        
+        // Save
+        doc.save(`אישורי-הגעה_${currentEvent.slug}_${Date.now()}.pdf`);
+        showToast('PDF יוצא בהצלחה!', 'success');
+    } catch (error) {
+        console.error('Error exporting PDF:', error);
+        showToast('שגיאה בייצוא PDF', 'error');
+    }
+}
+
+// Export Guests to PDF with Hebrew support
+async function exportGuestsPDF() {
+    try {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        
+        // Load Hebrew font
+        await loadHebrewFont(doc);
+        
+        // Add title in Hebrew
+        doc.setFont('Rubik');
+        doc.setFontSize(18);
+        doc.text(`אירוע: ${currentEvent.eventName}`, 105, 15, { align: 'center' });
+        doc.setFontSize(12);
+        doc.text(`רשימת אורחים - ${new Date().toLocaleDateString('he-IL')}`, 105, 23, { align: 'center' });
+        
+        // Prepare data in Hebrew
+        const tableData = allGuests.map((guest, index) => [
+            index + 1,
+            guest.fullName,
+            guest.phone || 'אין',
+            guest.side === 'groom' ? 'חתן' : guest.side === 'bride' ? 'כלה' : 'שניהם',
+            guest.groupLabel || 'אחר',
+            (guest.notes || 'אין').substring(0, 30)
+        ]);
+        
+        // Create table with Hebrew headers
+        doc.autoTable({
+            startY: 30,
+            head: [['#', 'שם מלא', 'טלפון', 'צד', 'קבוצה', 'הערות']],
+            body: tableData,
+            styles: { 
+                fontSize: 9, 
+                font: 'Rubik',
+                halign: 'right',
+                fontStyle: 'normal'
+            },
+            headStyles: { 
+                fillColor: [236, 72, 153], 
+                textColor: 255,
+                halign: 'center',
+                fontStyle: 'bold'
+            },
+            columnStyles: {
+                0: { halign: 'center' },  // # column
+                3: { halign: 'center' },  // Side column
+                5: { cellWidth: 40 }      // Notes column wider
+            },
+            alternateRowStyles: { fillColor: [252, 232, 243] }
+        });
+        
+        // Add summary in Hebrew
+        const finalY = doc.lastAutoTable.finalY + 10;
+        doc.setFont('Rubik');
+        doc.setFontSize(12);
+        doc.text(`סה"כ אורחים: ${allGuests.length}`, 196, finalY, { align: 'right' });
+        
+        const groomCount = allGuests.filter(g => g.side === 'groom').length;
+        const brideCount = allGuests.filter(g => g.side === 'bride').length;
+        doc.text(`צד חתן: ${groomCount} | צד כלה: ${brideCount}`, 196, finalY + 7, { align: 'right' });
+        
+        // Save
+        doc.save(`אורחים_${currentEvent.slug}_${Date.now()}.pdf`);
+        showToast('PDF יוצא בהצלחה!', 'success');
+    } catch (error) {
+        console.error('Error exporting PDF:', error);
+        showToast('שגיאה בייצוא PDF', 'error');
+    }
+}
+
+// Export Seating to PDF with Hebrew support
+async function exportSeatingPDF() {
+    try {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        
+        // Load Hebrew font
+        await loadHebrewFont(doc);
+        
+        // Add title in Hebrew
+        doc.setFont('Rubik');
+        doc.setFontSize(18);
+        doc.text(`אירוע: ${currentEvent.eventName}`, 105, 15, { align: 'center' });
+        doc.setFontSize(12);
+        doc.text(`תרשים הושבה - ${new Date().toLocaleDateString('he-IL')}`, 105, 23, { align: 'center' });
+        
+        // Prepare data by table in Hebrew
+        const tableData = [];
+        allTables.forEach(table => {
+            const tableSeating = allSeating.filter(s => s.tableId === table.id);
             
-            if (person) {
+            if (tableSeating.length === 0) {
+                // Show empty table in Hebrew
                 tableData.push([
                     table.tableName,
-                    table.tableNumber || 'N/A',
-                    person.fullName,
-                    person.phone || 'N/A',
-                    rsvp ? `+${rsvp.attendingCount || 1}` : 'Guest'
+                    table.tableNumber || 'אין',
+                    '(שולחן ריק)',
+                    '',
+                    `0/${table.capacity}`
                 ]);
+            } else {
+                tableSeating.forEach((seat, idx) => {
+                    // Find guest or RSVP
+                    const rsvp = allRsvps.find(r => r.id === seat.rsvpId);
+                    const guest = allGuests.find(g => g.id === seat.guestId);
+                    const person = rsvp || guest;
+                    
+                    if (person) {
+                        tableData.push([
+                            idx === 0 ? table.tableName : '', // Table name only on first row
+                            idx === 0 ? (table.tableNumber || 'אין') : '',
+                            person.fullName,
+                            person.phone || 'אין',
+                            idx === 0 ? `${tableSeating.length}/${table.capacity}` : ''
+                        ]);
+                    }
+                });
             }
         });
-    });
-    
-    // Create table
-    doc.autoTable({
-        startY: 30,
-        head: [['Table Name', 'Table #', 'Guest Name', 'Phone', 'Attending']],
-        body: tableData,
-        styles: { fontSize: 10, font: 'helvetica' },
-        headStyles: { fillColor: [236, 72, 153], textColor: 255 },
-        alternateRowStyles: { fillColor: [245, 245, 245] },
-        didDrawPage: function(data) {
-            // Add page numbers
-            doc.setFontSize(10);
-            doc.text(`Page ${doc.internal.getNumberOfPages()}`, 105, doc.internal.pageSize.height - 10, { align: 'center' });
+        
+        // Create table with Hebrew headers
+        doc.autoTable({
+            startY: 30,
+            head: [['שם שולחן', 'מס\' שולחן', 'שם אורח', 'טלפון', 'תפוסה']],
+            body: tableData,
+            styles: { 
+                fontSize: 9, 
+                font: 'Rubik',
+                halign: 'right',
+                fontStyle: 'normal'
+            },
+            headStyles: { 
+                fillColor: [236, 72, 153], 
+                textColor: 255,
+                halign: 'center',
+                fontStyle: 'bold'
+            },
+            columnStyles: {
+                1: { halign: 'center' },  // Table # column
+                4: { halign: 'center' }   // Occupancy column
+            },
+            alternateRowStyles: { fillColor: [252, 232, 243] },
+            didDrawPage: function(data) {
+                // Add page numbers in Hebrew
+                const pageCount = doc.internal.getNumberOfPages();
+                doc.setFont('Rubik');
+                doc.setFontSize(10);
+                doc.text(`עמוד ${doc.internal.getCurrentPageInfo().pageNumber} מתוך ${pageCount}`, 
+                    105, doc.internal.pageSize.height - 10, { align: 'center' });
+            }
+        });
+        
+        // Add summary in Hebrew
+        const finalY = doc.lastAutoTable.finalY + 10;
+        doc.setFont('Rubik');
+        doc.setFontSize(12);
+        doc.text(`סה"כ שולחנות: ${allTables.length}`, 196, finalY, { align: 'right' });
+        
+        const totalSeated = allSeating.length;
+        const totalCapacity = allTables.reduce((sum, t) => sum + t.capacity, 0);
+        doc.text(`סה"כ מוסבים: ${totalSeated} מתוך ${totalCapacity} מקומות`, 196, finalY + 7, { align: 'right' });
+        
+        // Save
+        doc.save(`הושבה_${currentEvent.slug}_${Date.now()}.pdf`);
+        showToast('PDF יוצא בהצלחה!', 'success');
+    } catch (error) {
+        console.error('Error exporting PDF:', error);
+        showToast('שגיאה בייצוא PDF', 'error');
+    }
+} 
+                     105, doc.internal.pageSize.height - 10, { align: 'center' });
         }
     });
     
@@ -2141,6 +2298,9 @@ function exportSeatingPDF() {
     doc.setFontSize(12);
     doc.text(`Total Tables: ${allTables.length}`, 14, finalY);
     doc.text(`Total Seated: ${allSeating.length}`, 14, finalY + 7);
+    
+    const totalCapacity = allTables.reduce((sum, t) => sum + t.capacity, 0);
+    doc.text(`Total Capacity: ${totalCapacity}`, 14, finalY + 14);
     
     // Save
     doc.save(`seating_${currentEvent.slug}_${Date.now()}.pdf`);
