@@ -188,7 +188,7 @@ guestsRouter.post('/events/:eventId/guests/bulk', zValidator('json', bulkGuestsS
  * PUT /api/guests/:id
  * עדכון אורח
  */
-guestsRouter.put('/:id', zValidator('json', updateGuestSchema), async (c) => {
+guestsRouter.put('/guests/:id', zValidator('json', updateGuestSchema), async (c) => {
   const db = initDb(c.env.DB);
   const userId = c.get('userId') as string;
   const guestId = c.req.param('id');
@@ -250,7 +250,7 @@ guestsRouter.put('/:id', zValidator('json', updateGuestSchema), async (c) => {
  * DELETE /api/guests/:id
  * מחיקת אורח
  */
-guestsRouter.delete('/:id', async (c) => {
+guestsRouter.delete('/guests/:id', async (c) => {
   const db = initDb(c.env.DB);
   const userId = c.get('userId') as string;
   const guestId = c.req.param('id');
