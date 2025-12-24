@@ -2,7 +2,7 @@ import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import { eq, and, desc } from 'drizzle-orm';
 import { initDb } from '../db';
-import { events, eventSettings, users } from '../db/schema';
+import { events, eventSettings, users, rsvps, guests, tables, seating, checkins } from '../db/schema';
 import { requireAuth } from '../middleware/auth';
 import { apiRateLimiter } from '../middleware/rateLimit';
 import { logAudit } from '../middleware/audit';
@@ -306,6 +306,25 @@ eventsRouter.delete('/events/:id', async (c) => {
       throw new AppError(404, 'אירוע לא נמצא', 'EVENT_NOT_FOUND');
     }
 
+    // Delete all related data first (due to foreign key constraints)
+    // Order matters: delete children before parents
+    
+    // 1. Delete checkins (references rsvps)
+    await db.delete(checkins).where(eq(checkins.eventId, eventId));
+    
+    // 2. Delete seating (references tables, rsvps, and guests)
+    await db.delete(seating).where(eq(seating.eventId, eventId));
+    
+    // 3. Delete tables
+    await db.delete(tables).where(eq(tables.eventId, eventId));
+    
+    // 4. Delete guests
+    await db.delete(guests).where(eq(guests.eventId, eventId));
+    
+    // 5. Delete RSVPs
+    await db.delete(rsvps).where(eq(rsvps.eventId, eventId));
+    
+    // 6. Finally, delete the event itself
     await db.delete(events).where(eq(events.id, eventId));
     await logAudit(c, 'DELETE_EVENT', 'event', eventId, { eventName: event.eventName });
 
