@@ -847,9 +847,82 @@ async function logout() {
     }
 }
 
-// Modals (placeholder functions)
+// Modals
 function showAddGuestModal() {
-    showToast('הוספת מוזמן - בפיתוח', 'info');
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+    modal.innerHTML = `
+        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">הוספת מוזמן חדש</h2>
+            <form id="add-guest-form" class="space-y-4">
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-2">שם מלא *</label>
+                    <input type="text" name="fullName" required
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                           placeholder="הכנס שם מלא">
+                </div>
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-2">טלפון</label>
+                    <input type="tel" name="phone" 
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                           placeholder="05X-XXXXXXX">
+                </div>
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-2">צד</label>
+                    <input type="text" name="side" 
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                           placeholder="חתן/כלה/משותף">
+                </div>
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-2">קבוצה</label>
+                    <input type="text" name="groupLabel" 
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                           placeholder="משפחה/חברים/עבודה">
+                </div>
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-2">הערות</label>
+                    <textarea name="notes" rows="2"
+                              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                              placeholder="הערות נוספות..."></textarea>
+                </div>
+                <div class="flex space-x-reverse space-x-3 pt-4">
+                    <button type="submit" class="flex-1 bg-gradient-to-r from-pink-500 to-purple-500 text-white px-6 py-3 rounded-lg hover:from-pink-600 hover:to-purple-600 transition font-semibold">
+                        <i class="fas fa-plus ml-2"></i>
+                        הוסף מוזמן
+                    </button>
+                    <button type="button" onclick="this.closest('.fixed').remove()" class="flex-1 bg-gray-300 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-400 transition font-semibold">
+                        ביטול
+                    </button>
+                </div>
+            </form>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    document.getElementById('add-guest-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const data = {
+            fullName: formData.get('fullName'),
+            phone: formData.get('phone') || '',
+            side: formData.get('side') || '',
+            groupLabel: formData.get('groupLabel') || '',
+            notes: formData.get('notes') || ''
+        };
+        
+        try {
+            const response = await axios.post(`/api/events/${getEventId()}/guests`, data);
+            if (response.data.success) {
+                showToast('המוזמן נוסף בהצלחה', 'success');
+                modal.remove();
+                loadGuests();
+            }
+        } catch (error) {
+            console.error('Error adding guest:', error);
+            showToast(error.response?.data?.error || 'שגיאה בהוספת מוזמן', 'error');
+        }
+    });
 }
 
 function showImportModal() {
@@ -857,7 +930,73 @@ function showImportModal() {
 }
 
 function showAddTableModal() {
-    showToast('הוספת שולחן - בפיתוח', 'info');
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+    modal.innerHTML = `
+        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">הוספת שולחן חדש</h2>
+            <form id="add-table-form" class="space-y-4">
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-2">שם השולחן *</label>
+                    <input type="text" name="tableName" required
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                           placeholder='לדוגמה: "שולחן 1" או "משפחה"'>
+                </div>
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-2">מספר שולחן (אופציונלי)</label>
+                    <input type="number" name="tableNumber" min="1"
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                           placeholder="1, 2, 3...">
+                </div>
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-2">קיבולת *</label>
+                    <input type="number" name="capacity" min="1" max="50" value="10" required
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                           placeholder="כמה אנשים יכולים לשבת?">
+                </div>
+                <div>
+                    <label class="block text-gray-700 font-semibold mb-2">הערות</label>
+                    <textarea name="notes" rows="2"
+                              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                              placeholder="הערות נוספות..."></textarea>
+                </div>
+                <div class="flex space-x-reverse space-x-3 pt-4">
+                    <button type="submit" class="flex-1 bg-gradient-to-r from-purple-500 to-blue-500 text-white px-6 py-3 rounded-lg hover:from-purple-600 hover:to-blue-600 transition font-semibold">
+                        <i class="fas fa-plus ml-2"></i>
+                        הוסף שולחן
+                    </button>
+                    <button type="button" onclick="this.closest('.fixed').remove()" class="flex-1 bg-gray-300 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-400 transition font-semibold">
+                        ביטול
+                    </button>
+                </div>
+            </form>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    document.getElementById('add-table-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const data = {
+            tableName: formData.get('tableName'),
+            tableNumber: formData.get('tableNumber') ? parseInt(formData.get('tableNumber')) : null,
+            capacity: parseInt(formData.get('capacity')),
+            notes: formData.get('notes') || ''
+        };
+        
+        try {
+            const response = await axios.post(`/api/events/${getEventId()}/tables`, data);
+            if (response.data.success) {
+                showToast('השולחן נוסף בהצלחה', 'success');
+                modal.remove();
+                loadSeating();
+            }
+        } catch (error) {
+            console.error('Error adding table:', error);
+            showToast(error.response?.data?.error || 'שגיאה בהוספת שולחן', 'error');
+        }
+    });
 }
 
 function viewRsvp(id) {
@@ -869,8 +1008,18 @@ function editGuest(id) {
 }
 
 async function deleteGuest(id) {
-    if (!confirm('האם למחוק את המוזמן?')) return;
-    showToast('מחיקת מוזמן - בפיתוח', 'info');
+    if (!confirm('האם אתה בטוח שברצונך למחוק את המוזמן?')) return;
+    
+    try {
+        const response = await axios.delete(`/api/guests/${id}`);
+        if (response.data.success) {
+            showToast('המוזמן נמחק בהצלחה', 'success');
+            loadGuests();
+        }
+    } catch (error) {
+        console.error('Error deleting guest:', error);
+        showToast(error.response?.data?.error || 'שגיאה במחיקת מוזמן', 'error');
+    }
 }
 
 // Initialize on page load
