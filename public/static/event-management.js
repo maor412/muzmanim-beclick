@@ -324,15 +324,17 @@ async function loadSeating() {
     document.getElementById('tables-grid').classList.add('hidden');
     
     try {
-        const [tablesRes, seatingRes, rsvpsRes] = await Promise.all([
+        const [tablesRes, seatingRes, rsvpsRes, guestsRes] = await Promise.all([
             axios.get(`/api/events/${currentEvent.id}/tables`),
             axios.get(`/api/events/${currentEvent.id}/seating`),
-            axios.get(`/api/events/${currentEvent.id}/rsvps`)
+            axios.get(`/api/events/${currentEvent.id}/rsvps`),
+            axios.get(`/api/events/${currentEvent.id}/guests`)
         ]);
         
         allTables = tablesRes.data.tables || [];
         allSeating = seatingRes.data.seating || [];
         allRsvps = rsvpsRes.data.rsvps || [];
+        allGuests = guestsRes.data.guests || [];
         
         document.getElementById('tables-loading').classList.add('hidden');
         
@@ -353,8 +355,35 @@ async function loadSeating() {
 
 // Render Unseated Guests
 function renderUnseatedGuests() {
-    const seatedRsvpIds = allSeating.map(s => s.rsvpId);
-    const unseated = allRsvps.filter(r => r.status === 'confirmed' && !seatedRsvpIds.includes(r.id));
+    // Get seated RSVP and Guest IDs
+    const seatedRsvpIds = allSeating.filter(s => s.rsvpId).map(s => s.rsvpId);
+    const seatedGuestIds = allSeating.filter(s => s.guestId).map(s => s.guestId);
+    
+    // Filter unseated RSVPs (confirmed and not seated)
+    const unseatedRsvps = allRsvps.filter(r => 
+        r.status === 'confirmed' && !seatedRsvpIds.includes(r.id)
+    );
+    
+    // Filter unseated Guests (not seated)
+    const unseatedGuests = allGuests.filter(g => !seatedGuestIds.includes(g.id));
+    
+    // Combine both lists
+    const unseated = [
+        ...unseatedRsvps.map(r => ({ 
+            id: r.id, 
+            type: 'rsvp', 
+            name: r.fullName, 
+            count: (r.attendingCount || 1),
+            subtitle: r.attendingCount > 1 ? `${r.attendingCount} מגיעים` : 'מגיע אחד'
+        })),
+        ...unseatedGuests.map(g => ({ 
+            id: g.id, 
+            type: 'guest', 
+            name: g.fullName, 
+            count: 1,
+            subtitle: g.groupLabel || 'מוזמן'
+        }))
+    ];
     
     document.getElementById('unseated-count').textContent = unseated.length;
     
@@ -362,11 +391,13 @@ function renderUnseatedGuests() {
     if (unseated.length === 0) {
         container.innerHTML = '<p class="text-sm text-gray-500 text-center py-4">כל האורחים הושבו</p>';
     } else {
-        container.innerHTML = unseated.map(rsvp => `
-            <div draggable="true" ondragstart="drag(event)" data-rsvp-id="${rsvp.id}" 
+        container.innerHTML = unseated.map(person => `
+            <div draggable="true" ondragstart="drag(event)" 
+                 data-${person.type}-id="${person.id}"
                  class="bg-blue-50 border border-blue-200 rounded-lg p-3 cursor-move hover:bg-blue-100 transition">
-                <p class="font-semibold text-sm">${rsvp.fullName}</p>
-                <p class="text-xs text-gray-600">${rsvp.plusOnes > 0 ? `+${rsvp.plusOnes} מלווים` : 'ללא מלווים'}</p>
+                <p class="font-semibold text-sm">${person.name}</p>
+                <p class="text-xs text-gray-600">${person.subtitle}</p>
+                ${person.type === 'guest' ? '<span class="text-xs bg-purple-100 text-purple-600 px-2 py-0.5 rounded">מוזמן ידני</span>' : ''}
             </div>
         `).join('');
     }
