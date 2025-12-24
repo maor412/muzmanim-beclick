@@ -2045,7 +2045,7 @@ function exportRsvpsPDF() {
         }
         
         // Add Rubik Hebrew font
-        addRubikFont(doc);
+        window.addRubikFont(doc);
         
         // Enable RTL mode
         doc.setR2L(true);
@@ -2119,7 +2119,7 @@ function exportGuestsPDF() {
         }
         
         // Add Rubik Hebrew font
-        addRubikFont(doc);
+        window.addRubikFont(doc);
         doc.setR2L(true);
         
         // Add title
@@ -2193,7 +2193,7 @@ function exportSeatingPDF() {
         }
         
         // Add Rubik Hebrew font
-        addRubikFont(doc);
+        window.addRubikFont(doc);
         doc.setR2L(true);
         
         // Add title
