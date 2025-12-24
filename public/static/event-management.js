@@ -64,6 +64,9 @@ function switchTab(tab) {
         case 'checkin':
             loadCheckin();
             break;
+        case 'walkins':
+            loadWalkins();
+            break;
         case 'messages':
             loadMessages();
             break;
@@ -907,6 +910,121 @@ async function cancelCheckin(rsvpId) {
         console.error('Error canceling check-in:', error);
         showToast('שגיאה בביטול צ\'ק-אין', 'error');
     }
+}
+
+// Walk-ins Management
+let allWalkins = [];
+
+// Load Walk-ins
+async function loadWalkins() {
+    try {
+        const response = await axios.get(`/api/events/${currentEvent.id}/guests`);
+        allGuests = response.data.guests || [];
+        
+        // Filter walk-ins (guests with notes containing "walk-in" or specific group)
+        allWalkins = allGuests.filter(g => 
+            g.notes?.toLowerCase().includes('walk-in') || 
+            g.groupLabel === 'walk-in'
+        );
+        
+        document.getElementById('walkins-count').textContent = allWalkins.length;
+        renderWalkinsList();
+    } catch (error) {
+        console.error('Error loading walk-ins:', error);
+        showToast('שגיאה בטעינת Walk-ins', 'error');
+    }
+}
+
+// Render Walk-ins List
+function renderWalkinsList() {
+    const container = document.getElementById('walkins-list');
+    
+    if (allWalkins.length === 0) {
+        container.innerHTML = '<p class="text-center py-12 text-gray-500">אין Walk-ins עדיין</p>';
+        return;
+    }
+    
+    container.innerHTML = allWalkins.map(guest => `
+        <div class="p-4 hover:bg-gray-50 transition">
+            <div class="flex justify-between items-center">
+                <div class="flex-1">
+                    <div class="flex items-center space-x-reverse space-x-2 mb-2">
+                        <i class="fas fa-person-walking text-pink-500"></i>
+                        <p class="font-bold text-lg">${guest.fullName}</p>
+                        ${guest.attendingCount > 0 ? `<span class="bg-purple-100 text-purple-700 text-xs px-2 py-1 rounded-full">+${guest.attendingCount}</span>` : ''}
+                    </div>
+                    <div class="flex items-center space-x-reverse space-x-4 text-sm text-gray-600">
+                        ${guest.phone ? `<span><i class="fas fa-phone ml-1"></i>${guest.phone}</span>` : ''}
+                        <span><i class="fas fa-tag ml-1"></i>${translateGroup(guest.groupLabel)}</span>
+                        <span><i class="fas fa-heart ml-1"></i>${translateSide(guest.side)}</span>
+                        ${guest.notes ? `<span><i class="fas fa-sticky-note ml-1"></i>${guest.notes}</span>` : ''}
+                    </div>
+                </div>
+                <div class="flex items-center space-x-reverse space-x-2">
+                    <button onclick="editGuest('${guest.id}')" class="text-blue-500 hover:text-blue-600 px-3 py-2">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button onclick="deleteGuest('${guest.id}')" class="text-red-500 hover:text-red-600 px-3 py-2">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Handle Walk-in Form Submission
+document.addEventListener('DOMContentLoaded', () => {
+    const walkinForm = document.getElementById('walkin-form');
+    if (walkinForm) {
+        walkinForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(walkinForm);
+            const data = {
+                fullName: formData.get('fullName'),
+                phone: formData.get('phone'),
+                side: formData.get('side') || 'both',
+                groupLabel: formData.get('groupLabel') || 'other',
+                notes: `Walk-in - ${formData.get('notes') || ''} (${new Date().toLocaleString('he-IL')})`.trim()
+            };
+            
+            // Add attendingCount if provided
+            const attendingCount = parseInt(formData.get('attendingCount')) || 0;
+            if (attendingCount > 0) {
+                data.notes = `${data.notes} | מלווים: ${attendingCount}`;
+            }
+            
+            try {
+                const response = await axios.post(`/api/events/${currentEvent.id}/guests`, data);
+                
+                if (response.data.success) {
+                    showToast('Walk-in נוסף בהצלחה!', 'success');
+                    walkinForm.reset();
+                    loadWalkins();
+                    loadGuests(); // Refresh main guests list too
+                } else {
+                    showToast(response.data.error || 'שגיאה בהוספת Walk-in', 'error');
+                }
+            } catch (error) {
+                console.error('Error adding walk-in:', error);
+                const errorMsg = error.response?.data?.error || 'שגיאה בהוספת Walk-in';
+                showToast(errorMsg, 'error');
+            }
+        });
+    }
+});
+
+// Helper: Translate side
+function translateSide(side) {
+    const map = { groom: 'חתן', bride: 'כלה', both: 'משותף' };
+    return map[side] || side;
+}
+
+// Helper: Translate group
+function translateGroup(group) {
+    const map = { family: 'משפחה', friends: 'חברים', work: 'עבודה', other: 'אחרים', 'walk-in': 'Walk-in' };
+    return map[group] || group;
 }
 
 // Load Messages

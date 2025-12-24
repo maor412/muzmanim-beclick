@@ -87,6 +87,10 @@ export const eventManagementPage = `
                     <i class="fas fa-clipboard-check ml-2"></i>
                     צ'ק-אין
                 </button>
+                <button onclick="switchTab('walkins')" id="tab-walkins" class="tab-inactive px-6 py-4 font-semibold transition whitespace-nowrap">
+                    <i class="fas fa-person-walking ml-2"></i>
+                    Walk-ins
+                </button>
                 <button onclick="switchTab('messages')" id="tab-messages" class="tab-inactive px-6 py-4 font-semibold transition whitespace-nowrap">
                     <i class="fas fa-comment-dots ml-2"></i>
                     הודעות
@@ -462,6 +466,118 @@ export const eventManagementPage = `
             <div class="bg-white rounded-xl shadow-lg overflow-hidden">
                 <div id="checkin-list" class="divide-y">
                     <p class="text-center py-12 text-gray-500">טוען רשימת אורחים...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Content: Walk-ins -->
+        <div id="content-walkins" class="tab-content hidden">
+            <h2 class="text-3xl font-bold text-gray-800 mb-6">
+                <i class="fas fa-person-walking text-pink-500 ml-2"></i>
+                רישום Walk-ins (מגיעים ללא הזמנה)
+            </h2>
+            
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                <p class="text-blue-800">
+                    <i class="fas fa-info-circle ml-2"></i>
+                    <strong>Walk-ins</strong> - אורחים שמגיעים לאירוע ללא הזמנה מראש. המערכת תוסיף אותם אוטומטית לרשימת המוזמנים.
+                </p>
+            </div>
+
+            <!-- Quick Add Form -->
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">
+                    <i class="fas fa-user-plus text-green-500 ml-2"></i>
+                    רישום מהיר
+                </h3>
+                
+                <form id="walkin-form" class="space-y-4">
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-user ml-1"></i>
+                                שם מלא *
+                            </label>
+                            <input type="text" name="fullName" required
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                                   placeholder="שם פרטי + משפחה">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-phone ml-1"></i>
+                                טלפון
+                            </label>
+                            <input type="tel" name="phone"
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                                   placeholder="052-1234567">
+                        </div>
+                    </div>
+                    
+                    <div class="grid md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-users ml-1"></i>
+                                מספר מלווים
+                            </label>
+                            <input type="number" name="attendingCount" min="0" max="20" value="0"
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-heart ml-1"></i>
+                                צד
+                            </label>
+                            <select name="side" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent">
+                                <option value="both">משותף</option>
+                                <option value="groom">חתן</option>
+                                <option value="bride">כלה</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-tag ml-1"></i>
+                                קבוצה
+                            </label>
+                            <select name="groupLabel" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent">
+                                <option value="other">אחרים</option>
+                                <option value="family">משפחה</option>
+                                <option value="friends">חברים</option>
+                                <option value="work">עבודה</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            <i class="fas fa-sticky-note ml-1"></i>
+                            הערות
+                        </label>
+                        <textarea name="notes" rows="2"
+                                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                                  placeholder="הערות נוספות..."></textarea>
+                    </div>
+                    
+                    <button type="submit" class="w-full bg-gradient-to-r from-pink-500 to-purple-600 text-white px-6 py-4 rounded-lg hover:from-pink-600 hover:to-purple-700 transition text-lg font-semibold">
+                        <i class="fas fa-plus ml-2"></i>
+                        הוסף Walk-in
+                    </button>
+                </form>
+            </div>
+
+            <!-- Walk-ins List -->
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                <div class="px-6 py-4 bg-gradient-to-r from-pink-50 to-purple-50 border-b flex justify-between items-center">
+                    <h3 class="text-lg font-bold text-gray-800">
+                        <i class="fas fa-list ml-2"></i>
+                        רשימת Walk-ins
+                    </h3>
+                    <span class="bg-pink-500 text-white px-3 py-1 rounded-full text-sm font-semibold" id="walkins-count">0</span>
+                </div>
+                <div id="walkins-list" class="divide-y">
+                    <p class="text-center py-12 text-gray-500">טוען רשימת Walk-ins...</p>
                 </div>
             </div>
         </div>
