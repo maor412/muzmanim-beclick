@@ -69,12 +69,13 @@ app.get('/api/health', (c) => {
 
 // API Routes
 app.route('/api/auth', authRouter);
-app.route('/api', eventsRouter);  // Changed from /api/events
-app.route('/api/rsvp', rsvpsRouter);
-app.route('/api', guestsRouter);  // Changed from /api/guests
-app.route('/api', tablesRouter);  // Changed from /api/tables
-app.route('/api', seatingRouter);  // Changed from /api/seating
-app.route('/api', checkinsRouter);  // Changed from /api/checkins
+app.route('/api', eventsRouter);
+app.route('/api/rsvp', rsvpsRouter);  // Public RSVP routes (/:slug, /:slug/event)
+app.route('/api', rsvpsRouter);       // Protected RSVP routes (/events/:eventId/rsvps)
+app.route('/api', guestsRouter);
+app.route('/api', tablesRouter);
+app.route('/api', seatingRouter);
+app.route('/api', checkinsRouter);
 
 // Public RSVP page by slug
 app.get('/e/:slug', async (c) => {
