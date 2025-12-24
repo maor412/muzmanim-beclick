@@ -5,34 +5,32 @@ import { AppError } from '../lib/utils';
 
 // Dev users לטסטים
 export const DEV_USERS = [
-  { id: 'dev_user_1', email: 'admin1@test.local', name: 'מנהל 1', role: 'admin' },
-  { id: 'dev_user_2', email: 'admin2@test.local', name: 'מנהל 2', role: 'admin' },
-  { id: 'dev_user_3', email: 'user@test.local', name: 'משתמש רגיל', role: 'user' }
+  { id: 'dev_user_1', email: 'itay@test.local', name: 'איתי כהן', role: 'admin' },
+  { id: 'dev_user_2', email: 'sara@test.local', name: 'שרה לוי', role: 'admin' },
+  { id: 'dev_user_3', email: 'dani@test.local', name: 'דני אברהם', role: 'user' }
 ];
 
-// Secret לחתימת cookies (בפרודקשן יהיה ב-env)
-const COOKIE_SECRET = process.env.COOKIE_SECRET || 'dev-secret-key-change-in-production';
 const COOKIE_NAME = 'mozmanim_session';
 
 /**
  * יצירת session token
  */
-export async function createSessionToken(userId: string): Promise<string> {
+export async function createSessionToken(userId: string, secret: string): Promise<string> {
   const payload = {
     userId,
     exp: Math.floor(Date.now() / 1000) + (60 * 60 * 24 * 7), // 7 days
     iat: Math.floor(Date.now() / 1000)
   };
   
-  return await sign(payload, COOKIE_SECRET);
+  return await sign(payload, secret);
 }
 
 /**
  * אימות session token
  */
-export async function verifySessionToken(token: string): Promise<{ userId: string } | null> {
+export async function verifySessionToken(token: string, secret: string): Promise<{ userId: string } | null> {
   try {
-    const payload = await verify(token, COOKIE_SECRET);
+    const payload = await verify(token, secret);
     if (payload.userId && typeof payload.userId === 'string') {
       return { userId: payload.userId };
     }
@@ -52,7 +50,8 @@ export async function devLogin(c: Context, userId: string) {
     throw new AppError(400, 'משתמש לא נמצא', 'USER_NOT_FOUND');
   }
   
-  const token = await createSessionToken(userId);
+  const secret = c.env?.COOKIE_SECRET || 'dev-secret-key-change-in-production';
+  const token = await createSessionToken(userId, secret);
   
   setCookie(c, COOKIE_NAME, token, {
     httpOnly: true,
@@ -82,7 +81,8 @@ export async function getCurrentUser(c: Context): Promise<{ userId: string } | n
     return null;
   }
   
-  return await verifySessionToken(token);
+  const secret = c.env?.COOKIE_SECRET || 'dev-secret-key-change-in-production';
+  return await verifySessionToken(token, secret);
 }
 
 /**

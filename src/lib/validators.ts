@@ -7,10 +7,10 @@ export const createEventSchema = z.object({
   eventName: z.string().min(2, 'שם האירוע חייב להכיל לפחות 2 תווים').max(100),
   coupleNames: z.string().min(2, 'שמות בני הזוג נדרשים').max(100),
   dateTime: z.string().datetime('תאריך לא תקין'),
-  venueName: z.string().min(2, 'שם המקום נדרש').max(200).optional(),
-  venueAddress: z.string().max(500).optional(),
+  venueName: z.string().max(200).optional().or(z.literal('')),
+  venueAddress: z.string().max(500).optional().or(z.literal('')),
   wazeLink: z.string().url('קישור Waze לא תקין').optional().or(z.literal('')),
-  notes: z.string().max(2000).optional(),
+  notes: z.string().max(2000).optional().or(z.literal('')),
   isRsvpOpen: z.boolean().default(true),
   // הגדרות RSVP
   requirePhone: z.boolean().default(false),
@@ -18,7 +18,7 @@ export const createEventSchema = z.object({
   showAllergies: z.boolean().default(true),
   showNotes: z.boolean().default(true),
   allowUpdates: z.boolean().default(true),
-  consentMessage: z.string().max(500).optional()
+  consentMessage: z.string().max(500).optional().or(z.literal(''))
 });
 
 export const updateEventSchema = createEventSchema.partial();
