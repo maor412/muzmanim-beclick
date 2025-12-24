@@ -284,15 +284,15 @@ function renderGuests() {
                 <td class="px-6 py-4 font-semibold">${guest.fullName}</td>
                 <td class="px-6 py-4">${guest.phone || '-'}</td>
                 <td class="px-6 py-4">${guest.email || '-'}</td>
-                <td class="px-6 py-4">${guest.guestGroup || '-'}</td>
+                <td class="px-6 py-4">${guest.groupLabel || '-'}</td>
                 <td class="px-6 py-4">
                     ${guest.hasRsvp ? '<span class="text-green-600"><i class="fas fa-check ml-1"></i>אישר</span>' : '<span class="text-gray-400">טרם אישר</span>'}
                 </td>
                 <td class="px-6 py-4">
-                    <button onclick="editGuest(${guest.id})" class="text-blue-500 hover:text-blue-600 ml-3">
+                    <button onclick="editGuest('${guest.id}')" class="text-blue-500 hover:text-blue-600 ml-3">
                         <i class="fas fa-edit"></i>
                     </button>
-                    <button onclick="deleteGuest(${guest.id})" class="text-red-500 hover:text-red-600">
+                    <button onclick="deleteGuest('${guest.id}')" class="text-red-500 hover:text-red-600">
                         <i class="fas fa-trash"></i>
                     </button>
                 </td>
@@ -307,7 +307,9 @@ function exportGuests(format) {
         'שם מלא': guest.fullName,
         'טלפון': guest.phone || '',
         'אימייל': guest.email || '',
-        'קבוצה': guest.guestGroup || '',
+        'צד': guest.side || '',
+        'קבוצה': guest.groupLabel || '',
+        'הערות': guest.notes || '',
         'RSVP': guest.hasRsvp ? 'אישר' : 'לא אישר'
     }));
     
@@ -917,6 +919,7 @@ function showAddGuestModal() {
                 showToast('המוזמן נוסף בהצלחה', 'success');
                 modal.remove();
                 loadGuests();
+                loadSeating(); // Refresh seating to show new guest
             }
         } catch (error) {
             console.error('Error adding guest:', error);
@@ -1166,6 +1169,7 @@ function editGuest(guestId) {
                 showToast('המוזמן עודכן בהצלחה', 'success');
                 modal.remove();
                 loadGuests();
+                loadSeating(); // Refresh seating to show updated guest
             }
         } catch (error) {
             console.error('Error updating guest:', error);
@@ -1182,6 +1186,7 @@ async function deleteGuest(id) {
         if (response.data.success) {
             showToast('המוזמן נמחק בהצלחה', 'success');
             loadGuests();
+            loadSeating(); // Refresh seating after deleting guest
         }
     } catch (error) {
         console.error('Error deleting guest:', error);
