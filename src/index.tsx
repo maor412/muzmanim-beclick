@@ -46,8 +46,23 @@ app.use('/api/*', cors({
   credentials: true
 }));
 
-// Clerk Authentication middleware
-app.use('*', clerkMiddleware());
+// Clerk Authentication middleware (אופציונלי בפיתוח)
+// בפיתוח: אם אין Clerk keys, המערכת תעבוד ללא אימות
+// בפרודקשן: Clerk keys נדרשים
+app.use('*', async (c, next) => {
+  const publishableKey = c.env?.CLERK_PUBLISHABLE_KEY;
+  
+  // אם אין מפתח או שזה המפתח ה-placeholder, נשתמש במצב dev
+  if (!publishableKey || publishableKey === 'pk_test_your_key_here') {
+    // Mock authentication לפיתוח
+    c.set('userId', 'dev_user_1');
+    c.set('sessionId', 'dev_session_1');
+    return await next();
+  }
+  
+  // אחרת, נשתמש ב-Clerk middleware
+  return await clerkMiddleware()(c, next);
+});
 
 // Serve static files
 app.use('/static/*', serveStatic({ root: './public' }));
