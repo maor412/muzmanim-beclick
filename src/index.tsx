@@ -3,7 +3,6 @@ import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
 import { prettyJSON } from 'hono/pretty-json';
 import { serveStatic } from 'hono/cloudflare-workers';
-import { clerkMiddleware } from '@hono/clerk-auth';
 
 // Routes
 import eventsRouter from './routes/events';
@@ -12,9 +11,11 @@ import guestsRouter from './routes/guests';
 import tablesRouter from './routes/tables';
 import seatingRouter from './routes/seating';
 import checkinsRouter from './routes/checkins';
+import authRouter from './routes/auth';
 
 // Middleware
 import { AppError } from './lib/utils';
+import { devAuthMiddleware } from './middleware/devAuth';
 
 // Static pages
 import { 
@@ -25,6 +26,8 @@ import {
   privacyPage, 
   accessibilityPage 
 } from './pages/static';
+import { devLoginPage } from './pages/devLogin';
+import { dashboardPage } from './pages/dashboard';
 
 type Bindings = {
   DB: D1Database;
@@ -46,28 +49,14 @@ app.use('/api/*', cors({
   credentials: true
 }));
 
-// Clerk Authentication middleware (אופציונלי בפיתוח)
-// בפיתוח: אם אין Clerk keys, המערכת תעבוד ללא אימות
-// בפרודקשן: Clerk keys נדרשים
-app.use('*', async (c, next) => {
-  const publishableKey = c.env?.CLERK_PUBLISHABLE_KEY;
-  
-  // אם אין מפתח או שזה המפתח ה-placeholder, נשתמש במצב dev
-  if (!publishableKey || publishableKey === 'pk_test_your_key_here') {
-    // Mock authentication לפיתוח
-    c.set('userId', 'dev_user_1');
-    c.set('sessionId', 'dev_session_1');
-    return await next();
-  }
-  
-  // אחרת, נשתמש ב-Clerk middleware
-  return await clerkMiddleware()(c, next);
-});
+// Dev Authentication middleware
+app.use('*', devAuthMiddleware);
 
 // Serve static files
 app.use('/static/*', serveStatic({ root: './public' }));
 
 // API Routes
+app.route('/api/auth', authRouter);
 app.route('/api/events', eventsRouter);
 app.route('/api/rsvp', rsvpsRouter);
 app.route('/api/guests', guestsRouter);
@@ -281,6 +270,14 @@ app.get('/contact', (c) => c.html(contactPage));
 app.get('/terms', (c) => c.html(termsPage));
 app.get('/privacy', (c) => c.html(privacyPage));
 app.get('/accessibility', (c) => c.html(accessibilityPage));
+
+// Dev login page
+app.get('/dev-login', (c) => c.html(devLoginPage));
+app.get('/login', (c) => c.redirect('/dev-login'));
+app.get('/signup', (c) => c.redirect('/dev-login'));
+
+// Dashboard
+app.get('/dashboard', (c) => c.html(dashboardPage));
 
 // Global error handler
 app.onError((err, c) => {
