@@ -2054,6 +2054,13 @@ function exportRsvpsPDF() {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
         
+        // Check if autoTable is available
+        if (typeof doc.autoTable !== 'function') {
+            console.error('autoTable is not loaded. Available methods:', Object.keys(doc));
+            showToast('שגיאה: ספריית PDF לא נטענה כראוי. אנא רענן את הדף', 'error');
+            return;
+        }
+        
         // Add title in Hebrew (reversed for PDF)
         doc.setFontSize(18);
         doc.text(hebrewToPDF(`אירוע: ${currentEvent.eventName}`), 105, 15, { align: 'center' });
@@ -2109,7 +2116,7 @@ function exportRsvpsPDF() {
         showToast(hebrewToPDF('PDF יוצא בהצלחה!'), 'success');
     } catch (error) {
         console.error('Error exporting PDF:', error);
-        showToast(`Error: ${error.message}`, 'error');
+        showToast(`שגיאה: ${error.message}`, 'error');
     }
 }
 
@@ -2118,6 +2125,12 @@ function exportGuestsPDF() {
     try {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
+        
+        // Check if autoTable is available
+        if (typeof doc.autoTable !== 'function') {
+            showToast('שגיאה: ספריית PDF לא נטענה כראוי. אנא רענן את הדף', 'error');
+            return;
+        }
         
         // Add title in Hebrew (reversed)
         doc.setFontSize(18);
@@ -2185,6 +2198,12 @@ function exportSeatingPDF() {
     try {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
+        
+        // Check if autoTable is available
+        if (typeof doc.autoTable !== 'function') {
+            showToast('שגיאה: ספריית PDF לא נטענה כראוי. אנא רענן את הדף', 'error');
+            return;
+        }
         
         // Add title in Hebrew (reversed)
         doc.setFontSize(18);
