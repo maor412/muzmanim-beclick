@@ -2032,77 +2032,76 @@ function generateInsights(rsvps, guests, seating, tables) {
 
 // PDF Export Functions
 
-// Helper function to reverse Hebrew text for PDF
-function reverseHebrewText(text) {
-    if (!text) return text;
-    // Simple string reversal for Hebrew RTL text
-    return text.split('').reverse().join('');
-}
-
-// Export RSVPs to PDF - Full Hebrew support with reversed text
-function exportRsvpsPDF() {
+// Export RSVPs to PDF - Using html2canvas for perfect Hebrew rendering
+async function exportRsvpsPDF() {
     try {
         const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
         
-        // Check if autoTable is available
-        if (typeof doc.autoTable !== 'function') {
-            showToast('שגיאה: ספריית PDF לא נטענה כראוי. אנא רענן את הדף', 'error');
-            return;
-        }
+        // Create hidden container for rendering
+        const container = document.createElement('div');
+        container.style.cssText = 'position: absolute; left: -9999px; top: 0; width: 800px; background: white; padding: 20px; font-family: Arial, sans-serif;';
+        container.innerHTML = `
+            <div dir="rtl" style="text-align: center; margin-bottom: 20px;">
+                <h1 style="font-size: 24px; margin-bottom: 10px;">אירוע: ${currentEvent.eventName}</h1>
+                <h3 style="font-size: 16px; color: #666;">רשימת אישורי הגעה - ${new Date().toLocaleDateString('he-IL')}</h3>
+            </div>
+            <table dir="rtl" style="width: 100%; border-collapse: collapse; font-size: 12px;">
+                <thead>
+                    <tr style="background-color: #ec4899; color: white;">
+                        <th style="padding: 10px; border: 1px solid #ddd; text-align: right;">#</th>
+                        <th style="padding: 10px; border: 1px solid #ddd; text-align: right;">שם מלא</th>
+                        <th style="padding: 10px; border: 1px solid #ddd; text-align: right;">טלפון</th>
+                        <th style="padding: 10px; border: 1px solid #ddd; text-align: right;">סטטוס</th>
+                        <th style="padding: 10px; border: 1px solid #ddd; text-align: right;">מלווים</th>
+                        <th style="padding: 10px; border: 1px solid #ddd; text-align: right;">בחירת מנה</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${allRsvps.map((rsvp, index) => `
+                        <tr style="background-color: ${index % 2 === 0 ? '#fce7f3' : 'white'};">
+                            <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">${index + 1}</td>
+                            <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${rsvp.fullName}</td>
+                            <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${rsvp.phone || 'לא צוין'}</td>
+                            <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">
+                                ${rsvp.status === 'confirmed' ? 'מאושר' : rsvp.status === 'declined' ? 'לא מגיע' : 'ממתין'}
+                            </td>
+                            <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">${rsvp.attendingCount || 1}</td>
+                            <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">
+                                ${rsvp.mealChoice === 'meat' ? 'בשר' : rsvp.mealChoice === 'fish' ? 'דג' : rsvp.mealChoice === 'vegan' ? 'צמחוני' : 'לא צוין'}
+                            </td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+            <div dir="rtl" style="margin-top: 20px; text-align: right; font-size: 14px;">
+                <p><strong>סה"כ אישורי הגעה:</strong> ${allRsvps.length}</p>
+                <p><strong>מאושרים:</strong> ${allRsvps.filter(r => r.status === 'confirmed').length}</p>
+                <p><strong>לא מגיעים:</strong> ${allRsvps.filter(r => r.status === 'declined').length}</p>
+            </div>
+        `;
         
-        // Use default font
-        doc.setFont("helvetica");
+        document.body.appendChild(container);
         
-        // Add title (reversed for Hebrew RTL)
-        doc.setFontSize(18);
-        doc.text(reverseHebrewText(`אירוע: ${currentEvent.eventName}`), 105, 15, { align: 'center' });
-        doc.setFontSize(12);
-        doc.text(reverseHebrewText(`רשימת אישורי הגעה - ${new Date().toLocaleDateString('he-IL')}`), 105, 23, { align: 'center' });
-        
-        // Prepare data - reverse Hebrew text
-        const tableData = allRsvps.map((rsvp, index) => [
-            index + 1,
-            reverseHebrewText(rsvp.fullName),
-            rsvp.phone || reverseHebrewText('לא צוין'),
-            rsvp.status === 'confirmed' ? reverseHebrewText('מאושר') : rsvp.status === 'declined' ? reverseHebrewText('לא מגיע') : reverseHebrewText('ממתין'),
-            rsvp.attendingCount || 1,
-            rsvp.mealChoice === 'meat' ? reverseHebrewText('בשר') : rsvp.mealChoice === 'fish' ? reverseHebrewText('דג') : rsvp.mealChoice === 'vegan' ? reverseHebrewText('צמחוני') : reverseHebrewText('לא צוין')
-        ]);
-        
-        // Create table with reversed Hebrew headers and RTL alignment
-        doc.autoTable({
-            startY: 30,
-            head: [[reverseHebrewText('#'), reverseHebrewText('שם מלא'), reverseHebrewText('טלפון'), reverseHebrewText('סטטוס'), reverseHebrewText('מלווים'), reverseHebrewText('בחירת מנה')]],
-            body: tableData,
-            styles: { 
-                font: 'helvetica',
-                fontSize: 10,
-                halign: 'right'  // RTL alignment
-            },
-            headStyles: { 
-                fillColor: [236, 72, 153], 
-                textColor: 255,
-                halign: 'right',
-                font: 'helvetica'
-            },
-            columnStyles: {
-                0: { halign: 'center' },
-                3: { halign: 'center' },
-                4: { halign: 'center' }
-            },
-            alternateRowStyles: { fillColor: [252, 232, 243] }
+        // Render to canvas
+        const canvas = await html2canvas(container, {
+            scale: 2,
+            useCORS: true,
+            logging: false,
+            backgroundColor: '#ffffff'
         });
         
-        // Add summary - reversed text
-        const finalY = doc.lastAutoTable.finalY + 10;
-        doc.setFontSize(12);
-        doc.text(reverseHebrewText(`סה"כ אישורי הגעה: ${allRsvps.length}`), 195, finalY, { align: 'right' });
-        doc.text(reverseHebrewText(`מאושרים: ${allRsvps.filter(r => r.status === 'confirmed').length}`), 195, finalY + 7, { align: 'right' });
-        doc.text(reverseHebrewText(`לא מגיעים: ${allRsvps.filter(r => r.status === 'declined').length}`), 195, finalY + 14, { align: 'right' });
+        // Remove container
+        document.body.removeChild(container);
         
-        // Save with Hebrew filename
+        // Create PDF
+        const doc = new jsPDF('p', 'mm', 'a4');
+        const imgData = canvas.toDataURL('image/png');
+        const pdfWidth = doc.internal.pageSize.getWidth();
+        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+        
+        doc.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
         doc.save(`אישורי-הגעה_${currentEvent.slug}_${Date.now()}.pdf`);
+        
         showToast('PDF יוצא בהצלחה!', 'success');
     } catch (error) {
         console.error('Error exporting PDF:', error);
