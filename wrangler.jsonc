@@ -8,7 +8,7 @@
     {
       "binding": "DB",
       "database_name": "webapp-production",
-      "database_id": "TO_BE_CREATED",
+      "database_id": "ec6dcacf-584c-4053-b06a-050923a3f83e",
       "migrations_dir": "migrations"
     }
   ]
