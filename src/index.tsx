@@ -60,12 +60,12 @@ app.use('/static/*', serveStatic({ root: './public' }));
 
 // API Routes
 app.route('/api/auth', authRouter);
-app.route('/api/events', eventsRouter);
+app.route('/api', eventsRouter);  // Changed from /api/events
 app.route('/api/rsvp', rsvpsRouter);
-app.route('/api/guests', guestsRouter);
-app.route('/api/tables', tablesRouter);
-app.route('/api/seating', seatingRouter);
-app.route('/api/checkins', checkinsRouter);
+app.route('/api', guestsRouter);  // Changed from /api/guests
+app.route('/api', tablesRouter);  // Changed from /api/tables
+app.route('/api', seatingRouter);  // Changed from /api/seating
+app.route('/api', checkinsRouter);  // Changed from /api/checkins
 
 // Health check
 app.get('/api/health', (c) => {
