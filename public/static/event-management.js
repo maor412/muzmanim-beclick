@@ -2288,23 +2288,6 @@ async function exportSeatingPDF() {
         console.error('Error exporting PDF:', error);
         showToast('שגיאה בייצוא PDF', 'error');
     }
-} 
-                     105, doc.internal.pageSize.height - 10, { align: 'center' });
-        }
-    });
-    
-    // Add summary
-    const finalY = doc.lastAutoTable.finalY + 10;
-    doc.setFontSize(12);
-    doc.text(`Total Tables: ${allTables.length}`, 14, finalY);
-    doc.text(`Total Seated: ${allSeating.length}`, 14, finalY + 7);
-    
-    const totalCapacity = allTables.reduce((sum, t) => sum + t.capacity, 0);
-    doc.text(`Total Capacity: ${totalCapacity}`, 14, finalY + 14);
-    
-    // Save
-    doc.save(`seating_${currentEvent.slug}_${Date.now()}.pdf`);
-    showToast('PDF exported successfully!', 'success');
 }
 
 // Initialize on page load
