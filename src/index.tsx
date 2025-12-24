@@ -58,6 +58,15 @@ app.use('*', devAuthMiddleware);
 // Serve static files
 app.use('/static/*', serveStatic({ root: './public' }));
 
+// Health check (before other routes)
+app.get('/api/health', (c) => {
+  return c.json({ 
+    success: true, 
+    status: 'healthy',
+    timestamp: new Date().toISOString()
+  });
+});
+
 // API Routes
 app.route('/api/auth', authRouter);
 app.route('/api', eventsRouter);  // Changed from /api/events
@@ -66,15 +75,6 @@ app.route('/api', guestsRouter);  // Changed from /api/guests
 app.route('/api', tablesRouter);  // Changed from /api/tables
 app.route('/api', seatingRouter);  // Changed from /api/seating
 app.route('/api', checkinsRouter);  // Changed from /api/checkins
-
-// Health check
-app.get('/api/health', (c) => {
-  return c.json({ 
-    success: true, 
-    status: 'healthy',
-    timestamp: new Date().toISOString()
-  });
-});
 
 // Public RSVP page by slug
 app.get('/e/:slug', async (c) => {
