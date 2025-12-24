@@ -440,7 +440,13 @@ function renderSeating() {
 
 // Drag and Drop functions
 function drag(ev) {
-    ev.dataTransfer.setData("rsvpId", ev.target.dataset.rsvpId);
+    // Support both RSVP and Guest dragging
+    if (ev.target.dataset.rsvpId) {
+        ev.dataTransfer.setData("rsvpId", ev.target.dataset.rsvpId);
+    }
+    if (ev.target.dataset.guestId) {
+        ev.dataTransfer.setData("guestId", ev.target.dataset.guestId);
+    }
     ev.target.classList.add('dragging');
 }
 
@@ -454,22 +460,29 @@ function drop(ev) {
     ev.currentTarget.classList.remove('drag-over');
     
     const rsvpId = ev.dataTransfer.getData("rsvpId");
+    const guestId = ev.dataTransfer.getData("guestId");
     const tableId = ev.currentTarget.dataset.tableId;
     
-    if (rsvpId && tableId) {
-        seatGuest(rsvpId, tableId);
+    if ((rsvpId || guestId) && tableId) {
+        seatGuest(rsvpId, guestId, tableId);
     }
     
     document.querySelectorAll('.dragging').forEach(el => el.classList.remove('dragging'));
 }
 
 // Seat Guest
-async function seatGuest(rsvpId, tableId) {
+async function seatGuest(rsvpId, guestId, tableId) {
     try {
-        const response = await axios.post(`/api/events/${currentEvent.id}/seating`, {
-            rsvpId: parseInt(rsvpId),
-            tableId: parseInt(tableId)
-        });
+        const data = { tableId };
+        
+        // Add either rsvpId or guestId (not both)
+        if (rsvpId) {
+            data.rsvpId = rsvpId;
+        } else if (guestId) {
+            data.guestId = guestId;
+        }
+        
+        const response = await axios.post(`/api/events/${currentEvent.id}/seating`, data);
         
         if (response.data.success) {
             showToast('האורח הושב בהצלחה', 'success');
@@ -479,7 +492,7 @@ async function seatGuest(rsvpId, tableId) {
         }
     } catch (error) {
         console.error('Error seating guest:', error);
-        showToast('שגיאה בהושבת אורח', 'error');
+        showToast(error.response?.data?.error || 'שגיאה בהושבת אורח', 'error');
     }
 }
 
@@ -506,8 +519,21 @@ async function unseatGuest(seatingId) {
 async function autoFillSeating() {
     if (!confirm('פעולה זו תמלא אוטומטית את השולחנות הפנויים. האם להמשיך?')) return;
     
-    const seatedRsvpIds = allSeating.map(s => s.rsvpId);
-    const unseated = allRsvps.filter(r => r.status === 'confirmed' && !seatedRsvpIds.includes(r.id));
+    // Get seated RSVP and Guest IDs
+    const seatedRsvpIds = allSeating.filter(s => s.rsvpId).map(s => s.rsvpId);
+    const seatedGuestIds = allSeating.filter(s => s.guestId).map(s => s.guestId);
+    
+    // Get unseated RSVPs and Guests
+    const unseatedRsvps = allRsvps.filter(r => 
+        r.status === 'confirmed' && !seatedRsvpIds.includes(r.id)
+    );
+    const unseatedGuests = allGuests.filter(g => !seatedGuestIds.includes(g.id));
+    
+    // Combine both lists
+    const unseated = [
+        ...unseatedRsvps.map(r => ({ type: 'rsvp', id: r.id })),
+        ...unseatedGuests.map(g => ({ type: 'guest', id: g.id }))
+    ];
     
     if (unseated.length === 0) {
         showToast('אין אורחים להושיב', 'info');
@@ -520,12 +546,17 @@ async function autoFillSeating() {
         const availableSeats = table.capacity - tableSeating.length;
         
         for (let i = 0; i < availableSeats && unseated.length > 0; i++) {
-            const rsvp = unseated.shift();
+            const person = unseated.shift();
             try {
-                await axios.post(`/api/events/${currentEvent.id}/seating`, {
-                    rsvpId: rsvp.id,
-                    tableId: table.id
-                });
+                const data = { tableId: table.id };
+                
+                if (person.type === 'rsvp') {
+                    data.rsvpId = person.id;
+                } else {
+                    data.guestId = person.id;
+                }
+                
+                await axios.post(`/api/events/${currentEvent.id}/seating`, data);
                 seated++;
             } catch (error) {
                 console.error('Error auto-seating:', error);
