@@ -599,20 +599,82 @@ async function autoFillSeating() {
     // Collect all seating assignments
     const seatings = [];
     
-    // Try to seat groups together
+    // Helper function to check if table name matches group
+    const tableMatchesGroup = (tableName, groupName) => {
+        const tableNameLower = tableName.toLowerCase();
+        const groupNameLower = groupName.toLowerCase();
+        
+        // Direct match
+        if (tableNameLower.includes(groupNameLower) || groupNameLower.includes(tableNameLower)) {
+            return true;
+        }
+        
+        // Hebrew translations
+        const groupMappings = {
+            'family': ['משפחה', 'קרובים'],
+            'friends': ['חברים', 'ידידים'],
+            'work': ['עבודה', 'קולגות', 'עמיתים'],
+            'other': ['אחרים', 'שונות'],
+            'משפחה': ['family', 'קרובים'],
+            'חברים': ['friends', 'ידידים'],
+            'עבודה': ['work', 'קולגות'],
+            'אחרים': ['other', 'שונות']
+        };
+        
+        const mappings = groupMappings[groupNameLower] || [];
+        return mappings.some(m => tableNameLower.includes(m));
+    };
+    
+    // Phase 1: Try to match groups to their corresponding tables
     for (const table of allTables) {
         const tableSeating = allSeating.filter(s => s.tableId === table.id);
         let availableSeats = table.capacity - tableSeating.length;
         
         if (availableSeats === 0) continue;
         
-        // Try to find a group that fits in this table
+        // Find groups that match this table's name
         for (let i = 0; i < sortedGroups.length && availableSeats > 0; i++) {
             const groupData = sortedGroups[i];
             
             if (groupData.people.length === 0) continue;
             
+            // Check if table name matches group
+            if (!tableMatchesGroup(table.tableName, groupData.group)) continue;
+            
             // Can we fit the whole group or part of it?
+            const toSeat = Math.min(groupData.people.length, availableSeats);
+            
+            for (let j = 0; j < toSeat; j++) {
+                const person = groupData.people.shift();
+                
+                const seatingData = { tableId: table.id };
+                
+                if (person.type === 'rsvp') {
+                    seatingData.rsvpId = person.id;
+                } else {
+                    seatingData.guestId = person.id;
+                }
+                
+                seatings.push(seatingData);
+                availableSeats--;
+            }
+        }
+    }
+    
+    // Phase 2: Fill remaining seats with any unseated guests
+    for (const table of allTables) {
+        const tableSeating = allSeating.filter(s => s.tableId === table.id);
+        const currentSeatings = seatings.filter(s => s.tableId === table.id);
+        let availableSeats = table.capacity - tableSeating.length - currentSeatings.length;
+        
+        if (availableSeats === 0) continue;
+        
+        // Fill with any remaining guests
+        for (let i = 0; i < sortedGroups.length && availableSeats > 0; i++) {
+            const groupData = sortedGroups[i];
+            
+            if (groupData.people.length === 0) continue;
+            
             const toSeat = Math.min(groupData.people.length, availableSeats);
             
             for (let j = 0; j < toSeat; j++) {
