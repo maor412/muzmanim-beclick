@@ -2044,35 +2044,32 @@ function exportRsvpsPDF() {
             return;
         }
         
-        // Add Rubik Hebrew font
-        window.addRubikFont(doc);
+        // Use default font
+        doc.setFont("helvetica");
         
-        // Enable RTL mode
-        doc.setR2L(true);
-        
-        // Add title  
+        // Add title (reversed for Hebrew RTL)
         doc.setFontSize(18);
-        doc.text(`אירוע: ${currentEvent.eventName}`, 105, 15, { align: 'center' });
+        doc.text(window.reverseHebrewText(`אירוע: ${currentEvent.eventName}`), 105, 15, { align: 'center' });
         doc.setFontSize(12);
-        doc.text(`רשימת אישורי הגעה - ${new Date().toLocaleDateString('he-IL')}`, 105, 23, { align: 'center' });
+        doc.text(window.reverseHebrewText(`רשימת אישורי הגעה - ${new Date().toLocaleDateString('he-IL')}`), 105, 23, { align: 'center' });
         
-        // Prepare data
+        // Prepare data - reverse Hebrew text
         const tableData = allRsvps.map((rsvp, index) => [
             index + 1,
-            rsvp.fullName,
-            rsvp.phone || 'לא צוין',
-            rsvp.status === 'confirmed' ? 'מאושר' : rsvp.status === 'declined' ? 'לא מגיע' : 'ממתין',
+            window.reverseHebrewText(rsvp.fullName),
+            rsvp.phone || window.reverseHebrewText('לא צוין'),
+            rsvp.status === 'confirmed' ? window.reverseHebrewText('מאושר') : rsvp.status === 'declined' ? window.reverseHebrewText('לא מגיע') : window.reverseHebrewText('ממתין'),
             rsvp.attendingCount || 1,
-            rsvp.mealChoice === 'meat' ? 'בשר' : rsvp.mealChoice === 'fish' ? 'דג' : rsvp.mealChoice === 'vegan' ? 'צמחוני' : 'לא צוין'
+            rsvp.mealChoice === 'meat' ? window.reverseHebrewText('בשר') : rsvp.mealChoice === 'fish' ? window.reverseHebrewText('דג') : rsvp.mealChoice === 'vegan' ? window.reverseHebrewText('צמחוני') : window.reverseHebrewText('לא צוין')
         ]);
         
-        // Create table with Hebrew headers and RTL alignment
+        // Create table with reversed Hebrew headers and RTL alignment
         doc.autoTable({
             startY: 30,
-            head: [['#', 'שם מלא', 'טלפון', 'סטטוס', 'מלווים', 'בחירת מנה']],
+            head: [[window.reverseHebrewText('#'), window.reverseHebrewText('שם מלא'), window.reverseHebrewText('טלפון'), window.reverseHebrewText('סטטוס'), window.reverseHebrewText('מלווים'), window.reverseHebrewText('בחירת מנה')]],
             body: tableData,
             styles: { 
-                font: 'Rubik',
+                font: 'helvetica',
                 fontSize: 10,
                 halign: 'right'  // RTL alignment
             },
@@ -2080,7 +2077,7 @@ function exportRsvpsPDF() {
                 fillColor: [236, 72, 153], 
                 textColor: 255,
                 halign: 'right',
-                font: 'Rubik'
+                font: 'helvetica'
             },
             columnStyles: {
                 0: { halign: 'center' },
@@ -2090,12 +2087,12 @@ function exportRsvpsPDF() {
             alternateRowStyles: { fillColor: [252, 232, 243] }
         });
         
-        // Add summary
+        // Add summary - reversed text
         const finalY = doc.lastAutoTable.finalY + 10;
         doc.setFontSize(12);
-        doc.text(`סה"כ אישורי הגעה: ${allRsvps.length}`, 195, finalY, { align: 'right' });
-        doc.text(`מאושרים: ${allRsvps.filter(r => r.status === 'confirmed').length}`, 195, finalY + 7, { align: 'right' });
-        doc.text(`לא מגיעים: ${allRsvps.filter(r => r.status === 'declined').length}`, 195, finalY + 14, { align: 'right' });
+        doc.text(window.reverseHebrewText(`סה"כ אישורי הגעה: ${allRsvps.length}`), 195, finalY, { align: 'right' });
+        doc.text(window.reverseHebrewText(`מאושרים: ${allRsvps.filter(r => r.status === 'confirmed').length}`), 195, finalY + 7, { align: 'right' });
+        doc.text(window.reverseHebrewText(`לא מגיעים: ${allRsvps.filter(r => r.status === 'declined').length}`), 195, finalY + 14, { align: 'right' });
         
         // Save with Hebrew filename
         doc.save(`אישורי-הגעה_${currentEvent.slug}_${Date.now()}.pdf`);
@@ -2118,33 +2115,32 @@ function exportGuestsPDF() {
             return;
         }
         
-        // Add Rubik Hebrew font
-        window.addRubikFont(doc);
-        doc.setR2L(true);
+        // Use default font
+        doc.setFont("helvetica");
         
-        // Add title
+        // Add title (reversed for Hebrew RTL)
         doc.setFontSize(18);
-        doc.text(`אירוע: ${currentEvent.eventName}`, 105, 15, { align: 'center' });
+        doc.text(window.reverseHebrewText(`אירוע: ${currentEvent.eventName}`), 105, 15, { align: 'center' });
         doc.setFontSize(12);
-        doc.text(`רשימת אורחים - ${new Date().toLocaleDateString('he-IL')}`, 105, 23, { align: 'center' });
+        doc.text(window.reverseHebrewText(`רשימת אורחים - ${new Date().toLocaleDateString('he-IL')}`), 105, 23, { align: 'center' });
         
-        // Prepare data
+        // Prepare data - reverse Hebrew text
         const tableData = allGuests.map((guest, index) => [
             index + 1,
-            guest.fullName,
-            guest.phone || 'לא צוין',
-            guest.side === 'groom' ? 'חתן' : guest.side === 'bride' ? 'כלה' : 'משותף',
-            guest.groupLabel === 'family' ? 'משפחה' : guest.groupLabel === 'friends' ? 'חברים' : guest.groupLabel === 'work' ? 'עבודה' : 'אחר',
-            (guest.notes || '-').substring(0, 30)
+            window.reverseHebrewText(guest.fullName),
+            guest.phone || window.reverseHebrewText('לא צוין'),
+            guest.side === 'groom' ? window.reverseHebrewText('חתן') : guest.side === 'bride' ? window.reverseHebrewText('כלה') : window.reverseHebrewText('משותף'),
+            guest.groupLabel === 'family' ? window.reverseHebrewText('משפחה') : guest.groupLabel === 'friends' ? window.reverseHebrewText('חברים') : guest.groupLabel === 'work' ? window.reverseHebrewText('עבודה') : window.reverseHebrewText('אחר'),
+            window.reverseHebrewText((guest.notes || '-').substring(0, 30))
         ]);
         
-        // Create table
+        // Create table - reversed headers
         doc.autoTable({
             startY: 30,
-            head: [['#', 'שם מלא', 'טלפון', 'צד', 'קבוצה', 'הערות']],
+            head: [[window.reverseHebrewText('#'), window.reverseHebrewText('שם מלא'), window.reverseHebrewText('טלפון'), window.reverseHebrewText('צד'), window.reverseHebrewText('קבוצה'), window.reverseHebrewText('הערות')]],
             body: tableData,
             styles: { 
-                font: 'Rubik',
+                font: 'helvetica',
                 fontSize: 9,
                 halign: 'right'
             },
@@ -2152,7 +2148,7 @@ function exportGuestsPDF() {
                 fillColor: [236, 72, 153], 
                 textColor: 255,
                 halign: 'right',
-                font: 'Rubik'
+                font: 'helvetica'
             },
             columnStyles: {
                 0: { halign: 'center' },
@@ -2162,14 +2158,14 @@ function exportGuestsPDF() {
             alternateRowStyles: { fillColor: [252, 232, 243] }
         });
         
-        // Add summary
+        // Add summary - reversed text
         const finalY = doc.lastAutoTable.finalY + 10;
         doc.setFontSize(12);
-        doc.text(`סה"כ אורחים: ${allGuests.length}`, 195, finalY, { align: 'right' });
+        doc.text(window.reverseHebrewText(`סה"כ אורחים: ${allGuests.length}`), 195, finalY, { align: 'right' });
         
         const groomCount = allGuests.filter(g => g.side === 'groom').length;
         const brideCount = allGuests.filter(g => g.side === 'bride').length;
-        doc.text(`צד חתן: ${groomCount} | צד כלה: ${brideCount}`, 195, finalY + 7, { align: 'right' });
+        doc.text(window.reverseHebrewText(`צד חתן: ${groomCount} | צד כלה: ${brideCount}`), 195, finalY + 7, { align: 'right' });
         
         // Save
         doc.save(`אורחים_${currentEvent.slug}_${Date.now()}.pdf`);
@@ -2192,17 +2188,16 @@ function exportSeatingPDF() {
             return;
         }
         
-        // Add Rubik Hebrew font
-        window.addRubikFont(doc);
-        doc.setR2L(true);
+        // Use default font
+        doc.setFont("helvetica");
         
-        // Add title
+        // Add title (reversed for Hebrew RTL)
         doc.setFontSize(18);
-        doc.text(`אירוע: ${currentEvent.eventName}`, 105, 15, { align: 'center' });
+        doc.text(window.reverseHebrewText(`אירוע: ${currentEvent.eventName}`), 105, 15, { align: 'center' });
         doc.setFontSize(12);
-        doc.text(`סידור הושבה - ${new Date().toLocaleDateString('he-IL')}`, 105, 23, { align: 'center' });
+        doc.text(window.reverseHebrewText(`סידור הושבה - ${new Date().toLocaleDateString('he-IL')}`), 105, 23, { align: 'center' });
         
-        // Prepare data by table
+        // Prepare data by table - reverse Hebrew text
         const tableData = [];
         allTables.forEach(table => {
             const tableSeating = allSeating.filter(s => s.tableId === table.id);
@@ -2210,9 +2205,9 @@ function exportSeatingPDF() {
             if (tableSeating.length === 0) {
                 // Show empty table
                 tableData.push([
-                    table.tableName,
+                    window.reverseHebrewText(table.tableName),
                     table.tableNumber || '-',
-                    '(ריק)',
+                    window.reverseHebrewText('(ריק)'),
                     '',
                     `0/${table.capacity}`
                 ]);
@@ -2225,9 +2220,9 @@ function exportSeatingPDF() {
                     
                     if (person) {
                         tableData.push([
-                            idx === 0 ? table.tableName : '',
+                            idx === 0 ? window.reverseHebrewText(table.tableName) : '',
                             idx === 0 ? (table.tableNumber || '-') : '',
-                            person.fullName,
+                            window.reverseHebrewText(person.fullName),
                             person.phone || '-',
                             idx === 0 ? `${tableSeating.length}/${table.capacity}` : ''
                         ]);
@@ -2236,13 +2231,13 @@ function exportSeatingPDF() {
             }
         });
         
-        // Create table with Hebrew headers
+        // Create table with reversed Hebrew headers
         doc.autoTable({
             startY: 30,
-            head: [['שם שולחן', 'מספר', 'שם אורח', 'טלפון', 'תפוסה']],
+            head: [[window.reverseHebrewText('שם שולחן'), window.reverseHebrewText('מספר'), window.reverseHebrewText('שם אורח'), window.reverseHebrewText('טלפון'), window.reverseHebrewText('תפוסה')]],
             body: tableData,
             styles: { 
-                font: 'Rubik',
+                font: 'helvetica',
                 fontSize: 9,
                 halign: 'right'
             },
@@ -2250,7 +2245,7 @@ function exportSeatingPDF() {
                 fillColor: [236, 72, 153], 
                 textColor: 255,
                 halign: 'right',
-                font: 'Rubik'
+                font: 'helvetica'
             },
             columnStyles: {
                 1: { halign: 'center' },
@@ -2258,24 +2253,24 @@ function exportSeatingPDF() {
             },
             alternateRowStyles: { fillColor: [252, 232, 243] },
             didDrawPage: function(data) {
-                // Add page numbers in Hebrew
+                // Add page numbers in reversed Hebrew
                 const pageCount = doc.internal.getNumberOfPages();
                 const pageNum = doc.internal.getCurrentPageInfo().pageNumber;
-                doc.setFont("Rubik");
+                doc.setFont("helvetica");
                 doc.setFontSize(10);
-                doc.text(`עמוד ${pageNum} מתוך ${pageCount}`, 
+                doc.text(window.reverseHebrewText(`עמוד ${pageNum} מתוך ${pageCount}`), 
                     105, doc.internal.pageSize.height - 10, { align: 'center' });
             }
         });
         
-        // Add summary
+        // Add summary - reversed text
         const finalY = doc.lastAutoTable.finalY + 10;
         doc.setFontSize(12);
-        doc.text(`סה"כ שולחנות: ${allTables.length}`, 195, finalY, { align: 'right' });
+        doc.text(window.reverseHebrewText(`סה"כ שולחנות: ${allTables.length}`), 195, finalY, { align: 'right' });
         
         const totalSeated = allSeating.length;
         const totalCapacity = allTables.reduce((sum, t) => sum + t.capacity, 0);
-        doc.text(`סה"כ מושבים: ${totalSeated} / ${totalCapacity} מקומות`, 195, finalY + 7, { align: 'right' });
+        doc.text(window.reverseHebrewText(`סה"כ מושבים: ${totalSeated} / ${totalCapacity} מקומות`), 195, finalY + 7, { align: 'right' });
         
         // Save with Hebrew filename
         doc.save(`הושבה_${currentEvent.slug}_${Date.now()}.pdf`);
