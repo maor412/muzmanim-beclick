@@ -287,6 +287,9 @@ export const createEventPage = `
 
     <script src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"></script>
     <script>
+        // Configure axios to send cookies
+        axios.defaults.withCredentials = true;
+        
         let currentStep = 1;
         const totalSteps = 4;
         let createdEventId = null;

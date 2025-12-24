@@ -7,6 +7,9 @@ let allTables = [];
 let allSeating = [];
 let filteredRsvps = [];
 
+// Configure axios to send cookies
+axios.defaults.withCredentials = true;
+
 // Toast notification
 function showToast(message, type = 'success') {
     const toast = document.createElement('div');
