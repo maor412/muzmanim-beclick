@@ -378,10 +378,15 @@ export const createEventPage = `
             if (!validateStep()) return;
             
             const formData = new FormData(form);
+            
+            // Convert datetime-local to ISO 8601
+            const dateTimeValue = formData.get('dateTime');
+            const dateTimeISO = dateTimeValue ? new Date(dateTimeValue).toISOString() : '';
+            
             const data = {
                 eventName: formData.get('eventName'),
                 coupleNames: formData.get('coupleNames'),
-                dateTime: formData.get('dateTime'),
+                dateTime: dateTimeISO,
                 venueName: formData.get('venueName') || '',
                 venueAddress: formData.get('venueAddress') || '',
                 wazeLink: formData.get('wazeLink') || '',
@@ -416,7 +421,13 @@ export const createEventPage = `
                 }
             } catch (error) {
                 console.error('Error creating event:', error);
-                alert('שגיאה ביצירת האירוע. אנא נסה שוב.');
+                let errorMessage = 'שגיאה ביצירת האירוע. אנא נסה שוב.';
+                
+                if (error.response?.data?.error) {
+                    errorMessage = error.response.data.error;
+                }
+                
+                alert(errorMessage);
                 form.classList.remove('hidden');
                 loadingState.classList.add('hidden');
             }
