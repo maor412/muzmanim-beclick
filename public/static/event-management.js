@@ -2032,7 +2032,7 @@ function generateInsights(rsvps, guests, seating, tables) {
 
 // PDF Export Functions
 
-// Export RSVPs to PDF - Full Hebrew support with Alef font
+// Export RSVPs to PDF - Hebrew support with default fonts
 function exportRsvpsPDF() {
     try {
         const { jsPDF } = window.jspdf;
@@ -2044,13 +2044,8 @@ function exportRsvpsPDF() {
             return;
         }
         
-        // Add Hebrew font
-        doc.addFileToVFS("Alef-Regular.ttf", ALEF_FONT_BASE64);
-        doc.addFont("Alef-Regular.ttf", "Alef", "normal");
-        doc.setFont("Alef");
-        
-        // Enable RTL mode
-        doc.setR2L(true);
+        // Use default helvetica font (better Unicode support than custom fonts)
+        doc.setFont('helvetica');
         
         // Add title  
         doc.setFontSize(18);
@@ -2074,7 +2069,7 @@ function exportRsvpsPDF() {
             head: [['#', 'שם מלא', 'טלפון', 'סטטוס', 'מלווים', 'בחירת מנה']],
             body: tableData,
             styles: { 
-                font: 'Alef',
+                font: 'helvetica',
                 fontSize: 10,
                 halign: 'right'  // RTL alignment
             },
@@ -2082,7 +2077,7 @@ function exportRsvpsPDF() {
                 fillColor: [236, 72, 153], 
                 textColor: 255,
                 halign: 'right',
-                font: 'Alef'
+                font: 'helvetica'
             },
             columnStyles: {
                 0: { halign: 'center' },
@@ -2108,7 +2103,7 @@ function exportRsvpsPDF() {
     }
 }
 
-// Export Guests to PDF - Full Hebrew support
+// Export Guests to PDF - Hebrew support
 function exportGuestsPDF() {
     try {
         const { jsPDF } = window.jspdf;
@@ -2120,11 +2115,8 @@ function exportGuestsPDF() {
             return;
         }
         
-        // Add Hebrew font
-        doc.addFileToVFS("Alef-Regular.ttf", ALEF_FONT_BASE64);
-        doc.addFont("Alef-Regular.ttf", "Alef", "normal");
-        doc.setFont("Alef");
-        doc.setR2L(true);
+        // Use default helvetica font
+        doc.setFont('helvetica');
         
         // Add title
         doc.setFontSize(18);
@@ -2148,7 +2140,7 @@ function exportGuestsPDF() {
             head: [['#', 'שם מלא', 'טלפון', 'צד', 'קבוצה', 'הערות']],
             body: tableData,
             styles: { 
-                font: 'Alef',
+                font: 'helvetica',
                 fontSize: 9,
                 halign: 'right'
             },
@@ -2156,7 +2148,7 @@ function exportGuestsPDF() {
                 fillColor: [236, 72, 153], 
                 textColor: 255,
                 halign: 'right',
-                font: 'Alef'
+                font: 'helvetica'
             },
             columnStyles: {
                 0: { halign: 'center' },
@@ -2184,7 +2176,7 @@ function exportGuestsPDF() {
     }
 }
 
-// Export Seating to PDF - Full Hebrew support
+// Export Seating to PDF - Hebrew support
 function exportSeatingPDF() {
     try {
         const { jsPDF } = window.jspdf;
@@ -2196,11 +2188,8 @@ function exportSeatingPDF() {
             return;
         }
         
-        // Add Hebrew font
-        doc.addFileToVFS("Alef-Regular.ttf", ALEF_FONT_BASE64);
-        doc.addFont("Alef-Regular.ttf", "Alef", "normal");
-        doc.setFont("Alef");
-        doc.setR2L(true);
+        // Use default helvetica font
+        doc.setFont('helvetica');
         
         // Add title
         doc.setFontSize(18);
@@ -2248,7 +2237,7 @@ function exportSeatingPDF() {
             head: [['שם שולחן', 'מספר', 'שם אורח', 'טלפון', 'תפוסה']],
             body: tableData,
             styles: { 
-                font: 'Alef',
+                font: 'helvetica',
                 fontSize: 9,
                 halign: 'right'
             },
@@ -2256,7 +2245,7 @@ function exportSeatingPDF() {
                 fillColor: [236, 72, 153], 
                 textColor: 255,
                 halign: 'right',
-                font: 'Alef'
+                font: 'helvetica'
             },
             columnStyles: {
                 1: { halign: 'center' },
@@ -2267,7 +2256,7 @@ function exportSeatingPDF() {
                 // Add page numbers in Hebrew
                 const pageCount = doc.internal.getNumberOfPages();
                 const pageNum = doc.internal.getCurrentPageInfo().pageNumber;
-                doc.setFont("Alef");
+                doc.setFont("helvetica");
                 doc.setFontSize(10);
                 doc.text(`עמוד ${pageNum} מתוך ${pageCount}`, 
                     105, doc.internal.pageSize.height - 10, { align: 'center' });
