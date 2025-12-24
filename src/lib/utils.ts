@@ -1,10 +1,19 @@
-import { nanoid } from 'nanoid';
-
 /**
- * יצירת ID ייחודי קצר
+ * יצירת ID ייחודי קצר באמצעות Web Crypto API
+ * תואם ל-Cloudflare Workers
  */
 export function generateId(): string {
-  return nanoid();
+  // יצירת 16 bytes אקראיים
+  const bytes = new Uint8Array(16);
+  crypto.getRandomValues(bytes);
+  
+  // המרה ל-base64url (בטוח לשימוש ב-URLs)
+  const base64 = btoa(String.fromCharCode(...bytes))
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=/g, '');
+  
+  return base64.substring(0, 21); // אורך דומה ל-nanoid
 }
 
 /**
@@ -16,7 +25,15 @@ export function generateSlug(eventName: string): string {
     .replace(/[^a-z0-9\u0590-\u05ff]+/gi, '-')
     .replace(/^-+|-+$/g, '');
   
-  const random = nanoid(6);
+  // יצירת 6 תווים אקראיים
+  const bytes = new Uint8Array(4);
+  crypto.getRandomValues(bytes);
+  const random = btoa(String.fromCharCode(...bytes))
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=/g, '')
+    .substring(0, 6);
+  
   return `${base}-${random}`;
 }
 
