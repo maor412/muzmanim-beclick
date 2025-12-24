@@ -1,19 +1,16 @@
 /**
  * יצירת ID ייחודי קצר באמצעות Web Crypto API
- * תואם ל-Cloudflare Workers
+ * תואם ל-Cloudflare Workers, בטוח לשימוש ב-URLs
  */
 export function generateId(): string {
-  // יצירת 16 bytes אקראיים
-  const bytes = new Uint8Array(16);
+  // יצירת 10 bytes אקראיים (20 תווים hex)
+  const bytes = new Uint8Array(10);
   crypto.getRandomValues(bytes);
   
-  // המרה ל-base64url (בטוח לשימוש ב-URLs)
-  const base64 = btoa(String.fromCharCode(...bytes))
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=/g, '');
-  
-  return base64.substring(0, 21); // אורך דומה ל-nanoid
+  // המרה ל-hex (בטוח לחלוטין ב-URLs - רק 0-9, a-f)
+  return Array.from(bytes)
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
 }
 
 /**
@@ -25,14 +22,12 @@ export function generateSlug(eventName: string): string {
     .replace(/[^a-z0-9\u0590-\u05ff]+/gi, '-')
     .replace(/^-+|-+$/g, '');
   
-  // יצירת 6 תווים אקראיים
-  const bytes = new Uint8Array(4);
+  // יצירת 6 תווים אקראיים (hex)
+  const bytes = new Uint8Array(3);
   crypto.getRandomValues(bytes);
-  const random = btoa(String.fromCharCode(...bytes))
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=/g, '')
-    .substring(0, 6);
+  const random = Array.from(bytes)
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
   
   return `${base}-${random}`;
 }

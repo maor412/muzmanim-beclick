@@ -27,8 +27,8 @@ function showToast(message, type = 'success') {
 // Get event ID from URL
 function getEventId() {
     const path = window.location.pathname;
-    // Match alphanumeric characters, hyphens, and underscores for the event ID
-    const match = path.match(/\/event\/([A-Za-z0-9_-]+)/);
+    // Match hex characters (0-9, a-f) for the event ID (generated via Web Crypto API)
+    const match = path.match(/\/event\/([a-f0-9]+)/);
     return match ? match[1] : null;
 }
 
