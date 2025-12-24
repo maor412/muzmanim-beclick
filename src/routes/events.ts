@@ -30,7 +30,7 @@ eventsRouter.use('/*', apiRateLimiter);
  * יצירת אירוע חדש
  * POST /api/events
  */
-eventsRouter.post('/', zValidator('json', createEventSchema), async (c) => {
+eventsRouter.post('/events', zValidator('json', createEventSchema), async (c) => {
   const db = initDb(c.env.DB);
   const userId = c.get('userId') as string;
   const data = c.req.valid('json');
@@ -118,7 +118,7 @@ eventsRouter.post('/', zValidator('json', createEventSchema), async (c) => {
  * קבלת כל האירועים של המשתמש
  * GET /api/events
  */
-eventsRouter.get('/', async (c) => {
+eventsRouter.get('/events', async (c) => {
   const db = initDb(c.env.DB);
   const userId = c.get('userId') as string;
 
@@ -154,7 +154,7 @@ eventsRouter.get('/', async (c) => {
  * קבלת אירוע ספציפי לפי ID
  * GET /api/events/:id
  */
-eventsRouter.get('/:id', async (c) => {
+eventsRouter.get('/events/:id', async (c) => {
   const db = initDb(c.env.DB);
   const userId = c.get('userId') as string;
   const eventId = c.req.param('id');
@@ -208,7 +208,7 @@ eventsRouter.get('/:id', async (c) => {
  * עדכון אירוע
  * PUT /api/events/:id
  */
-eventsRouter.put('/:id', zValidator('json', updateEventSchema), async (c) => {
+eventsRouter.put('/events/:id', zValidator('json', updateEventSchema), async (c) => {
   const db = initDb(c.env.DB);
   const userId = c.get('userId') as string;
   const eventId = c.req.param('id');
@@ -284,7 +284,7 @@ eventsRouter.put('/:id', zValidator('json', updateEventSchema), async (c) => {
  * מחיקת אירוע
  * DELETE /api/events/:id
  */
-eventsRouter.delete('/:id', async (c) => {
+eventsRouter.delete('/events/:id', async (c) => {
   const db = initDb(c.env.DB);
   const userId = c.get('userId') as string;
   const eventId = c.req.param('id');
