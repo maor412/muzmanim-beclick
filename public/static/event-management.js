@@ -2032,15 +2032,7 @@ function generateInsights(rsvps, guests, seating, tables) {
 
 // PDF Export Functions
 
-// Helper: Convert Hebrew text to readable format for PDF
-function prepareHebrewText(text) {
-    if (!text) return 'N/A';
-    // For now, we'll reverse the text to display correctly in PDF
-    // This is a workaround until we add Hebrew font support
-    return text.split('').reverse().join('');
-}
-
-// Export RSVPs to PDF - Simple reliable approach
+// Export RSVPs to PDF - Full Hebrew support with Alef font
 function exportRsvpsPDF() {
     try {
         const { jsPDF } = window.jspdf;
@@ -2052,35 +2044,45 @@ function exportRsvpsPDF() {
             return;
         }
         
+        // Add Hebrew font
+        doc.addFileToVFS("Alef-Regular.ttf", ALEF_FONT_BASE64);
+        doc.addFont("Alef-Regular.ttf", "Alef", "normal");
+        doc.setFont("Alef");
+        
+        // Enable RTL mode
+        doc.setR2L(true);
+        
         // Add title  
         doc.setFontSize(18);
-        doc.text(`Event: ${currentEvent.eventName}`, 105, 15, { align: 'center' });
+        doc.text(`אירוע: ${currentEvent.eventName}`, 105, 15, { align: 'center' });
         doc.setFontSize(12);
-        doc.text(`RSVPs List - ${new Date().toLocaleDateString()}`, 105, 23, { align: 'center' });
+        doc.text(`רשימת אישורי הגעה - ${new Date().toLocaleDateString('he-IL')}`, 105, 23, { align: 'center' });
         
-        // Prepare data - Hebrew names will display correctly
+        // Prepare data
         const tableData = allRsvps.map((rsvp, index) => [
             index + 1,
-            rsvp.fullName,  // Hebrew names work fine
-            rsvp.phone || 'N/A',
-            rsvp.status === 'confirmed' ? 'Confirmed' : rsvp.status === 'declined' ? 'Declined' : 'Pending',
+            rsvp.fullName,
+            rsvp.phone || 'לא צוין',
+            rsvp.status === 'confirmed' ? 'מאושר' : rsvp.status === 'declined' ? 'לא מגיע' : 'ממתין',
             rsvp.attendingCount || 1,
-            rsvp.mealChoice || 'N/A'
+            rsvp.mealChoice === 'meat' ? 'בשר' : rsvp.mealChoice === 'fish' ? 'דג' : rsvp.mealChoice === 'vegan' ? 'צמחוני' : 'לא צוין'
         ]);
         
-        // Create table - English headers but Hebrew content works
+        // Create table with Hebrew headers
         doc.autoTable({
             startY: 30,
-            head: [['#', 'Full Name', 'Phone', 'Status', 'Guests', 'Meal']],
+            head: [['#', 'שם מלא', 'טלפון', 'סטטוס', 'מלווים', 'בחירת מנה']],
             body: tableData,
             styles: { 
+                font: 'Alef',
                 fontSize: 10,
-                halign: 'left'
+                halign: 'right'  // RTL alignment
             },
             headStyles: { 
                 fillColor: [236, 72, 153], 
                 textColor: 255,
-                halign: 'center'
+                halign: 'right',
+                font: 'Alef'
             },
             columnStyles: {
                 0: { halign: 'center' },
@@ -2093,20 +2095,20 @@ function exportRsvpsPDF() {
         // Add summary
         const finalY = doc.lastAutoTable.finalY + 10;
         doc.setFontSize(12);
-        doc.text(`Total RSVPs: ${allRsvps.length}`, 14, finalY);
-        doc.text(`Confirmed: ${allRsvps.filter(r => r.status === 'confirmed').length}`, 14, finalY + 7);
-        doc.text(`Declined: ${allRsvps.filter(r => r.status === 'declined').length}`, 14, finalY + 14);
+        doc.text(`סה"כ אישורי הגעה: ${allRsvps.length}`, 195, finalY, { align: 'right' });
+        doc.text(`מאושרים: ${allRsvps.filter(r => r.status === 'confirmed').length}`, 195, finalY + 7, { align: 'right' });
+        doc.text(`לא מגיעים: ${allRsvps.filter(r => r.status === 'declined').length}`, 195, finalY + 14, { align: 'right' });
         
-        // Save
-        doc.save(`rsvps_${currentEvent.slug}_${Date.now()}.pdf`);
-        showToast('PDF נוצר בהצלחה!', 'success');
+        // Save with Hebrew filename
+        doc.save(`אישורי-הגעה_${currentEvent.slug}_${Date.now()}.pdf`);
+        showToast('PDF יוצא בהצלחה!', 'success');
     } catch (error) {
         console.error('Error exporting PDF:', error);
-        showToast(`שגיאה: ${error.message}`, 'error');
+        showToast(`שגיאה בייצוא PDF: ${error.message}`, 'error');
     }
 }
 
-// Export Guests to PDF
+// Export Guests to PDF - Full Hebrew support
 function exportGuestsPDF() {
     try {
         const { jsPDF } = window.jspdf;
@@ -2118,35 +2120,43 @@ function exportGuestsPDF() {
             return;
         }
         
+        // Add Hebrew font
+        doc.addFileToVFS("Alef-Regular.ttf", ALEF_FONT_BASE64);
+        doc.addFont("Alef-Regular.ttf", "Alef", "normal");
+        doc.setFont("Alef");
+        doc.setR2L(true);
+        
         // Add title
         doc.setFontSize(18);
-        doc.text(`Event: ${currentEvent.eventName}`, 105, 15, { align: 'center' });
+        doc.text(`אירוע: ${currentEvent.eventName}`, 105, 15, { align: 'center' });
         doc.setFontSize(12);
-        doc.text(`Guests List - ${new Date().toLocaleDateString()}`, 105, 23, { align: 'center' });
+        doc.text(`רשימת אורחים - ${new Date().toLocaleDateString('he-IL')}`, 105, 23, { align: 'center' });
         
-        // Prepare data - Hebrew names display correctly
+        // Prepare data
         const tableData = allGuests.map((guest, index) => [
             index + 1,
-            guest.fullName,  // Hebrew works fine
-            guest.phone || 'N/A',
-            guest.side === 'groom' ? 'Groom' : guest.side === 'bride' ? 'Bride' : 'Both',
-            guest.groupLabel || 'Other',
-            (guest.notes || 'N/A').substring(0, 30)
+            guest.fullName,
+            guest.phone || 'לא צוין',
+            guest.side === 'groom' ? 'חתן' : guest.side === 'bride' ? 'כלה' : 'משותף',
+            guest.groupLabel === 'family' ? 'משפחה' : guest.groupLabel === 'friends' ? 'חברים' : guest.groupLabel === 'work' ? 'עבודה' : 'אחר',
+            (guest.notes || '-').substring(0, 30)
         ]);
         
         // Create table
         doc.autoTable({
             startY: 30,
-            head: [['#', 'Full Name', 'Phone', 'Side', 'Group', 'Notes']],
+            head: [['#', 'שם מלא', 'טלפון', 'צד', 'קבוצה', 'הערות']],
             body: tableData,
             styles: { 
+                font: 'Alef',
                 fontSize: 9,
-                halign: 'left'
+                halign: 'right'
             },
             headStyles: { 
                 fillColor: [236, 72, 153], 
                 textColor: 255,
-                halign: 'center'
+                halign: 'right',
+                font: 'Alef'
             },
             columnStyles: {
                 0: { halign: 'center' },
@@ -2159,22 +2169,22 @@ function exportGuestsPDF() {
         // Add summary
         const finalY = doc.lastAutoTable.finalY + 10;
         doc.setFontSize(12);
-        doc.text(`Total Guests: ${allGuests.length}`, 14, finalY);
+        doc.text(`סה"כ אורחים: ${allGuests.length}`, 195, finalY, { align: 'right' });
         
         const groomCount = allGuests.filter(g => g.side === 'groom').length;
         const brideCount = allGuests.filter(g => g.side === 'bride').length;
-        doc.text(`Groom Side: ${groomCount} | Bride Side: ${brideCount}`, 14, finalY + 7);
+        doc.text(`צד חתן: ${groomCount} | צד כלה: ${brideCount}`, 195, finalY + 7, { align: 'right' });
         
         // Save
-        doc.save(`guests_${currentEvent.slug}_${Date.now()}.pdf`);
-        showToast('PDF נוצר בהצלחה!', 'success');
+        doc.save(`אורחים_${currentEvent.slug}_${Date.now()}.pdf`);
+        showToast('PDF יוצא בהצלחה!', 'success');
     } catch (error) {
         console.error('Error exporting PDF:', error);
-        showToast(`שגיאה: ${error.message}`, 'error');
+        showToast(`שגיאה בייצוא PDF: ${error.message}`, 'error');
     }
 }
 
-// Export Seating to PDF
+// Export Seating to PDF - Full Hebrew support
 function exportSeatingPDF() {
     try {
         const { jsPDF } = window.jspdf;
@@ -2186,11 +2196,17 @@ function exportSeatingPDF() {
             return;
         }
         
+        // Add Hebrew font
+        doc.addFileToVFS("Alef-Regular.ttf", ALEF_FONT_BASE64);
+        doc.addFont("Alef-Regular.ttf", "Alef", "normal");
+        doc.setFont("Alef");
+        doc.setR2L(true);
+        
         // Add title
         doc.setFontSize(18);
-        doc.text(`Event: ${currentEvent.eventName}`, 105, 15, { align: 'center' });
+        doc.text(`אירוע: ${currentEvent.eventName}`, 105, 15, { align: 'center' });
         doc.setFontSize(12);
-        doc.text(`Seating Arrangement - ${new Date().toLocaleDateString()}`, 105, 23, { align: 'center' });
+        doc.text(`סידור הושבה - ${new Date().toLocaleDateString('he-IL')}`, 105, 23, { align: 'center' });
         
         // Prepare data by table
         const tableData = [];
@@ -2200,9 +2216,9 @@ function exportSeatingPDF() {
             if (tableSeating.length === 0) {
                 // Show empty table
                 tableData.push([
-                    table.tableName,  // Hebrew table names work fine
-                    table.tableNumber || 'N/A',
-                    '(Empty)',
+                    table.tableName,
+                    table.tableNumber || '-',
+                    '(ריק)',
                     '',
                     `0/${table.capacity}`
                 ]);
@@ -2215,10 +2231,10 @@ function exportSeatingPDF() {
                     
                     if (person) {
                         tableData.push([
-                            idx === 0 ? table.tableName : '', // Hebrew table name - works fine
-                            idx === 0 ? (table.tableNumber || 'N/A') : '',
-                            person.fullName,  // Hebrew name - works fine
-                            person.phone || 'N/A',
+                            idx === 0 ? table.tableName : '',
+                            idx === 0 ? (table.tableNumber || '-') : '',
+                            person.fullName,
+                            person.phone || '-',
                             idx === 0 ? `${tableSeating.length}/${table.capacity}` : ''
                         ]);
                     }
@@ -2226,19 +2242,21 @@ function exportSeatingPDF() {
             }
         });
         
-        // Create table
+        // Create table with Hebrew headers
         doc.autoTable({
             startY: 30,
-            head: [['Table Name', 'Table #', 'Guest Name', 'Phone', 'Occupancy']],
+            head: [['שם שולחן', 'מספר', 'שם אורח', 'טלפון', 'תפוסה']],
             body: tableData,
             styles: { 
+                font: 'Alef',
                 fontSize: 9,
-                halign: 'left'
+                halign: 'right'
             },
             headStyles: { 
                 fillColor: [236, 72, 153], 
                 textColor: 255,
-                halign: 'center'
+                halign: 'right',
+                font: 'Alef'
             },
             columnStyles: {
                 1: { halign: 'center' },
@@ -2246,10 +2264,12 @@ function exportSeatingPDF() {
             },
             alternateRowStyles: { fillColor: [252, 232, 243] },
             didDrawPage: function(data) {
-                // Add page numbers
+                // Add page numbers in Hebrew
                 const pageCount = doc.internal.getNumberOfPages();
+                const pageNum = doc.internal.getCurrentPageInfo().pageNumber;
+                doc.setFont("Alef");
                 doc.setFontSize(10);
-                doc.text(`Page ${doc.internal.getCurrentPageInfo().pageNumber} of ${pageCount}`, 
+                doc.text(`עמוד ${pageNum} מתוך ${pageCount}`, 
                     105, doc.internal.pageSize.height - 10, { align: 'center' });
             }
         });
@@ -2257,18 +2277,18 @@ function exportSeatingPDF() {
         // Add summary
         const finalY = doc.lastAutoTable.finalY + 10;
         doc.setFontSize(12);
-        doc.text(`Total Tables: ${allTables.length}`, 14, finalY);
+        doc.text(`סה"כ שולחנות: ${allTables.length}`, 195, finalY, { align: 'right' });
         
         const totalSeated = allSeating.length;
         const totalCapacity = allTables.reduce((sum, t) => sum + t.capacity, 0);
-        doc.text(`Total Seated: ${totalSeated} / ${totalCapacity} seats`, 14, finalY + 7);
+        doc.text(`סה"כ מושבים: ${totalSeated} / ${totalCapacity} מקומות`, 195, finalY + 7, { align: 'right' });
         
-        // Save
-        doc.save(`seating_${currentEvent.slug}_${Date.now()}.pdf`);
-        showToast('PDF נוצר בהצלחה!', 'success');
+        // Save with Hebrew filename
+        doc.save(`הושבה_${currentEvent.slug}_${Date.now()}.pdf`);
+        showToast('PDF יוצא בהצלחה!', 'success');
     } catch (error) {
         console.error('Error exporting PDF:', error);
-        showToast(`שגיאה: ${error.message}`, 'error');
+        showToast(`שגיאה בייצוא PDF: ${error.message}`, 'error');
     }
 }
 
