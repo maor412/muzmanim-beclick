@@ -30,14 +30,15 @@
 - **דף סגירת RSVP**: הודעה מותאמת כשה-RSVP נסגר
 - שדות מותאמים אישית: מספר מגיעים, בחירת מנה, אלרגיות, הערות
 
-### 🎛️ **דשבורד ניהול אירוע מלא (7 טאבים)**
-1. **סקירה (Overview)**: סטטיסטיקות כוללות, פרטי אירוע, פעולות מהירות
-2. **אישורי הגעה (RSVPs)**: טבלה מסוננת, ייצוא CSV/Excel, צפייה בפרטים
-3. **רשימת מוזמנים (Guests)**: הוספה ידנית, **ייבוא CSV**, עריכה ומחיקה
-4. **הושבה (Seating)**: **Drag & Drop**, **Auto-fill**, תצוגת אורחים בשולחנות
+### 🎛️ **דשבורד ניהול אירוע מלא (8 טאבים)**
+1. **סקירה (Overview)**: סטטיסטיקות כוללות, **גרפים אינטראקטיביים**, **תובנות אוטומטיות**, פעולות מהירות
+2. **אישורי הגעה (RSVPs)**: טבלה מסוננת, ייצוא CSV/Excel/**PDF**, צפייה בפרטים
+3. **רשימת מוזמנים (Guests)**: הוספה ידנית, **ייבוא CSV**, עריכה ומחיקה, ייצוא **PDF**
+4. **הושבה (Seating)**: **Drag & Drop**, **Auto-fill חכם**, תצוגת אורחים בשולחנות, ייצוא **PDF**
 5. **צ'ק-אין (Check-in)**: חיפוש מהיר, סטטיסטיקות, רישום הגעה בלחיצה
-6. **הודעות (Messages)**: תבניות Copy/Paste מוכנות עם personalization
-7. **הגדרות (Settings)**: עריכת פרטי אירוע, פתיחה/סגירת RSVP, **מחיקת אירוע**
+6. **Walk-ins**: רישום מהיר של אורחים ללא הזמנה מראש
+7. **הודעות (Messages)**: תבניות Copy/Paste מוכנות עם personalization
+8. **הגדרות (Settings)**: עריכת פרטי אירוע, פתיחה/סגירת RSVP, **מחיקת אירוע**
 
 ### 👥 **ניהול מוזמנים**
 - ✅ **הוספה ידנית**: טופס מלא עם כל השדות
@@ -526,7 +527,7 @@ npm run test             # Health check
 
 - [x] ✅ Dev Auth Mode
 - [x] ✅ Public RSVP with ICS download
-- [x] ✅ Event Management Dashboard (7 tabs)
+- [x] ✅ Event Management Dashboard (8 tabs)
 - [x] ✅ Guest CRUD operations
 - [x] ✅ **CSV Import with template download**
 - [x] ✅ Table management
@@ -537,8 +538,13 @@ npm run test             # Health check
   - [x] Bulk seating API
 - [x] ✅ **Guest list display in tables**
 - [x] ✅ Check-in system
+- [x] ✅ **Walk-ins page** (מגיעים ללא הזמנה)
 - [x] ✅ Copy/Paste messages
-- [x] ✅ CSV/Excel export
+- [x] ✅ **CSV/Excel/PDF export**
+- [x] ✅ **Analytics Dashboard**
+  - [x] Interactive charts (Chart.js)
+  - [x] Automated insights
+  - [x] Progress tracking
 - [x] ✅ **Cascade delete for events**
 - [x] ✅ Audit logging
 - [x] ✅ Rate limiting (optimized 100 req/min)
@@ -546,9 +552,9 @@ npm run test             # Health check
 
 ## 🚧 פיתוח עתידי (Nice to Have)
 
-- [ ] Walk-ins page (מגיעים בלי הזמנה)
-- [ ] PDF export לרשימות
-- [ ] Analytics Dashboard מתקדם
+- [x] ✅ Walk-ins page (מגיעים בלי הזמנה) - **הושלם!**
+- [x] ✅ PDF export לרשימות - **הושלם!**
+- [x] ✅ Analytics Dashboard מתקדם - **הושלם!**
 - [ ] WhatsApp Business API integration
 - [ ] תזכורות אוטומטיות
 - [ ] Multi-language support
