@@ -23,8 +23,9 @@ export function rateLimiter(maxRequests: number = 10, windowMs: number = 60000) 
 
 /**
  * Rate limiter חמור יותר ל-RSVP endpoints
+ * בסביבת פיתוח מקל יותר
  */
-export const rsvpRateLimiter = rateLimiter(5, 60000); // 5 בקשות לדקה
+export const rsvpRateLimiter = rateLimiter(20, 60000); // 20 בקשות לדקה (הוגדל לפיתוח)
 
 /**
  * Rate limiter רגיל ל-API endpoints
