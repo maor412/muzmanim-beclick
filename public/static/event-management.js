@@ -422,16 +422,36 @@ function renderSeating() {
                 </div>
                 <div class="space-y-2 min-h-[100px]">
                     ${tableSeating.map(seat => {
-                        const rsvp = allRsvps.find(r => r.id === seat.rsvpId);
-                        return rsvp ? `
-                            <div class="bg-pink-50 border border-pink-200 rounded p-2 flex justify-between items-center">
-                                <span class="text-sm font-semibold">${rsvp.fullName}</span>
-                                <button onclick="unseatGuest(${seat.id})" class="text-red-500 hover:text-red-600 text-xs">
+                        // Check if it's an RSVP or Guest
+                        let person = null;
+                        let isRsvp = false;
+                        let badge = '';
+                        
+                        if (seat.rsvpId) {
+                            person = allRsvps.find(r => r.id === seat.rsvpId);
+                            isRsvp = true;
+                            if (person && person.attendingCount > 1) {
+                                badge = `<span class="text-xs bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded ml-1">+${person.attendingCount - 1}</span>`;
+                            }
+                        } else if (seat.guestId) {
+                            person = allGuests.find(g => g.id === seat.guestId);
+                            isRsvp = false;
+                            badge = '<span class="text-xs bg-purple-100 text-purple-600 px-1.5 py-0.5 rounded ml-1">מוזמן</span>';
+                        }
+                        
+                        return person ? `
+                            <div class="bg-${isRsvp ? 'pink' : 'purple'}-50 border border-${isRsvp ? 'pink' : 'purple'}-200 rounded p-2 flex justify-between items-center">
+                                <div class="flex items-center">
+                                    <span class="text-sm font-semibold">${person.fullName}</span>
+                                    ${badge}
+                                </div>
+                                <button onclick="unseatGuest('${seat.id}')" class="text-red-500 hover:text-red-600 text-xs">
                                     <i class="fas fa-times"></i>
                                 </button>
                             </div>
                         ` : '';
                     }).join('')}
+                    ${occupiedSeats === 0 ? '<p class="text-sm text-gray-400 text-center py-4">גרור אורחים לכאן</p>' : ''}
                 </div>
             </div>
         `;

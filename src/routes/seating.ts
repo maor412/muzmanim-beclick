@@ -159,7 +159,7 @@ seatingRouter.post('/events/:eventId/seating', zValidator('json', createSeatingS
  * DELETE /api/seating/:id
  * מחיקת סידור הושבה
  */
-seatingRouter.delete('/:id', async (c) => {
+seatingRouter.delete('/seating/:id', async (c) => {
   const db = initDb(c.env.DB);
   const userId = c.get('userId') as string;
   const seatingId = c.req.param('id');
