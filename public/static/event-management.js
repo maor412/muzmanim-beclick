@@ -891,7 +891,8 @@ async function deleteEvent() {
         }
     } catch (error) {
         console.error('Error deleting event:', error);
-        showToast('שגיאה במחיקת האירוע', 'error');
+        const errorMsg = error.response?.data?.error || error.message || 'שגיאה במחיקת האירוע';
+        showToast(errorMsg, 'error');
     }
 }
 
