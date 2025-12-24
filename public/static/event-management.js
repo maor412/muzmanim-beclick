@@ -115,18 +115,25 @@ async function loadOverview() {
     
     try {
         // Load stats
-        const [rsvpsRes, guestsRes, tablesRes, checkinsRes] = await Promise.all([
+        const [rsvpsRes, guestsRes, tablesRes, checkinsRes, seatingRes] = await Promise.all([
             axios.get(`/api/events/${currentEvent.id}/rsvps`),
             axios.get(`/api/events/${currentEvent.id}/guests`),
             axios.get(`/api/events/${currentEvent.id}/tables`),
-            axios.get(`/api/events/${currentEvent.id}/checkins`)
+            axios.get(`/api/events/${currentEvent.id}/checkins`),
+            axios.get(`/api/events/${currentEvent.id}/seating`)
         ]);
         
+        const rsvps = rsvpsRes.data.rsvps || [];
+        const guests = guestsRes.data.guests || [];
+        const tables = tablesRes.data.tables || [];
+        const checkins = checkinsRes.data.checkins || [];
+        const seating = seatingRes.data.seating || [];
+        
         // Update stats
-        document.getElementById('stat-rsvps').textContent = rsvpsRes.data.rsvps?.filter(r => r.status === 'confirmed').length || 0;
-        document.getElementById('stat-guests').textContent = guestsRes.data.guests?.length || 0;
-        document.getElementById('stat-tables').textContent = tablesRes.data.tables?.length || 0;
-        document.getElementById('stat-checkins').textContent = checkinsRes.data.checkins?.filter(c => c.arrived).length || 0;
+        document.getElementById('stat-rsvps').textContent = rsvps.filter(r => r.status === 'confirmed').length;
+        document.getElementById('stat-guests').textContent = guests.length;
+        document.getElementById('stat-tables').textContent = tables.length;
+        document.getElementById('stat-checkins').textContent = checkins.filter(c => c.arrived).length;
         
         // Update event details
         document.getElementById('detail-eventName').textContent = currentEvent.eventName;
@@ -137,6 +144,12 @@ async function loadOverview() {
             ? '<span class="text-green-600"><i class="fas fa-check-circle ml-1"></i>פתוח</span>'
             : '<span class="text-red-600"><i class="fas fa-times-circle ml-1"></i>סגור</span>';
         document.getElementById('detail-slug').textContent = window.location.origin + '/e/' + currentEvent.slug;
+        
+        // Render charts
+        renderAnalyticsCharts(rsvps, guests, seating, tables);
+        
+        // Generate insights
+        generateInsights(rsvps, guests, seating, tables);
     } catch (error) {
         console.error('Error loading overview:', error);
     }
@@ -1785,6 +1798,213 @@ async function deleteGuest(id) {
     } catch (error) {
         console.error('Error deleting guest:', error);
         showToast(error.response?.data?.error || 'שגיאה במחיקת מוזמן', 'error');
+    }
+}
+
+// Analytics Charts
+let rsvpChart, groupsChart, seatingChart, sideChart;
+
+function renderAnalyticsCharts(rsvps, guests, seating, tables) {
+    // Destroy existing charts
+    if (rsvpChart) rsvpChart.destroy();
+    if (groupsChart) groupsChart.destroy();
+    if (seatingChart) seatingChart.destroy();
+    if (sideChart) sideChart.destroy();
+    
+    // RSVP Status Chart
+    const confirmed = rsvps.filter(r => r.status === 'confirmed').length;
+    const declined = rsvps.filter(r => r.status === 'declined').length;
+    const pending = rsvps.filter(r => r.status === 'pending').length;
+    
+    const rsvpCtx = document.getElementById('rsvp-chart');
+    rsvpChart = new Chart(rsvpCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['מאושר', 'לא מגיע', 'ממתין'],
+            datasets: [{
+                data: [confirmed, declined, pending],
+                backgroundColor: ['#10b981', '#ef4444', '#f59e0b'],
+                borderWidth: 2,
+                borderColor: '#ffffff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom' }
+            }
+        }
+    });
+    
+    // Guest Groups Chart
+    const groupCounts = {};
+    [...rsvps, ...guests].forEach(person => {
+        const group = person.groupLabel || 'אחרים';
+        groupCounts[group] = (groupCounts[group] || 0) + 1;
+    });
+    
+    const groupsCtx = document.getElementById('groups-chart');
+    groupsChart = new Chart(groupsCtx, {
+        type: 'bar',
+        data: {
+            labels: Object.keys(groupCounts),
+            datasets: [{
+                label: 'מספר אורחים',
+                data: Object.values(groupCounts),
+                backgroundColor: '#a855f7',
+                borderColor: '#7e22ce',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
+    });
+    
+    // Seating Progress Chart
+    const totalGuests = confirmed + guests.length;
+    const seated = seating.length;
+    const unseated = totalGuests - seated;
+    
+    const seatingCtx = document.getElementById('seating-chart');
+    seatingChart = new Chart(seatingCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['הושבו', 'לא הושבו'],
+            datasets: [{
+                data: [seated, unseated],
+                backgroundColor: ['#3b82f6', '#e5e7eb'],
+                borderWidth: 2,
+                borderColor: '#ffffff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom' }
+            }
+        }
+    });
+    
+    // Side Distribution Chart
+    const groomSide = [...rsvps, ...guests].filter(p => p.side === 'groom').length;
+    const brideSide = [...rsvps, ...guests].filter(p => p.side === 'bride').length;
+    const bothSide = [...rsvps, ...guests].filter(p => p.side === 'both').length;
+    
+    const sideCtx = document.getElementById('side-chart');
+    sideChart = new Chart(sideCtx, {
+        type: 'pie',
+        data: {
+            labels: ['צד חתן', 'צד כלה', 'משותף'],
+            datasets: [{
+                data: [groomSide, brideSide, bothSide],
+                backgroundColor: ['#3b82f6', '#ec4899', '#8b5cf6'],
+                borderWidth: 2,
+                borderColor: '#ffffff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom' }
+            }
+        }
+    });
+}
+
+// Generate Insights
+function generateInsights(rsvps, guests, seating, tables) {
+    const insights = [];
+    
+    const confirmed = rsvps.filter(r => r.status === 'confirmed').length;
+    const totalGuests = confirmed + guests.length;
+    const seated = seating.length;
+    const unseated = totalGuests - seated;
+    
+    // Response rate
+    const responseRate = rsvps.length > 0 ? ((rsvps.filter(r => r.status !== 'pending').length / rsvps.length) * 100).toFixed(0) : 0;
+    insights.push({
+        icon: 'fa-chart-line',
+        color: 'text-green-600',
+        text: `שיעור מענה: ${responseRate}% מהמוזמנים השיבו לאישור ההגעה`
+    });
+    
+    // Seating progress
+    if (totalGuests > 0) {
+        const seatingProgress = ((seated / totalGuests) * 100).toFixed(0);
+        const icon = seatingProgress >= 80 ? 'fa-check-circle' : 'fa-hourglass-half';
+        const color = seatingProgress >= 80 ? 'text-green-600' : 'text-orange-600';
+        insights.push({
+            icon,
+            color,
+            text: `התקדמות הושבה: ${seatingProgress}% מהאורחים הושבו (${seated}/${totalGuests})`
+        });
+    }
+    
+    // Table capacity
+    const totalCapacity = tables.reduce((sum, t) => sum + t.capacity, 0);
+    if (totalCapacity > 0 && totalGuests > 0) {
+        const utilization = ((seated / totalCapacity) * 100).toFixed(0);
+        insights.push({
+            icon: 'fa-chair',
+            color: 'text-blue-600',
+            text: `ניצול שולחנות: ${utilization}% מקיבולת השולחנות (${seated}/${totalCapacity} מקומות)`
+        });
+    }
+    
+    // Empty tables
+    const emptyTables = tables.filter(t => {
+        const tableSeats = seating.filter(s => s.tableId === t.id).length;
+        return tableSeats === 0;
+    }).length;
+    
+    if (emptyTables > 0) {
+        insights.push({
+            icon: 'fa-exclamation-triangle',
+            color: 'text-yellow-600',
+            text: `שולחנות ריקים: ${emptyTables} שולחנות ללא אורחים`
+        });
+    }
+    
+    // Unseated guests warning
+    if (unseated > 0) {
+        insights.push({
+            icon: 'fa-users',
+            color: 'text-orange-600',
+            text: `${unseated} אורחים עדיין לא הושבו - השתמש בהושבה אוטומטית`
+        });
+    }
+    
+    // Success message
+    if (unseated === 0 && totalGuests > 0) {
+        insights.push({
+            icon: 'fa-trophy',
+            color: 'text-green-600',
+            text: '🎉 כל האורחים הושבו! המערכת מוכנה לאירוע'
+        });
+    }
+    
+    // Render insights
+    const container = document.getElementById('insights-list');
+    if (insights.length === 0) {
+        container.innerHTML = '<p class="text-gray-500 text-center py-4">אין תובנות זמינות כרגע</p>';
+    } else {
+        container.innerHTML = insights.map(insight => `
+            <div class="flex items-start space-x-reverse space-x-3 bg-white rounded-lg p-4 shadow">
+                <i class="fas ${insight.icon} ${insight.color} text-2xl"></i>
+                <p class="text-gray-700 flex-1">${insight.text}</p>
+            </div>
+        `).join('');
     }
 }
 

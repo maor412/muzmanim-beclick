@@ -9,6 +9,7 @@ export const eventManagementPage = `
     <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
       body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
       .tab-active { 
@@ -167,6 +168,56 @@ export const eventManagementPage = `
                         </div>
                         <i class="fas fa-clipboard-check text-4xl text-orange-200"></i>
                     </div>
+                </div>
+            </div>
+
+            <!-- Analytics Charts -->
+            <div class="grid md:grid-cols-2 gap-6 mb-8">
+                <!-- RSVP Status Chart -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">
+                        <i class="fas fa-chart-pie text-pink-500 ml-2"></i>
+                        סטטוס אישורי הגעה
+                    </h3>
+                    <canvas id="rsvp-chart" height="250"></canvas>
+                </div>
+                
+                <!-- Guest Groups Chart -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">
+                        <i class="fas fa-chart-bar text-purple-500 ml-2"></i>
+                        פילוח קבוצות אורחים
+                    </h3>
+                    <canvas id="groups-chart" height="250"></canvas>
+                </div>
+                
+                <!-- Seating Progress Chart -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">
+                        <i class="fas fa-chart-line text-blue-500 ml-2"></i>
+                        התקדמות הושבה
+                    </h3>
+                    <canvas id="seating-chart" height="250"></canvas>
+                </div>
+                
+                <!-- Side Distribution Chart -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">
+                        <i class="fas fa-chart-pie text-green-500 ml-2"></i>
+                        חלוקה לפי צד (חתן/כלה)
+                    </h3>
+                    <canvas id="side-chart" height="250"></canvas>
+                </div>
+            </div>
+
+            <!-- Insights -->
+            <div class="bg-gradient-to-r from-pink-50 to-purple-50 rounded-xl shadow-lg p-6 mb-8">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">
+                    <i class="fas fa-lightbulb text-yellow-500 ml-2"></i>
+                    תובנות ומלצות
+                </h3>
+                <div id="insights-list" class="space-y-3">
+                    <p class="text-gray-500 text-center py-4">טוען תובנות...</p>
                 </div>
             </div>
 
