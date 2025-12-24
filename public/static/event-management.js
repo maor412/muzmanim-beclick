@@ -537,54 +537,113 @@ async function unseatGuest(seatingId) {
 
 // Auto-fill Seating
 async function autoFillSeating() {
-    if (!confirm('פעולה זו תמלא אוטומטית את השולחנות הפנויים. האם להמשיך?')) return;
+    if (!confirm('פעולה זו תמלא אוטומטית את השולחנות הפנויים לפי קבוצות וצדדים. האם להמשיך?')) return;
     
     // Get seated RSVP and Guest IDs
     const seatedRsvpIds = allSeating.filter(s => s.rsvpId).map(s => s.rsvpId);
     const seatedGuestIds = allSeating.filter(s => s.guestId).map(s => s.guestId);
     
-    // Get unseated RSVPs and Guests
+    // Get unseated RSVPs and Guests with full data
     const unseatedRsvps = allRsvps.filter(r => 
         r.status === 'confirmed' && !seatedRsvpIds.includes(r.id)
-    );
-    const unseatedGuests = allGuests.filter(g => !seatedGuestIds.includes(g.id));
+    ).map(r => ({
+        type: 'rsvp',
+        id: r.id,
+        side: r.side || 'both',
+        group: r.groupLabel || 'other',
+        name: r.fullName
+    }));
     
-    // Combine both lists
-    const unseated = [
-        ...unseatedRsvps.map(r => ({ type: 'rsvp', id: r.id })),
-        ...unseatedGuests.map(g => ({ type: 'guest', id: g.id }))
-    ];
+    const unseatedGuests = allGuests.filter(g => !seatedGuestIds.includes(g.id))
+        .map(g => ({
+            type: 'guest',
+            id: g.id,
+            side: g.side || 'both',
+            group: g.groupLabel || 'other',
+            name: g.fullName
+        }));
+    
+    // Combine and group by side and group
+    const unseated = [...unseatedRsvps, ...unseatedGuests];
     
     if (unseated.length === 0) {
         showToast('אין אורחים להושיב', 'info');
         return;
     }
     
+    // Group by side -> group -> people
+    const grouped = {};
+    unseated.forEach(person => {
+        const side = person.side;
+        const group = person.group;
+        
+        if (!grouped[side]) grouped[side] = {};
+        if (!grouped[side][group]) grouped[side][group] = [];
+        grouped[side][group].push(person);
+    });
+    
+    // Sort groups by size (largest first to fill tables efficiently)
+    const sortedGroups = [];
+    Object.keys(grouped).forEach(side => {
+        Object.keys(grouped[side]).forEach(group => {
+            sortedGroups.push({
+                side,
+                group,
+                people: grouped[side][group],
+                size: grouped[side][group].length
+            });
+        });
+    });
+    sortedGroups.sort((a, b) => b.size - a.size);
+    
     let seated = 0;
+    
+    // Try to seat groups together
     for (const table of allTables) {
         const tableSeating = allSeating.filter(s => s.tableId === table.id);
-        const availableSeats = table.capacity - tableSeating.length;
+        let availableSeats = table.capacity - tableSeating.length;
         
-        for (let i = 0; i < availableSeats && unseated.length > 0; i++) {
-            const person = unseated.shift();
-            try {
-                const data = { tableId: table.id };
+        if (availableSeats === 0) continue;
+        
+        // Try to find a group that fits in this table
+        for (let i = 0; i < sortedGroups.length && availableSeats > 0; i++) {
+            const groupData = sortedGroups[i];
+            
+            if (groupData.people.length === 0) continue;
+            
+            // Can we fit the whole group or part of it?
+            const toSeat = Math.min(groupData.people.length, availableSeats);
+            
+            for (let j = 0; j < toSeat; j++) {
+                const person = groupData.people.shift();
                 
-                if (person.type === 'rsvp') {
-                    data.rsvpId = person.id;
-                } else {
-                    data.guestId = person.id;
+                try {
+                    const data = { tableId: table.id };
+                    
+                    if (person.type === 'rsvp') {
+                        data.rsvpId = person.id;
+                    } else {
+                        data.guestId = person.id;
+                    }
+                    
+                    await axios.post(`/api/events/${currentEvent.id}/seating`, data);
+                    seated++;
+                    availableSeats--;
+                } catch (error) {
+                    console.error('Error auto-seating:', error);
                 }
-                
-                await axios.post(`/api/events/${currentEvent.id}/seating`, data);
-                seated++;
-            } catch (error) {
-                console.error('Error auto-seating:', error);
             }
         }
     }
     
-    showToast(`${seated} אורחים הושבו אוטומטית`, 'success');
+    // Remove empty groups
+    sortedGroups.forEach((g, idx) => {
+        if (g.people.length === 0) {
+            sortedGroups.splice(idx, 1);
+        }
+    });
+    
+    showToast(`${seated} אורחים הושבו אוטומטית לפי קבוצות`, 'success');
     loadSeating();
 }
 
