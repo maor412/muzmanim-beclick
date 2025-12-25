@@ -79,6 +79,7 @@ export const rsvps = sqliteTable('rsvps', {
   mealChoice: text('meal_choice'),
   allergies: text('allergies'),
   comment: text('comment'),
+  seatingNote: text('seating_note'), // הערה על הסרה מהושבה
   consentUpdates: integer('consent_updates').default(0),
   ipAddress: text('ip_address'),
   userAgent: text('user_agent'),

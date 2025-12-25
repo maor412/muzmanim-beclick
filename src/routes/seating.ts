@@ -140,6 +140,18 @@ seatingRouter.post('/events/:eventId/seating', zValidator('json', createSeatingS
       notes: data.notes || null
     });
 
+    // אם מושיבים RSVP, נמחק את seatingNote (הערה על הסרה קודמת)
+    if (data.rsvpId) {
+      await db
+        .update(rsvps)
+        .set({
+          seatingNote: null,
+          updatedAt: new Date().toISOString()
+        })
+        .where(eq(rsvps.id, data.rsvpId))
+        .run();
+    }
+
     await logAudit(c, 'CREATE_SEATING', 'seating', seatingId, { tableId: data.tableId });
 
     const newSeating = await db.select().from(seating).where(eq(seating.id, seatingId)).get();

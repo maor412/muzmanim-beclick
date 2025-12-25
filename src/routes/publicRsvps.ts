@@ -313,12 +313,6 @@ publicRsvpsRouter.post('/:slug', rsvpRateLimiter, zValidator('json', createRsvpS
     const ipAddress = c.req.header('cf-connecting-ip') || c.req.header('x-forwarded-for') || 'unknown';
     const userAgent = c.req.header('user-agent') || 'unknown';
 
-    // אם יש הערת הסרה משולחן, נוסיף אותה ל-comment
-    let finalComment = data.comment || null;
-    if (removalNote) {
-      finalComment = finalComment ? `${finalComment}\n\n${removalNote}` : removalNote;
-    }
-
     await db.insert(rsvps).values({
       id: rsvpId,
       eventId: event.id,
@@ -327,7 +321,8 @@ publicRsvpsRouter.post('/:slug', rsvpRateLimiter, zValidator('json', createRsvpS
       attendingCount: data.attendingCount,
       mealChoice: data.mealChoice || null,
       allergies: data.allergies || null,
-      comment: finalComment,
+      comment: data.comment || null,
+      seatingNote: removalNote, // שמור הערה אם הוסר מהושבה
       consentUpdates: data.consentUpdates ? 1 : 0,
       ipAddress,
       userAgent
@@ -354,7 +349,8 @@ publicRsvpsRouter.post('/:slug', rsvpRateLimiter, zValidator('json', createRsvpS
         id: rsvpId,
         attendingCount: data.attendingCount,
         status: data.attendingCount > 0 ? 'confirmed' : 'declined'
-      }
+      },
+      ...(removalNote && { warning: removalNote })
     }, 201);
 
   } catch (error) {

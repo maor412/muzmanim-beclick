@@ -343,6 +343,12 @@ export const publicRsvpPage = (slug: string) => `
                 
                 if (response.data.success) {
                     submittedRsvp = response.data.rsvp;
+                    
+                    // אם יש אזהרה (הסרה משולחן), הצג אותה
+                    if (response.data.warning) {
+                        alert('⚠️ ' + response.data.warning);
+                    }
+                    
                     showSuccess();
                 } else {
                     alert('שגיאה: ' + (response.data.error || 'לא ניתן לשלוח את האישור'));
