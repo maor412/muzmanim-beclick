@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
-import { eq } from 'drizzle-orm';
+import { eq, and, like } from 'drizzle-orm';
 import { initDb } from '../db';
 import { rsvps, events, eventSettings } from '../db/schema';
 import { rsvpRateLimiter } from '../middleware/rateLimit';
@@ -102,7 +102,68 @@ publicRsvpsRouter.post('/:slug', rsvpRateLimiter, zValidator('json', createRsvpS
       throw new AppError(400, 'מספר טלפון נדרש לאירוע זה', 'PHONE_REQUIRED');
     }
 
-    // יצירת RSVP
+    // בדיקת כפילויות - אם כבר קיים RSVP לאותו אדם
+    let existingRsvp = null;
+    if (data.phone) {
+      const formattedPhone = formatPhoneE164(data.phone);
+      existingRsvp = await db
+        .select()
+        .from(rsvps)
+        .where(
+          and(
+            eq(rsvps.eventId, event.id),
+            eq(rsvps.phone, formattedPhone)
+          )
+        )
+        .get();
+    } else {
+      // אם אין טלפון, בדוק לפי שם בלבד
+      existingRsvp = await db
+        .select()
+        .from(rsvps)
+        .where(
+          and(
+            eq(rsvps.eventId, event.id),
+            like(rsvps.fullName, `%${data.fullName.trim()}%`)
+          )
+        )
+        .get();
+    }
+
+    // אם קיים RSVP ו-allowUpdates מופעל, נעדכן במקום ליצור
+    if (existingRsvp && event.allowUpdates) {
+      await db
+        .update(rsvps)
+        .set({
+          fullName: data.fullName,
+          phone: data.phone ? formatPhoneE164(data.phone) : null,
+          attendingCount: data.attendingCount,
+          mealChoice: data.mealChoice || null,
+          allergies: data.allergies || null,
+          comment: data.comment || null,
+          consentUpdates: data.consentUpdates ? 1 : 0,
+          updatedAt: new Date().toISOString()
+        })
+        .where(eq(rsvps.id, existingRsvp.id))
+        .run();
+
+      return c.json({
+        success: true,
+        message: 'אישור ההגעה עודכן בהצלחה',
+        rsvp: {
+          id: existingRsvp.id,
+          attendingCount: data.attendingCount,
+          status: data.attendingCount > 0 ? 'confirmed' : 'declined'
+        }
+      });
+    }
+
+    // אם קיים RSVP אבל לא מותר לעדכן
+    if (existingRsvp && !event.allowUpdates) {
+      throw new AppError(409, 'נראה שכבר שלחת אישור הגעה. אם ברצונך לעדכן, אנא צור קשר עם בעלי האירוע', 'DUPLICATE_RSVP');
+    }
+
+    // יצירת RSVP חדש
     const rsvpId = generateId();
     const ipAddress = c.req.header('cf-connecting-ip') || c.req.header('x-forwarded-for') || 'unknown';
     const userAgent = c.req.header('user-agent') || 'unknown';

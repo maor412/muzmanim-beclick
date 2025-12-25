@@ -498,7 +498,19 @@ function renderSeating() {
     const grid = document.getElementById('tables-grid');
     grid.innerHTML = allTables.map(table => {
         const tableSeating = allSeating.filter(s => s.tableId === table.id);
-        const occupiedSeats = tableSeating.length;
+        
+        // חישוב מספר מושבים תפוסים (כולל +1)
+        const occupiedSeats = tableSeating.reduce((sum, seat) => {
+            if (seat.rsvpId) {
+                const rsvp = allRsvps.find(r => r.id === seat.rsvpId);
+                return sum + (rsvp?.attendingCount || 1);
+            } else if (seat.guestId) {
+                const guest = allGuests.find(g => g.id === seat.guestId);
+                return sum + (guest?.attendingCount || 1);
+            }
+            return sum + 1;
+        }, 0);
+        
         const availableSeats = table.capacity - occupiedSeats;
         
         return `
