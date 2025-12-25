@@ -103,13 +103,15 @@ publicRsvpsRouter.post('/:slug', rsvpRateLimiter, zValidator('json', createRsvpS
     }
 
     // בדיקת כפילויות - בדוק אם קיים RSVP או Guest עם אותו שם/טלפון
+    // חיפוש גמיש: שם OR טלפון (אם יש טעות באחד, השני יזהה)
     let existingRsvp = null;
     let existingGuest = null;
     
-    if (data.phone) {
-      const formattedPhone = formatPhoneE164(data.phone);
-      
-      // בדיקה ב-RSVPs לפי טלפון
+    const formattedPhone = data.phone ? formatPhoneE164(data.phone) : null;
+    
+    // בדיקה ב-RSVPs - לפי טלפון או שם
+    if (formattedPhone) {
+      // אם יש טלפון, חפש לפי טלפון
       existingRsvp = await db
         .select()
         .from(rsvps)
@@ -120,35 +122,51 @@ publicRsvpsRouter.post('/:slug', rsvpRateLimiter, zValidator('json', createRsvpS
           )
         )
         .get();
+    }
+    
+    // אם לא נמצא לפי טלפון, חפש לפי שם
+    if (!existingRsvp) {
+      existingRsvp = await db
+        .select()
+        .from(rsvps)
+        .where(
+          and(
+            eq(rsvps.eventId, event.id),
+            eq(rsvps.fullName, data.fullName.trim())
+          )
+        )
+        .get();
+    }
+    
+    // בדיקה ב-Guests - לפי שם OR טלפון (גמיש!)
+    if (!existingRsvp) {
+      // נסה לפי שם מדויק
+      existingGuest = await db
+        .select()
+        .from(guests)
+        .where(
+          and(
+            eq(guests.eventId, event.id),
+            eq(guests.fullName, data.fullName.trim())
+          )
+        )
+        .get();
       
-      // בדיקה ב-Guests לפי שם (עדיפות ראשונה)
-      if (!existingRsvp) {
+      // אם לא נמצא לפי שם ויש טלפון, נסה לפי טלפון
+      if (!existingGuest && formattedPhone) {
+        // נסה פורמט מקורי
         existingGuest = await db
           .select()
           .from(guests)
           .where(
             and(
               eq(guests.eventId, event.id),
-              eq(guests.fullName, data.fullName.trim())
+              eq(guests.phone, data.phone)
             )
           )
           .get();
         
-        // אם לא נמצא לפי שם, נסה לפי טלפון (פורמט מקורי)
-        if (!existingGuest) {
-          existingGuest = await db
-            .select()
-            .from(guests)
-            .where(
-              and(
-                eq(guests.eventId, event.id),
-                eq(guests.phone, data.phone)
-              )
-            )
-            .get();
-        }
-        
-        // אם לא נמצא, נסה לפי טלפון (E164)
+        // נסה פורמט E164
         if (!existingGuest) {
           existingGuest = await db
             .select()
@@ -161,31 +179,6 @@ publicRsvpsRouter.post('/:slug', rsvpRateLimiter, zValidator('json', createRsvpS
             )
             .get();
         }
-      }
-    } else {
-      // אם אין טלפון ב-RSVP, בדוק לפי שם מדויק בלבד
-      existingRsvp = await db
-        .select()
-        .from(rsvps)
-        .where(
-          and(
-            eq(rsvps.eventId, event.id),
-            eq(rsvps.fullName, data.fullName.trim())
-          )
-        )
-        .get();
-      
-      if (!existingRsvp) {
-        existingGuest = await db
-          .select()
-          .from(guests)
-          .where(
-            and(
-              eq(guests.eventId, event.id),
-              eq(guests.fullName, data.fullName.trim())
-            )
-          )
-          .get();
       }
     }
     
