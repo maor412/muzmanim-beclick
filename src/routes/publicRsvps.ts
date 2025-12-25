@@ -148,6 +148,20 @@ publicRsvpsRouter.post('/:slug', rsvpRateLimiter, zValidator('json', createRsvpS
             )
             .get();
         }
+        
+        // אם עדיין לא נמצא, נסה לפי שם (למקרה שאין טלפון ב-Guest)
+        if (!existingGuest) {
+          existingGuest = await db
+            .select()
+            .from(guests)
+            .where(
+              and(
+                eq(guests.eventId, event.id),
+                like(guests.fullName, `%${data.fullName.trim()}%`)
+              )
+            )
+            .get();
+        }
       }
     } else {
       // אם אין טלפון, בדוק לפי שם בלבד
