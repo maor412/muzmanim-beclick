@@ -72,49 +72,6 @@ app.get('/api/health', (c) => {
   });
 });
 
-// PUBLIC RSVP API routes (NO AUTH REQUIRED)
-app.get('/api/rsvp/:slug/event', async (c) => {
-  console.log('🟢 PUBLIC API: Get event details for slug:', c.req.param('slug'));
-  
-  try {
-    const slug = c.req.param('slug');
-    const db = c.env.DB as any;
-    
-    const event = await db.prepare(`
-      SELECT * FROM events WHERE slug = ?
-    `).bind(slug).first();
-    
-    if (!event) {
-      return c.json({ error: 'אירוע לא נמצא' }, 404);
-    }
-    
-    return c.json({
-      success: true,
-      event: {
-        id: event.id,
-        eventName: event.event_name,
-        coupleNames: event.couple_names,
-        dateTime: event.date_time,
-        venueName: event.venue_name,
-        venueAddress: event.venue_address,
-        wazeLink: event.waze_link,
-        notes: event.notes,
-        isRsvpOpen: event.is_rsvp_open,
-        requirePhone: event.require_phone,
-        showMealChoice: event.show_meal_choice,
-        showAllergies: event.show_allergies,
-        showNotes: event.show_notes,
-        allowUpdates: event.allow_updates,
-        consentMessage: event.consent_message,
-        slug: event.slug
-      }
-    });
-  } catch (error) {
-    console.error('Error loading event:', error);
-    return c.json({ error: 'שגיאה בטעינת פרטי האירוע' }, 500);
-  }
-});
-
 // API Routes
 app.route('/api/auth', authRouter);
 app.route('/api/auth/google', googleRouter);

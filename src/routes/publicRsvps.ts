@@ -103,28 +103,30 @@ publicRsvpsRouter.post('/:slug', rsvpRateLimiter, zValidator('json', createRsvpS
     }
 
     // יצירת RSVP
-    const rsvp = {
-      id: generateId(),
+    const rsvpId = generateId();
+    const ipAddress = c.req.header('cf-connecting-ip') || c.req.header('x-forwarded-for') || 'unknown';
+    const userAgent = c.req.header('user-agent') || 'unknown';
+
+    await db.insert(rsvps).values({
+      id: rsvpId,
       eventId: event.id,
       fullName: data.fullName,
       phone: data.phone ? formatPhoneE164(data.phone) : null,
-      status: data.status,
-      plusOnes: data.plusOnes || 0,
+      attendingCount: data.attendingCount,
       mealChoice: data.mealChoice || null,
       allergies: data.allergies || null,
-      notes: data.notes || null,
-      consentGiven: data.consentGiven,
-      source: 'web'
-    };
-
-    await db.insert(rsvps).values(rsvp);
+      comment: data.comment || null,
+      consentUpdates: data.consentUpdates ? 1 : 0,
+      ipAddress,
+      userAgent
+    });
 
     return c.json({
       success: true,
       message: 'תודה רבה! אישור ההגעה נשמר בהצלחה',
       rsvp: {
-        id: rsvp.id,
-        status: rsvp.status
+        id: rsvpId,
+        attendingCount: data.attendingCount
       }
     }, 201);
 
