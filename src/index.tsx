@@ -7,6 +7,7 @@ import { serveStatic } from 'hono/cloudflare-workers';
 // Routes
 import eventsRouter from './routes/events';
 import rsvpsRouter from './routes/rsvps';
+import publicRsvpsRouter from './routes/publicRsvps';
 import guestsRouter from './routes/guests';
 import tablesRouter from './routes/tables';
 import seatingRouter from './routes/seating';
@@ -79,8 +80,8 @@ app.route('/api', guestsRouter);
 app.route('/api', tablesRouter);
 app.route('/api', seatingRouter);
 app.route('/api', checkinsRouter);
-app.route('/api', rsvpsRouter);       // Protected RSVP routes (/events/:eventId/rsvps)
-app.route('/api/rsvp', rsvpsRouter);  // Public RSVP routes - MUST BE LAST (/:slug, /:slug/event)
+app.route('/api', rsvpsRouter);            // Protected RSVP routes (/events/:eventId/rsvps)
+app.route('/api/rsvp', publicRsvpsRouter);  // Public RSVP routes (/:slug, /:slug/event)
 
 // Public RSVP page by slug
 app.get('/e/:slug', async (c) => {
