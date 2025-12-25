@@ -1891,25 +1891,51 @@ function renderAnalyticsCharts(rsvps, guests, seating, tables) {
     const pending = rsvps.filter(r => r.status === 'pending').length;
     
     const rsvpCtx = document.getElementById('rsvp-chart');
-    rsvpChart = new Chart(rsvpCtx, {
-        type: 'doughnut',
-        data: {
-            labels: ['מאושר', 'לא מגיע', 'ממתין'],
-            datasets: [{
-                data: [confirmed, declined, pending],
-                backgroundColor: ['#10b981', '#ef4444', '#f59e0b'],
-                borderWidth: 2,
-                borderColor: '#ffffff'
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { position: 'bottom' }
+    const totalRsvps = confirmed + declined + pending;
+    
+    // Show placeholder if no data
+    if (totalRsvps === 0) {
+        rsvpChart = new Chart(rsvpCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['אין נתונים'],
+                datasets: [{
+                    data: [1],
+                    backgroundColor: ['#e5e7eb'],
+                    borderWidth: 2,
+                    borderColor: '#ffffff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { enabled: false }
+                }
             }
-        }
-    });
+        });
+    } else {
+        rsvpChart = new Chart(rsvpCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['מאושר', 'לא מגיע', 'ממתין'],
+                datasets: [{
+                    data: [confirmed, declined, pending],
+                    backgroundColor: ['#10b981', '#ef4444', '#f59e0b'],
+                    borderWidth: 2,
+                    borderColor: '#ffffff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom' }
+                }
+            }
+        });
+    }
     
     // Guest Groups Chart
     const groupCounts = {};
@@ -1980,25 +2006,51 @@ function renderAnalyticsCharts(rsvps, guests, seating, tables) {
     const bothSide = [...rsvps, ...guests].filter(p => p.side === 'both').length;
     
     const sideCtx = document.getElementById('side-chart');
-    sideChart = new Chart(sideCtx, {
-        type: 'pie',
-        data: {
-            labels: ['צד חתן', 'צד כלה', 'משותף'],
-            datasets: [{
-                data: [groomSide, brideSide, bothSide],
-                backgroundColor: ['#3b82f6', '#ec4899', '#8b5cf6'],
-                borderWidth: 2,
-                borderColor: '#ffffff'
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { position: 'bottom' }
+    const totalSides = groomSide + brideSide + bothSide;
+    
+    // Show placeholder if no data
+    if (totalSides === 0) {
+        sideChart = new Chart(sideCtx, {
+            type: 'pie',
+            data: {
+                labels: ['אין נתונים'],
+                datasets: [{
+                    data: [1],
+                    backgroundColor: ['#e5e7eb'],
+                    borderWidth: 2,
+                    borderColor: '#ffffff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { enabled: false }
+                }
             }
-        }
-    });
+        });
+    } else {
+        sideChart = new Chart(sideCtx, {
+            type: 'pie',
+            data: {
+                labels: ['צד חתן', 'צד כלה', 'משותף'],
+                datasets: [{
+                    data: [groomSide, brideSide, bothSide],
+                    backgroundColor: ['#3b82f6', '#ec4899', '#8b5cf6'],
+                    borderWidth: 2,
+                    borderColor: '#ffffff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom' }
+                }
+            }
+        });
+    }
 }
 
 // Generate Insights
