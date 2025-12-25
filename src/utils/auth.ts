@@ -17,6 +17,32 @@ export function generateToken(): string {
 }
 
 /**
+ * Base64URL encode (safe for URLs, handles Unicode)
+ */
+function base64UrlEncode(data: Uint8Array | string): string {
+  const bytes = typeof data === 'string' ? new TextEncoder().encode(data) : data;
+  const binaryString = Array.from(bytes, byte => String.fromCharCode(byte)).join('');
+  return btoa(binaryString)
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=/g, '');
+}
+
+/**
+ * Base64URL decode
+ */
+function base64UrlDecode(str: string): string {
+  // Add padding if needed
+  let base64 = str.replace(/-/g, '+').replace(/_/g, '/');
+  while (base64.length % 4) {
+    base64 += '=';
+  }
+  const binaryString = atob(base64);
+  const bytes = Uint8Array.from(binaryString, c => c.charCodeAt(0));
+  return new TextDecoder().decode(bytes);
+}
+
+/**
  * Create a JWT token
  */
 export async function createJWT(payload: any, secret: string, expiresIn: number = 7 * 24 * 60 * 60): Promise<string> {
@@ -29,8 +55,8 @@ export async function createJWT(payload: any, secret: string, expiresIn: number 
     exp: now + expiresIn
   };
   
-  const encodedHeader = btoa(JSON.stringify(header));
-  const encodedPayload = btoa(JSON.stringify(jwtPayload));
+  const encodedHeader = base64UrlEncode(JSON.stringify(header));
+  const encodedPayload = base64UrlEncode(JSON.stringify(jwtPayload));
   const message = `${encodedHeader}.${encodedPayload}`;
   
   const encoder = new TextEncoder();
@@ -46,7 +72,7 @@ export async function createJWT(payload: any, secret: string, expiresIn: number 
   );
   
   const signature = await crypto.subtle.sign('HMAC', cryptoKey, messageData);
-  const encodedSignature = btoa(String.fromCharCode(...new Uint8Array(signature)));
+  const encodedSignature = base64UrlEncode(new Uint8Array(signature));
   
   return `${message}.${encodedSignature}`;
 }
@@ -76,7 +102,14 @@ export async function verifyJWT(token: string, secret: string): Promise<any> {
     ['verify']
   );
   
-  const signatureData = Uint8Array.from(atob(encodedSignature), c => c.charCodeAt(0));
+  // Decode signature from base64url
+  let base64Sig = encodedSignature.replace(/-/g, '+').replace(/_/g, '/');
+  while (base64Sig.length % 4) {
+    base64Sig += '=';
+  }
+  const binaryString = atob(base64Sig);
+  const signatureData = Uint8Array.from(binaryString, c => c.charCodeAt(0));
+  
   const isValid = await crypto.subtle.verify('HMAC', cryptoKey, signatureData, messageData);
   
   if (!isValid) {
@@ -84,7 +117,7 @@ export async function verifyJWT(token: string, secret: string): Promise<any> {
   }
   
   // Decode payload
-  const payload = JSON.parse(atob(encodedPayload));
+  const payload = JSON.parse(base64UrlDecode(encodedPayload));
   
   // Check expiration
   const now = Math.floor(Date.now() / 1000);

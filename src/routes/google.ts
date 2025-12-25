@@ -140,7 +140,9 @@ google.get('/callback', async (c) => {
     
   } catch (error) {
     console.error('Google callback error:', error);
-    return c.redirect('/login?error=' + encodeURIComponent('Authentication failed'));
+    const errorMessage = error instanceof Error ? error.message : 'Authentication failed';
+    console.error('Error details:', errorMessage, error);
+    return c.redirect('/login?error=' + encodeURIComponent(errorMessage));
   }
 });
 
