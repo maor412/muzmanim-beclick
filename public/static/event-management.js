@@ -2005,7 +2005,17 @@ function renderAnalyticsCharts(rsvps, guests, seating, tables) {
     const groomSide = [...rsvps, ...guests].filter(p => p.side === 'groom').length;
     const brideSide = [...rsvps, ...guests].filter(p => p.side === 'bride').length;
     const bothSide = [...rsvps, ...guests].filter(p => p.side === 'both').length;
-    const undefinedSide = [...rsvps, ...guests].filter(p => !p.side || p.side === null).length;
+    const undefinedSide = [...rsvps, ...guests].filter(p => !p.side || p.side === null || p.side === '' || p.side === 'undefined').length;
+    
+    // Debug logging
+    console.log('🔍 Side Chart Debug:', {
+        totalPeople: [...rsvps, ...guests].length,
+        groomSide,
+        brideSide,
+        bothSide,
+        undefinedSide,
+        samplePerson: [...rsvps, ...guests][0]
+    });
     
     const sideCtx = document.getElementById('side-chart');
     const totalSides = groomSide + brideSide + bothSide + undefinedSide;
