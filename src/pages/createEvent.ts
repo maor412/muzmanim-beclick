@@ -290,6 +290,30 @@ export const createEventPage = `
         // Configure axios to send cookies
         axios.defaults.withCredentials = true;
         
+        // Add axios interceptor to automatically include auth token
+        axios.interceptors.request.use(function (config) {
+            const token = localStorage.getItem('auth_token');
+            if (token) {
+                config.headers.Authorization = \`Bearer \${token}\`;
+            }
+            return config;
+        }, function (error) {
+            return Promise.reject(error);
+        });
+
+        // Add response interceptor to handle 401 errors
+        axios.interceptors.response.use(
+            response => response,
+            error => {
+                if (error.response && error.response.status === 401) {
+                    // Token expired or invalid - redirect to login
+                    localStorage.removeItem('auth_token');
+                    window.location.href = '/login?error=' + encodeURIComponent('Session expired. Please login again.');
+                }
+                return Promise.reject(error);
+            }
+        );
+        
         let currentStep = 1;
         const totalSteps = 4;
         let createdEventId = null;
