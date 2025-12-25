@@ -121,21 +121,35 @@ publicRsvpsRouter.post('/:slug', rsvpRateLimiter, zValidator('json', createRsvpS
         )
         .get();
       
-      // בדיקה ב-Guests (גם בפורמט מקורי וגם ב-E164)
+      // בדיקה ב-Guests - קודם לפי שם, אחר כך לפי טלפון
       if (!existingRsvp) {
-        // נסה קודם עם הפורמט המקורי
+        // נסה קודם לפי שם מדויק (עדיפות ראשונה)
         existingGuest = await db
           .select()
           .from(guests)
           .where(
             and(
               eq(guests.eventId, event.id),
-              eq(guests.phone, data.phone)
+              eq(guests.fullName, data.fullName.trim())
             )
           )
           .get();
         
-        // אם לא נמצא, נסה עם פורמט E164
+        // אם לא נמצא לפי שם, נסה לפי טלפון בפורמט מקורי
+        if (!existingGuest) {
+          existingGuest = await db
+            .select()
+            .from(guests)
+            .where(
+              and(
+                eq(guests.eventId, event.id),
+                eq(guests.phone, data.phone)
+              )
+            )
+            .get();
+        }
+        
+        // אם עדיין לא נמצא, נסה עם פורמט E164
         if (!existingGuest) {
           existingGuest = await db
             .select()
@@ -148,30 +162,16 @@ publicRsvpsRouter.post('/:slug', rsvpRateLimiter, zValidator('json', createRsvpS
             )
             .get();
         }
-        
-        // אם עדיין לא נמצא, נסה לפי שם (למקרה שאין טלפון ב-Guest)
-        if (!existingGuest) {
-          existingGuest = await db
-            .select()
-            .from(guests)
-            .where(
-              and(
-                eq(guests.eventId, event.id),
-                like(guests.fullName, `%${data.fullName.trim()}%`)
-              )
-            )
-            .get();
-        }
       }
     } else {
-      // אם אין טלפון, בדוק לפי שם בלבד
+      // אם אין טלפון ב-RSVP, בדוק לפי שם מדויק בלבד
       existingRsvp = await db
         .select()
         .from(rsvps)
         .where(
           and(
             eq(rsvps.eventId, event.id),
-            like(rsvps.fullName, `%${data.fullName.trim()}%`)
+            eq(rsvps.fullName, data.fullName.trim())
           )
         )
         .get();
@@ -183,7 +183,7 @@ publicRsvpsRouter.post('/:slug', rsvpRateLimiter, zValidator('json', createRsvpS
           .where(
             and(
               eq(guests.eventId, event.id),
-              like(guests.fullName, `%${data.fullName.trim()}%`)
+              eq(guests.fullName, data.fullName.trim())
             )
           )
           .get();
