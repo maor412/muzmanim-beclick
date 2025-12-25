@@ -154,12 +154,17 @@ function showError(message) {
 
 // Load overview
 async function loadOverview() {
+    console.log('🔵 Loading overview for event:', currentEvent?.id);
     document.getElementById('loading').classList.add('hidden');
     document.getElementById('content-overview').classList.remove('hidden');
     
-    if (!currentEvent) return;
+    if (!currentEvent) {
+        console.error('❌ No current event!');
+        return;
+    }
     
     try {
+        console.log('📡 Making 5 API calls for overview...');
         // Load stats
         const [rsvpsRes, guestsRes, tablesRes, checkinsRes, seatingRes] = await Promise.all([
             axios.get(`/api/events/${currentEvent.id}/rsvps`),
@@ -168,6 +173,8 @@ async function loadOverview() {
             axios.get(`/api/events/${currentEvent.id}/checkins`),
             axios.get(`/api/events/${currentEvent.id}/seating`)
         ]);
+        
+        console.log('✅ Overview API calls successful');
         
         const rsvps = rsvpsRes.data.rsvps || [];
         const guests = guestsRes.data.guests || [];
@@ -197,7 +204,14 @@ async function loadOverview() {
         // Generate insights
         generateInsights(rsvps, guests, seating, tables);
     } catch (error) {
-        console.error('Error loading overview:', error);
+        console.error('❌ Error loading overview:', error);
+        console.error('Error details:', {
+            message: error.message,
+            response: error.response?.data,
+            status: error.response?.status,
+            url: error.config?.url
+        });
+        showToast('שגיאה בטעינת נתוני הסקירה', 'error');
     }
 }
 
@@ -381,17 +395,26 @@ function exportGuests(format) {
 
 // Load Seating
 async function loadSeating() {
+    console.log('🔵 Loading seating data for event:', currentEvent.id);
     document.getElementById('tables-loading').classList.remove('hidden');
     document.getElementById('tables-empty').classList.add('hidden');
     document.getElementById('tables-grid').classList.add('hidden');
     
     try {
+        console.log('📡 Making 4 API calls...');
         const [tablesRes, seatingRes, rsvpsRes, guestsRes] = await Promise.all([
             axios.get(`/api/events/${currentEvent.id}/tables`),
             axios.get(`/api/events/${currentEvent.id}/seating`),
             axios.get(`/api/events/${currentEvent.id}/rsvps`),
             axios.get(`/api/events/${currentEvent.id}/guests`)
         ]);
+        
+        console.log('✅ API calls successful:', {
+            tables: tablesRes.data.tables?.length,
+            seating: seatingRes.data.seating?.length,
+            rsvps: rsvpsRes.data.rsvps?.length,
+            guests: guestsRes.data.guests?.length
+        });
         
         allTables = tablesRes.data.tables || [];
         allSeating = seatingRes.data.seating || [];
@@ -409,7 +432,12 @@ async function loadSeating() {
         
         renderUnseatedGuests();
     } catch (error) {
-        console.error('Error loading seating:', error);
+        console.error('❌ Error loading seating:', error);
+        console.error('Error details:', {
+            message: error.message,
+            response: error.response?.data,
+            status: error.response?.status
+        });
         document.getElementById('tables-loading').classList.add('hidden');
         showToast('שגיאה בטעינת הושבה', 'error');
     }
