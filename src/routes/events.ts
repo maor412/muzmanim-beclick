@@ -32,29 +32,21 @@ eventsRouter.use('/*', apiRateLimiter);
  */
 eventsRouter.post('/events', zValidator('json', createEventSchema), async (c) => {
   const db = initDb(c.env.DB);
-  const userId = c.get('userId') as string;
+  const currentUser = c.get('user') as any; // Get user from authMiddleware
+  
+  if (!currentUser || !currentUser.id) {
+    throw new AppError(401, 'נדרשת התחברות', 'UNAUTHORIZED');
+  }
+  
+  const userId = currentUser.id;
   const data = c.req.valid('json');
 
   try {
     // בדיקת משתמש קיים
-    const user = await db.select().from(users).where(eq(users.clerkId, userId)).get();
+    const user = await db.select().from(users).where(eq(users.id, userId)).get();
     
     if (!user) {
-      // יצירת משתמש חדש אם לא קיים
-      const auth = c.get('auth');
-      await db.insert(users).values({
-        id: generateId(),
-        clerkId: userId,
-        email: auth?.sessionClaims?.email || 'unknown@example.com',
-        name: auth?.sessionClaims?.name || 'משתמש',
-        authProvider: 'clerk'
-      });
-    }
-
-    const userRecord = user || await db.select().from(users).where(eq(users.clerkId, userId)).get();
-    
-    if (!userRecord) {
-      throw new AppError(500, 'שגיאה ביצירת משתמש', 'USER_CREATION_FAILED');
+      throw new AppError(404, 'משתמש לא נמצא', 'USER_NOT_FOUND');
     }
 
     // יצירת slug ייחודי
@@ -64,7 +56,7 @@ eventsRouter.post('/events', zValidator('json', createEventSchema), async (c) =>
     const eventId = generateId();
     await db.insert(events).values({
       id: eventId,
-      ownerUserId: userRecord.id,
+      ownerUserId: user.id,
       slug,
       eventName: data.eventName,
       coupleNames: data.coupleNames,
@@ -120,10 +112,16 @@ eventsRouter.post('/events', zValidator('json', createEventSchema), async (c) =>
  */
 eventsRouter.get('/events', async (c) => {
   const db = initDb(c.env.DB);
-  const userId = c.get('userId') as string;
+  const currentUser = c.get('user') as any;
+  
+  if (!currentUser || !currentUser.id) {
+    throw new AppError(401, 'נדרשת התחברות', 'UNAUTHORIZED');
+  }
+  
+  const userId = currentUser.id;
 
   try {
-    const user = await db.select().from(users).where(eq(users.clerkId, userId)).get();
+    const user = await db.select().from(users).where(eq(users.id, userId)).get();
     
     if (!user) {
       return c.json({ success: true, events: [] });
@@ -156,11 +154,17 @@ eventsRouter.get('/events', async (c) => {
  */
 eventsRouter.get('/events/:id', async (c) => {
   const db = initDb(c.env.DB);
-  const userId = c.get('userId') as string;
+  const currentUser = c.get('user') as any;
+  
+  if (!currentUser || !currentUser.id) {
+    throw new AppError(401, 'נדרשת התחברות', 'UNAUTHORIZED');
+  }
+  
+  const userId = currentUser.id;
   const eventId = c.req.param('id');
 
   try {
-    const user = await db.select().from(users).where(eq(users.clerkId, userId)).get();
+    const user = await db.select().from(users).where(eq(users.id, userId)).get();
     
     if (!user) {
       throw new AppError(404, 'משתמש לא נמצא', 'USER_NOT_FOUND');
@@ -210,12 +214,18 @@ eventsRouter.get('/events/:id', async (c) => {
  */
 eventsRouter.put('/events/:id', zValidator('json', updateEventSchema), async (c) => {
   const db = initDb(c.env.DB);
-  const userId = c.get('userId') as string;
+  const currentUser = c.get('user') as any;
+  
+  if (!currentUser || !currentUser.id) {
+    throw new AppError(401, 'נדרשת התחברות', 'UNAUTHORIZED');
+  }
+  
+  const userId = currentUser.id;
   const eventId = c.req.param('id');
   const data = c.req.valid('json');
 
   try {
-    const user = await db.select().from(users).where(eq(users.clerkId, userId)).get();
+    const user = await db.select().from(users).where(eq(users.id, userId)).get();
     
     if (!user) {
       throw new AppError(404, 'משתמש לא נמצא', 'USER_NOT_FOUND');
@@ -286,11 +296,17 @@ eventsRouter.put('/events/:id', zValidator('json', updateEventSchema), async (c)
  */
 eventsRouter.delete('/events/:id', async (c) => {
   const db = initDb(c.env.DB);
-  const userId = c.get('userId') as string;
+  const currentUser = c.get('user') as any;
+  
+  if (!currentUser || !currentUser.id) {
+    throw new AppError(401, 'נדרשת התחברות', 'UNAUTHORIZED');
+  }
+  
+  const userId = currentUser.id;
   const eventId = c.req.param('id');
 
   try {
-    const user = await db.select().from(users).where(eq(users.clerkId, userId)).get();
+    const user = await db.select().from(users).where(eq(users.id, userId)).get();
     
     if (!user) {
       throw new AppError(404, 'משתמש לא נמצא', 'USER_NOT_FOUND');
