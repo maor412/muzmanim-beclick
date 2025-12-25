@@ -2,10 +2,20 @@ import { Context, Next } from 'hono';
 import { checkRateLimit, AppError } from '../lib/utils';
 
 /**
- * Rate limiting middleware
+ * Rate limiting middleware with optional bypass for authenticated users
  */
-export function rateLimiter(maxRequests: number = 10, windowMs: number = 60000) {
+export function rateLimiter(maxRequests: number = 10, windowMs: number = 60000, bypassAuth: boolean = false) {
   return async (c: Context, next: Next) => {
+    // If bypassAuth is enabled and user is authenticated, skip rate limiting
+    if (bypassAuth) {
+      const user = c.get('user');
+      if (user && user.id) {
+        // Authenticated user - skip rate limiting
+        await next();
+        return;
+      }
+    }
+    
     const ip = c.req.header('cf-connecting-ip') || 
                c.req.header('x-forwarded-for') || 
                c.req.header('x-real-ip') || 
@@ -29,9 +39,9 @@ export const rsvpRateLimiter = rateLimiter(50, 60000); // 50 בקשות לדקה
 
 /**
  * Rate limiter רגיל ל-API endpoints
- * בסביבת פיתוח מאוד מקל
+ * משתמשים מחוברים לא מוגבלים
  */
-export const apiRateLimiter = rateLimiter(100, 60000); // 100 בקשות לדקה (הוגדל לפיתוח)
+export const apiRateLimiter = rateLimiter(100, 60000, true); // 100 בקשות לדקה, bypass for authenticated users
 
 /**
  * Rate limiter מקל ל-Auth endpoints
