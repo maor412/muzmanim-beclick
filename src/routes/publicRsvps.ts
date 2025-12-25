@@ -2,7 +2,7 @@ import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import { eq, and, like } from 'drizzle-orm';
 import { initDb } from '../db';
-import { rsvps, events, eventSettings } from '../db/schema';
+import { rsvps, events, eventSettings, guests } from '../db/schema';
 import { rsvpRateLimiter } from '../middleware/rateLimit';
 import { 
   createRsvpSchema 
@@ -102,10 +102,14 @@ publicRsvpsRouter.post('/:slug', rsvpRateLimiter, zValidator('json', createRsvpS
       throw new AppError(400, 'מספר טלפון נדרש לאירוע זה', 'PHONE_REQUIRED');
     }
 
-    // בדיקת כפילויות - אם כבר קיים RSVP לאותו אדם
+    // בדיקת כפילויות - אם כבר קיים RSVP או Guest לאותו אדם
     let existingRsvp = null;
+    let existingGuest = null;
+    
     if (data.phone) {
       const formattedPhone = formatPhoneE164(data.phone);
+      
+      // בדיקה ב-RSVPs
       existingRsvp = await db
         .select()
         .from(rsvps)
@@ -116,6 +120,20 @@ publicRsvpsRouter.post('/:slug', rsvpRateLimiter, zValidator('json', createRsvpS
           )
         )
         .get();
+      
+      // בדיקה ב-Guests
+      if (!existingRsvp) {
+        existingGuest = await db
+          .select()
+          .from(guests)
+          .where(
+            and(
+              eq(guests.eventId, event.id),
+              eq(guests.phone, formattedPhone)
+            )
+          )
+          .get();
+      }
     } else {
       // אם אין טלפון, בדוק לפי שם בלבד
       existingRsvp = await db
@@ -128,6 +146,32 @@ publicRsvpsRouter.post('/:slug', rsvpRateLimiter, zValidator('json', createRsvpS
           )
         )
         .get();
+      
+      if (!existingRsvp) {
+        existingGuest = await db
+          .select()
+          .from(guests)
+          .where(
+            and(
+              eq(guests.eventId, event.id),
+              like(guests.fullName, `%${data.fullName.trim()}%`)
+            )
+          )
+          .get();
+      }
+    }
+
+    // אם קיים Guest - נציג הודעה ידידותית
+    if (existingGuest) {
+      return c.json({
+        success: true,
+        message: 'תודה! קיבלנו את אישור ההגעה שלך. שמך כבר רשום ברשימת המוזמנים שלנו',
+        rsvp: {
+          id: existingGuest.id,
+          attendingCount: data.attendingCount,
+          status: data.attendingCount > 0 ? 'confirmed' : 'declined'
+        }
+      });
     }
 
     // אם קיים RSVP ו-allowUpdates מופעל, נעדכן במקום ליצור
