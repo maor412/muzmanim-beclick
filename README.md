@@ -3,23 +3,32 @@
 מערכת מקצועית מלאה לניהול מוזמנים לחתונה בעברית עם תמיכה מלאה ב-RTL.
 
 > **✅ Production-Ready**: המערכת מוכנה לשימוש מיידי!  
-> **Dev Auth Mode** מובנה מאפשר התחברות עם משתמשי בדיקה ללא Clerk/OAuth.
+> **Authentication System**: מערכת אימות מלאה עם **Magic Link** ו-**Google OAuth**
 
 ## 🌐 קישורים
 
-- **Production**: `https://webapp.pages.dev` (לאחר deployment)
+- **Production**: `https://webapp-cio.pages.dev`
+- **Login**: `https://webapp-cio.pages.dev/login`
+- **Latest Deploy**: `https://4e12e699.webapp-cio.pages.dev`
 - **API Health**: `/api/health`
-- **Dev Login**: `/dev-login`
+- **Dev Login** (for development): `/dev-login`
 - **Public RSVP Demo**: `/e/wedding-demo-abc123`
 
 ## ✨ תכונות עיקריות
 
-### 🔐 **Dev Auth Mode (מצב פיתוח מובנה)**
-- **התחברות ללא מפתחות חיצוניים**: `/dev-login` עם משתמשי בדיקה מוכנים
-- **Session Management מאובטח**: Cookies מוצפנים עם HMAC
-- **RBAC בסיסי**: בדיקת בעלות על אירועים
-- **מצב Demo**: עובד מקופסה ללא תלות ב-Clerk או OAuth
-- **ניתן למעבר לפרודקשן**: תמיכה מלאה ב-Clerk בהגדרת המפתחות
+### 🔐 **Authentication System (מערכת אימות מלאה)**
+- **Magic Link (קישור קסם)**: התחברות ללא סיסמה - רק אימייל
+  - משתמש מזין אימייל → מקבל לינק למייל → לוחץ → מחובר
+  - אין צורך לזכור סיסמאות
+  - קישורים בתוקף ל-15 דקות
+- **Google OAuth**: התחברות עם חשבון Google בלחיצה
+  - כפתור "התחבר עם Google"
+  - אין צורך בהרשמה נפרדת
+- **Session Management מאובטח**: JWT tokens עם תוקף של 7 ימים
+- **100% חינמי**: 
+  - Resend (100 magic links ליום)
+  - Google OAuth (ללא הגבלה)
+  - Cloudflare D1 (עד 5GB חינמי)
 
 ### 📱 **RSVP ציבורי משודרג**
 - לינק ייחודי לכל אירוע (`/e/:slug`)
@@ -88,7 +97,9 @@
 - **Copy/Paste**: העתקה ללוח להדבקה ידנית
 
 ### 🔒 **אבטחה מלאה**
-- אימות Clerk: Google, Email, Apple, Facebook
+- **Authentication**: Magic Link + Google OAuth
+- **JWT Tokens**: תוקף 7 ימים, חתימה מאובטחת
+- **Session Management**: D1-based sessions עם expiration
 - **Rate limiting מותאם**:
   - RSVP: 50 בקשות לדקה
   - API: 100 בקשות לדקה
@@ -124,8 +135,9 @@
 ### דרישות מוקדמות
 - Node.js 18+
 - npm
-- (אופציונלי) חשבון Cloudflare (חינמי)
-- (אופציונלי) חשבון Clerk (חינמי)
+- חשבון Cloudflare (חינמי) להרצת local D1
+- (אופציונלי) Google OAuth credentials
+- (אופציונלי) Resend API key למייל
 
 ### 1. Clone והתקנה
 
@@ -135,20 +147,27 @@ cd webapp
 npm install
 ```
 
-### 2. הגדרת משתני סביבה (אופציונלי)
+### 2. הגדרת משתני סביבה
 
 צור קובץ `.dev.vars`:
 
 ```env
-# Dev Auth Mode (מובנה)
-DEV_AUTH=true
-COOKIE_SECRET=your-secret-key-min-32-chars
-BASE_URL=http://localhost:3000
+# App Configuration
+APP_URL=http://localhost:3000
+JWT_SECRET=your-super-secret-jwt-key-at-least-32-chars
 
-# Clerk (אופציונלי - לפרודקשן)
-CLERK_PUBLISHABLE_KEY=pk_test_xxx
-CLERK_SECRET_KEY=sk_test_xxx
+# Resend API (for Magic Link email)
+RESEND_API_KEY=re_xxx
+
+# Google OAuth
+GOOGLE_CLIENT_ID=xxx.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=GOCSPX-xxx
+
+# Dev Auth (for development bypass)
+DEV_AUTH=true
 ```
+
+**הערה**: אם אתה רוצה לעבוד בלי אימות אמיתי בפיתוח, השאר רק `DEV_AUTH=true` והשאר יכולים להישאר ריקים.
 
 ### 3. הגדרת Database
 
@@ -191,7 +210,10 @@ npm run dev:sandbox
 # Health check
 curl http://localhost:3000/api/health
 
-# Dev login page
+# Login page
+http://localhost:3000/login
+
+# Dev login page (for development bypass)
 http://localhost:3000/dev-login
 
 # Public RSVP demo
@@ -252,19 +274,33 @@ npx wrangler pages project create webapp \
   --compatibility-date 2024-01-01
 ```
 
-### שלב 5: הגדרת Secrets (אופציונלי - לפרודקשן)
+### שלב 5: הגדרת Secrets
 
 ```bash
-# הגדר Clerk keys (אם משתמשים)
-npx wrangler pages secret put CLERK_PUBLISHABLE_KEY --project-name webapp
-npx wrangler pages secret put CLERK_SECRET_KEY --project-name webapp
+# App URL
+npx wrangler pages secret put APP_URL --project-name webapp
+# הזן: https://webapp-cio.pages.dev
 
-# הגדר Cookie secret
-npx wrangler pages secret put COOKIE_SECRET --project-name webapp
+# JWT Secret (generate strong random key)
+openssl rand -hex 32 | npx wrangler pages secret put JWT_SECRET --project-name webapp
 
-# הגדר Base URL
-npx wrangler pages secret put BASE_URL --project-name webapp
+# Resend API Key
+npx wrangler pages secret put RESEND_API_KEY --project-name webapp
+# הזן: re_xxx
+
+# Google OAuth
+npx wrangler pages secret put GOOGLE_CLIENT_ID --project-name webapp
+# הזן: xxx.apps.googleusercontent.com
+
+npx wrangler pages secret put GOOGLE_CLIENT_SECRET --project-name webapp
+# הזן: GOCSPX-xxx
 ```
+
+**הערות חשובות**:
+- **APP_URL**: שנה ל-URL הסופי שלך (לא localhost)
+- **JWT_SECRET**: חייב להיות מחרוזת אקראית חזקה (32+ תווים)
+- **Resend API Key**: קבל ב-https://resend.com (חינמי, 100 emails/day)
+- **Google OAuth**: צור ב-Google Cloud Console → APIs & Services → Credentials
 
 ### שלב 6: Deploy
 
@@ -282,11 +318,34 @@ npx wrangler pages deploy dist --project-name webapp
 
 ```bash
 # Health check
-curl https://webapp.pages.dev/api/health
+curl https://webapp-cio.pages.dev/api/health
 
-# Test dev login
-https://webapp.pages.dev/dev-login
+# Test login page
+https://webapp-cio.pages.dev/login
+
+# Test dev login (for development)
+https://webapp-cio.pages.dev/dev-login
 ```
+
+### שלב 8: הגדרת Google OAuth Redirect URIs
+
+עבור ל-Google Cloud Console → OAuth credentials → ערוך את ה-Client ID:
+
+הוסף **Authorized redirect URIs**:
+```
+https://webapp-cio.pages.dev/api/auth/google/callback
+http://localhost:3000/api/auth/google/callback
+```
+
+### שלב 9 (אופציונלי): הגדרת Resend Domain
+
+לשליחת מיילים מדומיין מותאם אישית (לא נדרש למדת חינמי):
+1. היכנס ל-https://resend.com
+2. עבור ל-Domains
+3. הוסף את הדומיין שלך
+4. הגדר DNS records (SPF, DKIM)
+
+**ללא זה**, מיילים נשלחים מ-`onboarding@resend.dev` (עובד מצוין למימוש חינמי)
 
 ## 📁 מבנה הפרויקט
 
@@ -339,9 +398,28 @@ webapp/
 
 ### Users
 משתמשים רשומים (בעלי אירועים)
-- `id` (primary key, hex string)
-- `clerkId` (unique, nullable)
-- `email`, `fullName`
+- `id` (primary key, text UUID)
+- `email` (unique, not null)
+- `full_name` (nullable)
+- `avatar_url` (nullable)
+- `auth_provider` ('magic-link' | 'google')
+- `google_id` (nullable, unique)
+- `created_at`, `last_login`
+
+### Magic Links
+קישורי קסם זמניים (נמחקים לאחר שימוש)
+- `id` (primary key, text UUID)
+- `email` (not null)
+- `token` (unique, expires in 15 minutes)
+- `expires_at`, `used` (boolean)
+
+### Sessions
+סשנים אקטיביים של משתמשים
+- `id` (primary key, text UUID)
+- `user_id` (foreign key → users)
+- `token` (JWT, unique)
+- `expires_at` (7 days from creation)
+- `created_at`
 
 ### Events
 אירועים (חתונות)
@@ -399,8 +477,13 @@ webapp/
 - `POST /api/rsvp/:slug` - יצירת/עדכון RSVP
 
 ### Authentication
-- `POST /api/auth/dev-login` - התחברות dev mode
-- `POST /api/auth/logout` - יציאה
+- `POST /api/auth/magic-link` - שליחת קישור קסם למייל
+- `GET /api/auth/verify/:token` - אימות קישור קסם
+- `GET /api/auth/google` - התחברות Google (redirect)
+- `GET /api/auth/google/callback` - Google callback
+- `GET /api/auth/me` - פרטי משתמש מחובר
+- `POST /api/auth/logout` - התנתקות
+- `POST /api/auth/dev-login` - התחברות dev mode (development only)
 
 ### Events
 - `GET /api/events` - רשימת אירועים (שלי)
@@ -525,7 +608,13 @@ npm run test             # Health check
 
 ## 📝 תכונות שהושלמו
 
-- [x] ✅ Dev Auth Mode
+- [x] ✅ **Authentication System (Magic Link + Google OAuth)**
+  - [x] Magic Link (email without password)
+  - [x] Google OAuth integration
+  - [x] JWT session management
+  - [x] D1-based sessions
+  - [x] Resend email integration
+- [x] ✅ Dev Auth Mode (for development)
 - [x] ✅ Public RSVP with ICS download
 - [x] ✅ Event Management Dashboard (8 tabs)
 - [x] ✅ Guest CRUD operations
