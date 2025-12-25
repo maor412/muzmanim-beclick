@@ -1,4 +1,4 @@
-export const eventManagementPage = `
+export const eventManagementPage = () => `
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
@@ -799,7 +799,7 @@ export const eventManagementPage = `
     <!-- Modals will go here -->
     
     <script src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"></script>
-    <script src="/static/event-management.js"></script>
+    <script src="/static/event-management.js?v=${Date.now()}"></script>
 </body>
 </html>
 `;

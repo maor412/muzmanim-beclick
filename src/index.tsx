@@ -262,7 +262,7 @@ app.get('/dashboard', (c) => c.html(dashboardPage));
 app.get('/create-event', (c) => c.html(createEventPage));
 
 // Event Management
-app.get('/event/:id', (c) => c.html(eventManagementPage));
+app.get('/event/:id', (c) => c.html(eventManagementPage()));
 
 // Global error handler
 app.onError((err, c) => {
