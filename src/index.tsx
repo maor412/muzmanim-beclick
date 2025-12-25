@@ -72,7 +72,9 @@ app.get('/api/health', (c) => {
   });
 });
 
-// API Routes
+// API Routes (order matters!)
+// Mount public routes FIRST (before protected routers with auth middleware)
+app.route('/api/rsvp', publicRsvpsRouter);         // Public RSVP routes (:slug, :slug/event) - NO AUTH
 app.route('/api/auth', authRouter);
 app.route('/api/auth/google', googleRouter);
 app.route('/api', eventsRouter);
@@ -81,7 +83,6 @@ app.route('/api', tablesRouter);
 app.route('/api', seatingRouter);
 app.route('/api', checkinsRouter);
 app.route('/api/events', rsvpsRouter);            // Protected RSVP routes (/:eventId/rsvps)
-app.route('/api/rsvp', publicRsvpsRouter);         // Public RSVP routes (:slug, :slug/event)
 
 // Public RSVP page by slug
 app.get('/e/:slug', async (c) => {
