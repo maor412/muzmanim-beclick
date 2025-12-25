@@ -123,9 +123,8 @@ app.route('/api', guestsRouter);
 app.route('/api', tablesRouter);
 app.route('/api', seatingRouter);
 app.route('/api', checkinsRouter);
-// NOTE: rsvpsRouter is NOT mounted on /api anymore!
-// Protected RSVP routes (/events/:eventId/rsvps) now in events router
-app.route('/api/rsvp', publicRsvpsRouter);  // Public RSVP routes ONLY (/:slug, /:slug/event)
+app.route('/api/events', rsvpsRouter);            // Protected RSVP routes (/:eventId/rsvps)
+app.route('/api/rsvp', publicRsvpsRouter);         // Public RSVP routes (:slug, :slug/event)
 
 // Public RSVP page by slug
 app.get('/e/:slug', async (c) => {

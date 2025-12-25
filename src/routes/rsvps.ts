@@ -221,7 +221,7 @@ rsvpsRouter.post('/:slug', rsvpRateLimiter, zValidator('json', createRsvpSchema)
  * קבלת כל ה-RSVPs של אירוע (רק לבעלים)
  * GET /api/events/:eventId/rsvps
  */
-rsvpsRouter.get('/events/:eventId/rsvps', authMiddleware, apiRateLimiter, async (c) => {
+rsvpsRouter.get('/:eventId/rsvps', authMiddleware, apiRateLimiter, async (c) => {
   const db = initDb(c.env.DB);
   const currentUser = c.get('user') as any;
   if (!currentUser || !currentUser.id) {
