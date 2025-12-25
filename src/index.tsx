@@ -12,6 +12,7 @@ import tablesRouter from './routes/tables';
 import seatingRouter from './routes/seating';
 import checkinsRouter from './routes/checkins';
 import authRouter from './routes/auth';
+import googleRouter from './routes/google';
 
 // Middleware
 import { AppError } from './lib/utils';
@@ -27,6 +28,9 @@ import {
   accessibilityPage 
 } from './pages/static';
 import { devLoginPage } from './pages/devLogin';
+import { loginPage } from './pages/login';
+import { authSuccessPage } from './pages/authSuccess';
+import { authVerifyPage } from './pages/authVerify';
 import { dashboardPage } from './pages/dashboard';
 import { createEventPage } from './pages/createEvent';
 import { eventManagementPage } from './pages/eventManagement';
@@ -69,6 +73,7 @@ app.get('/api/health', (c) => {
 
 // API Routes
 app.route('/api/auth', authRouter);
+app.route('/api/auth/google', googleRouter);
 app.route('/api', eventsRouter);
 app.route('/api/rsvp', rsvpsRouter);  // Public RSVP routes (/:slug, /:slug/event)
 app.route('/api', rsvpsRouter);       // Protected RSVP routes (/events/:eventId/rsvps)
@@ -232,8 +237,12 @@ app.get('/accessibility', (c) => c.html(accessibilityPage));
 
 // Dev login page
 app.get('/dev-login', (c) => c.html(devLoginPage));
-app.get('/login', (c) => c.redirect('/dev-login'));
-app.get('/signup', (c) => c.redirect('/dev-login'));
+
+// Auth pages
+app.get('/login', (c) => c.html(loginPage));
+app.get('/auth/verify', (c) => c.html(authVerifyPage));
+app.get('/auth/success', (c) => c.html(authSuccessPage));
+app.get('/signup', (c) => c.redirect('/login'));
 
 // Dashboard
 app.get('/dashboard', (c) => c.html(dashboardPage));
