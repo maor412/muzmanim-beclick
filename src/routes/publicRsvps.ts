@@ -2,7 +2,7 @@ import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import { eq, and, like } from 'drizzle-orm';
 import { initDb } from '../db';
-import { rsvps, events, eventSettings, guests, seating } from '../db/schema';
+import { rsvps, events, eventSettings, guests, seating, tables } from '../db/schema';
 import { rsvpRateLimiter } from '../middleware/rateLimit';
 import { 
   createRsvpSchema 
@@ -189,18 +189,86 @@ publicRsvpsRouter.post('/:slug', rsvpRateLimiter, zValidator('json', createRsvpS
       }
     }
     
-    // אם נמצא Guest קיים - נמחק אותו ונשתמש ב-RSVP במקום
-    // (כי RSVP מכיל יותר מידע: attendingCount, mealChoice וכו')
+    // אם נמצא Guest קיים - נבדוק אם אפשר לשמור על ההושבה
+    let removalNote = null;
+    let existingSeating = null;
     if (existingGuest && !existingRsvp) {
       console.log(`🔄 Found existing guest "${existingGuest.fullName}", converting to RSVP`);
       
-      // מחק את ההושבה של ה-Guest הישן (אם קיימת)
-      await db
-        .delete(seating)
+      // בדוק אם ה-Guest יושב בשולחן (שמור את זה לפני מחיקת ה-Guest)
+      existingSeating = await db
+        .select()
+        .from(seating)
         .where(eq(seating.guestId, existingGuest.id))
-        .run();
+        .get();
       
-      // מחק את ה-Guest
+      if (existingSeating) {
+        // טען את פרטי השולחן
+        const table = await db
+          .select()
+          .from(tables)
+          .where(eq(tables.id, existingSeating.tableId))
+          .get();
+        
+        if (table) {
+          // חשב כמה מקומות תפוסים בשולחן (כולל ה-RSVP החדש)
+          const tableSeating = await db
+            .select()
+            .from(seating)
+            .where(eq(seating.tableId, existingSeating.tableId))
+            .all();
+          
+          // חשב תפוסה נוכחית - ספור גם Guests וגם RSVPs
+          let totalOccupied = 0;
+          
+          for (const s of tableSeating) {
+            if (s.guestId === existingGuest.id) {
+              // דלג על האורח הנוכחי
+              continue;
+            }
+            
+            if (s.rsvpId) {
+              // טען את ה-RSVP וספור את attendingCount
+              const rsvp = await db
+                .select()
+                .from(rsvps)
+                .where(eq(rsvps.id, s.rsvpId))
+                .get();
+              
+              if (rsvp) {
+                totalOccupied += rsvp.attendingCount || 1;
+              }
+            } else if (s.guestId) {
+              // Guest = 1 אדם
+              totalOccupied += 1;
+            }
+          }
+          
+          const newAttendingCount = data.attendingCount || 1;
+          const availableSeats = table.capacity - totalOccupied;
+          
+          console.log(`📊 Table "${table.tableName}": capacity=${table.capacity}, occupied=${totalOccupied}, new=${newAttendingCount}, available=${availableSeats}`);
+          
+          if (newAttendingCount <= availableSeats) {
+            // יש מקום - נעדכן את ההושבה מ-Guest ל-RSVP (לאחר יצירת ה-RSVP)
+            console.log(`✅ Keeping seating at table "${table.tableName}"`);
+          } else {
+            // אין מקום - נמחק את ההושבה ונוסיף הערה
+            console.log(`❌ Not enough space at table "${table.tableName}" (need ${newAttendingCount}, have ${availableSeats})`);
+            removalNote = `הוסר משולחן ${table.tableName}: מספר המלווים (${newAttendingCount}) חורג מהמקומות הפנויים.`;
+            
+            await db
+              .delete(seating)
+              .where(eq(seating.id, existingSeating.id))
+              .run();
+            
+            // אפס את existingSeating כדי שלא ננסה לעדכן אותה מאוחר יותר
+            existingSeating = null;
+          }
+        }
+      }
+      
+      // מחק את ה-Guest (ההושבה כבר טופלה למעלה)
       await db
         .delete(guests)
         .where(eq(guests.id, existingGuest.id))
@@ -245,6 +313,12 @@ publicRsvpsRouter.post('/:slug', rsvpRateLimiter, zValidator('json', createRsvpS
     const ipAddress = c.req.header('cf-connecting-ip') || c.req.header('x-forwarded-for') || 'unknown';
     const userAgent = c.req.header('user-agent') || 'unknown';
 
+    // אם יש הערת הסרה משולחן, נוסיף אותה ל-comment
+    let finalComment = data.comment || null;
+    if (removalNote) {
+      finalComment = finalComment ? `${finalComment}\n\n${removalNote}` : removalNote;
+    }
+
     await db.insert(rsvps).values({
       id: rsvpId,
       eventId: event.id,
@@ -253,11 +327,25 @@ publicRsvpsRouter.post('/:slug', rsvpRateLimiter, zValidator('json', createRsvpS
       attendingCount: data.attendingCount,
       mealChoice: data.mealChoice || null,
       allergies: data.allergies || null,
-      comment: data.comment || null,
+      comment: finalComment,
       consentUpdates: data.consentUpdates ? 1 : 0,
       ipAddress,
       userAgent
     });
+
+    // אם יש הושבה שנשמרה (existingGuest היה מושב ויש מקום), עדכן אותה ל-RSVP
+    if (existingSeating) {
+      console.log(`🔄 Updating seating from Guest to RSVP`);
+      await db
+        .update(seating)
+        .set({
+          guestId: null,
+          rsvpId: rsvpId,
+          updatedAt: new Date().toISOString()
+        })
+        .where(eq(seating.id, existingSeating.id))
+        .run();
+    }
 
     return c.json({
       success: true,
