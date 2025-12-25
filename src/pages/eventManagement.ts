@@ -186,12 +186,12 @@ export const eventManagementPage = `
                 </div>
                 
                 <!-- Guest Groups Chart -->
-                <div class="bg-white rounded-xl shadow-lg p-6">
+                <div class="bg-white rounded-xl shadow-lg p-6" style="max-height: 350px;">
                     <h3 class="text-xl font-bold text-gray-800 mb-4">
                         <i class="fas fa-chart-bar text-purple-500 ml-2"></i>
                         פילוח קבוצות אורחים
                     </h3>
-                    <div style="height: 250px; max-height: 250px;">
+                    <div style="height: 250px; max-height: 250px; overflow: hidden; position: relative;">
                         <canvas id="groups-chart"></canvas>
                     </div>
                 </div>
