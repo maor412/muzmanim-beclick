@@ -477,10 +477,20 @@ function renderSeating() {
             <div class="bg-white rounded-xl shadow-lg p-4 table-drop-zone" 
                  ondrop="drop(event)" ondragover="allowDrop(event)" data-table-id="${table.id}">
                 <div class="flex justify-between items-center mb-3">
-                    <h4 class="font-bold text-lg">${table.tableName}</h4>
-                    <span class="text-sm ${availableSeats > 0 ? 'text-green-600' : 'text-red-600'}">
-                        ${occupiedSeats}/${table.capacity}
-                    </span>
+                    <div>
+                        <h4 class="font-bold text-lg">${table.tableName}</h4>
+                        <span class="text-xs text-gray-500">שולחן ${table.tableNumber}</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-sm ${availableSeats > 0 ? 'text-green-600' : 'text-red-600'}">
+                            ${occupiedSeats}/${table.capacity}
+                        </span>
+                        <button onclick="deleteTable('${table.id}')" 
+                                class="text-red-500 hover:text-red-700 p-1 rounded hover:bg-red-50"
+                                title="מחק שולחן">
+                            <i class="fas fa-trash text-sm"></i>
+                        </button>
+                    </div>
                 </div>
                 <div class="space-y-2 min-h-[100px]">
                     ${tableSeating.map(seat => {
@@ -1667,6 +1677,24 @@ function showAddTableModal() {
     });
 }
 
+// Delete Table
+async function deleteTable(tableId) {
+    if (!confirm('האם אתה בטוח שברצונך למחוק את השולחן? כל האורחים שהושבו בו יחזרו לרשימת המתנה.')) {
+        return;
+    }
+    
+    try {
+        const response = await axios.delete(`/api/tables/${tableId}`);
+        if (response.data.success) {
+            showToast('השולחן נמחק בהצלחה', 'success');
+            loadSeating();
+        }
+    } catch (error) {
+        console.error('Error deleting table:', error);
+        showToast(error.response?.data?.error || 'שגיאה במחיקת השולחן', 'error');
+    }
+}
+
 function viewRsvp(id) {
     const rsvp = allRsvps.find(r => r.id === id);
     if (!rsvp) {
@@ -1905,12 +1933,18 @@ function renderAnalyticsCharts(rsvps, guests, seating, tables) {
         },
         options: {
             responsive: true,
-            maintainAspectRatio: false,
+            maintainAspectRatio: true,
+            aspectRatio: 2,
             plugins: {
                 legend: { display: false }
             },
             scales: {
-                y: { beginAtZero: true }
+                y: { 
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
             }
         }
     });
