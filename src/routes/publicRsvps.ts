@@ -102,14 +102,13 @@ publicRsvpsRouter.post('/:slug', rsvpRateLimiter, zValidator('json', createRsvpS
       throw new AppError(400, 'מספר טלפון נדרש לאירוע זה', 'PHONE_REQUIRED');
     }
 
-    // בדיקת כפילויות - אם כבר קיים RSVP או Guest לאותו אדם
+    // בדיקת כפילויות - אם כבר קיים RSVP (לא בודקים Guests כי הם רק רשימת יעד)
     let existingRsvp = null;
-    let existingGuest = null;
     
     if (data.phone) {
       const formattedPhone = formatPhoneE164(data.phone);
       
-      // בדיקה ב-RSVPs
+      // בדיקה ב-RSVPs לפי טלפון
       existingRsvp = await db
         .select()
         .from(rsvps)
@@ -120,49 +119,6 @@ publicRsvpsRouter.post('/:slug', rsvpRateLimiter, zValidator('json', createRsvpS
           )
         )
         .get();
-      
-      // בדיקה ב-Guests - קודם לפי שם, אחר כך לפי טלפון
-      if (!existingRsvp) {
-        // נסה קודם לפי שם מדויק (עדיפות ראשונה)
-        existingGuest = await db
-          .select()
-          .from(guests)
-          .where(
-            and(
-              eq(guests.eventId, event.id),
-              eq(guests.fullName, data.fullName.trim())
-            )
-          )
-          .get();
-        
-        // אם לא נמצא לפי שם, נסה לפי טלפון בפורמט מקורי
-        if (!existingGuest) {
-          existingGuest = await db
-            .select()
-            .from(guests)
-            .where(
-              and(
-                eq(guests.eventId, event.id),
-                eq(guests.phone, data.phone)
-              )
-            )
-            .get();
-        }
-        
-        // אם עדיין לא נמצא, נסה עם פורמט E164
-        if (!existingGuest) {
-          existingGuest = await db
-            .select()
-            .from(guests)
-            .where(
-              and(
-                eq(guests.eventId, event.id),
-                eq(guests.phone, formattedPhone)
-              )
-            )
-            .get();
-        }
-      }
     } else {
       // אם אין טלפון ב-RSVP, בדוק לפי שם מדויק בלבד
       existingRsvp = await db
@@ -175,32 +131,6 @@ publicRsvpsRouter.post('/:slug', rsvpRateLimiter, zValidator('json', createRsvpS
           )
         )
         .get();
-      
-      if (!existingRsvp) {
-        existingGuest = await db
-          .select()
-          .from(guests)
-          .where(
-            and(
-              eq(guests.eventId, event.id),
-              eq(guests.fullName, data.fullName.trim())
-            )
-          )
-          .get();
-      }
-    }
-
-    // אם קיים Guest - נציג הודעה ידידותית
-    if (existingGuest) {
-      return c.json({
-        success: true,
-        message: 'תודה! קיבלנו את אישור ההגעה שלך. שמך כבר רשום ברשימת המוזמנים שלנו',
-        rsvp: {
-          id: existingGuest.id,
-          attendingCount: data.attendingCount,
-          status: data.attendingCount > 0 ? 'confirmed' : 'declined'
-        }
-      });
     }
 
     // אם קיים RSVP ו-allowUpdates מופעל, נעדכן במקום ליצור
