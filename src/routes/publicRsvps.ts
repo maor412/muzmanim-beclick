@@ -24,6 +24,7 @@ const publicRsvpsRouter = new Hono<{ Bindings: Bindings }>();
  * GET /api/rsvp/:slug/event
  */
 publicRsvpsRouter.get('/:slug/event', async (c) => {
+  console.log('🔵 PUBLIC RSVP ROUTE CALLED:', c.req.param('slug'));
   const db = initDb(c.env.DB);
   const slug = c.req.param('slug');
 
