@@ -54,13 +54,19 @@ rsvpsRouter.get('/:eventId/rsvps', authMiddleware, apiRateLimiter, async (c) => 
 
     const allRsvps = await query.orderBy(desc(rsvps.createdAt)).all();
 
+    // הוספת שדה status מחושב לכל RSVP
+    const rsvpsWithStatus = allRsvps.map(r => ({
+      ...r,
+      status: r.attendingCount > 0 ? 'confirmed' : 'declined'
+    }));
+
     // סינון בצד הקליינט אם יש חיפוש
     const filtered = search 
-      ? allRsvps.filter(r => 
+      ? rsvpsWithStatus.filter(r => 
           r.fullName.toLowerCase().includes(search.toLowerCase()) ||
           r.phone?.includes(search)
         )
-      : allRsvps;
+      : rsvpsWithStatus;
 
     // חישוב סטטיסטיקות
     const totalRsvps = filtered.length;

@@ -126,7 +126,8 @@ publicRsvpsRouter.post('/:slug', rsvpRateLimiter, zValidator('json', createRsvpS
       message: 'תודה רבה! אישור ההגעה נשמר בהצלחה',
       rsvp: {
         id: rsvpId,
-        attendingCount: data.attendingCount
+        attendingCount: data.attendingCount,
+        status: data.attendingCount > 0 ? 'confirmed' : 'declined'
       }
     }, 201);
 
