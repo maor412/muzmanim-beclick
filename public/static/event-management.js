@@ -1889,9 +1889,10 @@ function renderAnalyticsCharts(rsvps, guests, seating, tables) {
     const confirmed = rsvps.filter(r => r.status === 'confirmed').length;
     const declined = rsvps.filter(r => r.status === 'declined').length;
     const pending = rsvps.filter(r => r.status === 'pending').length;
+    const guestsWithoutRsvp = guests.length; // מוזמנים שטרם אישרו הגעה
     
     const rsvpCtx = document.getElementById('rsvp-chart');
-    const totalRsvps = confirmed + declined + pending;
+    const totalRsvps = confirmed + declined + pending + guestsWithoutRsvp;
     
     // Show placeholder if no data
     if (totalRsvps === 0) {
@@ -1919,10 +1920,10 @@ function renderAnalyticsCharts(rsvps, guests, seating, tables) {
         rsvpChart = new Chart(rsvpCtx, {
             type: 'doughnut',
             data: {
-                labels: ['מאושר', 'לא מגיע', 'ממתין'],
+                labels: ['מאושר', 'לא מגיע', 'ממתין', 'טרם אישר'],
                 datasets: [{
-                    data: [confirmed, declined, pending],
-                    backgroundColor: ['#10b981', '#ef4444', '#f59e0b'],
+                    data: [confirmed, declined, pending, guestsWithoutRsvp],
+                    backgroundColor: ['#10b981', '#ef4444', '#f59e0b', '#9ca3af'],
                     borderWidth: 2,
                     borderColor: '#ffffff'
                 }]
@@ -2004,9 +2005,10 @@ function renderAnalyticsCharts(rsvps, guests, seating, tables) {
     const groomSide = [...rsvps, ...guests].filter(p => p.side === 'groom').length;
     const brideSide = [...rsvps, ...guests].filter(p => p.side === 'bride').length;
     const bothSide = [...rsvps, ...guests].filter(p => p.side === 'both').length;
+    const undefinedSide = [...rsvps, ...guests].filter(p => !p.side || p.side === null).length;
     
     const sideCtx = document.getElementById('side-chart');
-    const totalSides = groomSide + brideSide + bothSide;
+    const totalSides = groomSide + brideSide + bothSide + undefinedSide;
     
     // Show placeholder if no data
     if (totalSides === 0) {
@@ -2034,10 +2036,10 @@ function renderAnalyticsCharts(rsvps, guests, seating, tables) {
         sideChart = new Chart(sideCtx, {
             type: 'pie',
             data: {
-                labels: ['צד חתן', 'צד כלה', 'משותף'],
+                labels: ['צד חתן', 'צד כלה', 'משותף', 'לא מוגדר'],
                 datasets: [{
-                    data: [groomSide, brideSide, bothSide],
-                    backgroundColor: ['#3b82f6', '#ec4899', '#8b5cf6'],
+                    data: [groomSide, brideSide, bothSide, undefinedSide],
+                    backgroundColor: ['#3b82f6', '#ec4899', '#8b5cf6', '#9ca3af'],
                     borderWidth: 2,
                     borderColor: '#ffffff'
                 }]
