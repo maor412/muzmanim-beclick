@@ -3,7 +3,7 @@ import { zValidator } from '@hono/zod-validator';
 import { eq, and, desc } from 'drizzle-orm';
 import { initDb } from '../db';
 import { events, eventSettings, users, rsvps, guests, tables, seating, checkins } from '../db/schema';
-import { requireAuth } from '../middleware/auth';
+import { authMiddleware } from '../middleware/auth';
 import { apiRateLimiter } from '../middleware/rateLimit';
 import { logAudit } from '../middleware/audit';
 import { 
@@ -23,7 +23,7 @@ type Bindings = {
 const eventsRouter = new Hono<{ Bindings: Bindings }>();
 
 // כל ה-routes דורשים אימות
-eventsRouter.use('/*', requireAuth);
+eventsRouter.use('/*', authMiddleware);
 eventsRouter.use('/*', apiRateLimiter);
 
 /**

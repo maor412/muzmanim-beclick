@@ -77,8 +77,11 @@ export const dashboardPage = `
 
     <script src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"></script>
     <script>
-        // Configure axios to send cookies
-        axios.defaults.withCredentials = true;
+        // Configure axios with JWT token
+        const token = localStorage.getItem('auth_token');
+        if (token) {
+            axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
+        }
         
         let currentUser = null;
 
@@ -86,17 +89,22 @@ export const dashboardPage = `
         async function checkAuth() {
             try {
                 const response = await axios.get('/api/auth/me');
-                if (response.data.authenticated) {
+                if (response.data.user) {
                     currentUser = response.data.user;
-                    document.getElementById('user-name').textContent = currentUser.name;
+                    document.getElementById('user-name').textContent = currentUser.fullName || currentUser.email;
                     loadEvents();
                 } else {
-                    window.location.href = '/dev-login';
+                    redirectToLogin();
                 }
             } catch (error) {
                 console.error('Auth check failed:', error);
-                window.location.href = '/dev-login';
+                redirectToLogin();
             }
+        }
+        
+        function redirectToLogin() {
+            localStorage.removeItem('auth_token');
+            window.location.href = '/login';
         }
 
         // טעינת אירועים
@@ -181,10 +189,11 @@ export const dashboardPage = `
         async function logout() {
             try {
                 await axios.post('/api/auth/logout');
-                window.location.href = '/';
             } catch (error) {
                 console.error('Logout error:', error);
-                window.location.href = '/';
+            } finally {
+                localStorage.removeItem('auth_token');
+                window.location.href = '/login';
             }
         }
 

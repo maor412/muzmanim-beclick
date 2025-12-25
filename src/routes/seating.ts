@@ -3,7 +3,7 @@ import { zValidator } from '@hono/zod-validator';
 import { eq } from 'drizzle-orm';
 import { initDb } from '../db';
 import { seating, tables, events, users, rsvps, guests } from '../db/schema';
-import { requireAuth } from '../middleware/auth';
+import { authMiddleware } from '../middleware/auth';
 import { apiRateLimiter } from '../middleware/rateLimit';
 import { logAudit } from '../middleware/audit';
 import { createSeatingSchema } from '../lib/validators';
@@ -15,7 +15,7 @@ type Bindings = {
 
 const seatingRouter = new Hono<{ Bindings: Bindings }>();
 
-seatingRouter.use('/*', requireAuth);
+seatingRouter.use('/*', authMiddleware);
 seatingRouter.use('/*', apiRateLimiter);
 
 /**

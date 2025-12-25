@@ -36,7 +36,7 @@ auth.post('/magic-link', async (c) => {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        from: 'מוזמנים בקליק <noreply@yourdomain.com>',
+        from: 'מוזמנים בקליק <onboarding@resend.dev>',
         to: [email],
         subject: 'קישור התחברות למערכת',
         html: `

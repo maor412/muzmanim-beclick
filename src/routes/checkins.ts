@@ -3,7 +3,7 @@ import { zValidator } from '@hono/zod-validator';
 import { eq } from 'drizzle-orm';
 import { initDb } from '../db';
 import { checkins, rsvps, events, users } from '../db/schema';
-import { requireAuth } from '../middleware/auth';
+import { authMiddleware } from '../middleware/auth';
 import { apiRateLimiter } from '../middleware/rateLimit';
 import { logAudit } from '../middleware/audit';
 import { createCheckinSchema } from '../lib/validators';
@@ -15,7 +15,7 @@ type Bindings = {
 
 const checkinsRouter = new Hono<{ Bindings: Bindings }>();
 
-checkinsRouter.use('/*', requireAuth);
+checkinsRouter.use('/*', authMiddleware);
 checkinsRouter.use('/*', apiRateLimiter);
 
 /**

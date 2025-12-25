@@ -4,7 +4,7 @@ import { eq, and, desc, like } from 'drizzle-orm';
 import { initDb } from '../db';
 import { rsvps, events, eventSettings } from '../db/schema';
 import { rsvpRateLimiter, apiRateLimiter } from '../middleware/rateLimit';
-import { requireAuth } from '../middleware/auth';
+import { authMiddleware } from '../middleware/auth';
 import { logAudit } from '../middleware/audit';
 import { 
   createRsvpSchema, 
@@ -221,7 +221,7 @@ rsvpsRouter.post('/:slug', rsvpRateLimiter, zValidator('json', createRsvpSchema)
  * קבלת כל ה-RSVPs של אירוע (רק לבעלים)
  * GET /api/events/:eventId/rsvps
  */
-rsvpsRouter.get('/events/:eventId/rsvps', requireAuth, apiRateLimiter, async (c) => {
+rsvpsRouter.get('/events/:eventId/rsvps', authMiddleware, apiRateLimiter, async (c) => {
   const db = initDb(c.env.DB);
   const userId = c.get('userId') as string;
   const eventId = c.req.param('eventId');
@@ -292,7 +292,7 @@ rsvpsRouter.get('/events/:eventId/rsvps', requireAuth, apiRateLimiter, async (c)
  * עדכון RSVP (רק לבעלים)
  * PUT /api/rsvps/:id
  */
-rsvpsRouter.put('/:id', requireAuth, apiRateLimiter, zValidator('json', updateRsvpSchema), async (c) => {
+rsvpsRouter.put('/:id', authMiddleware, apiRateLimiter, zValidator('json', updateRsvpSchema), async (c) => {
   const db = initDb(c.env.DB);
   const userId = c.get('userId') as string;
   const rsvpId = c.req.param('id');
@@ -358,7 +358,7 @@ rsvpsRouter.put('/:id', requireAuth, apiRateLimiter, zValidator('json', updateRs
  * מחיקת RSVP (רק לבעלים)
  * DELETE /api/rsvps/:id
  */
-rsvpsRouter.delete('/:id', requireAuth, apiRateLimiter, async (c) => {
+rsvpsRouter.delete('/:id', authMiddleware, apiRateLimiter, async (c) => {
   const db = initDb(c.env.DB);
   const userId = c.get('userId') as string;
   const rsvpId = c.req.param('id');

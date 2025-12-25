@@ -3,7 +3,7 @@ import { zValidator } from '@hono/zod-validator';
 import { eq } from 'drizzle-orm';
 import { initDb } from '../db';
 import { tables, events, users, seating } from '../db/schema';
-import { requireAuth } from '../middleware/auth';
+import { authMiddleware } from '../middleware/auth';
 import { apiRateLimiter } from '../middleware/rateLimit';
 import { logAudit } from '../middleware/audit';
 import { createTableSchema, updateTableSchema } from '../lib/validators';
@@ -15,7 +15,7 @@ type Bindings = {
 
 const tablesRouter = new Hono<{ Bindings: Bindings }>();
 
-tablesRouter.use('/*', requireAuth);
+tablesRouter.use('/*', authMiddleware);
 tablesRouter.use('/*', apiRateLimiter);
 
 /**
