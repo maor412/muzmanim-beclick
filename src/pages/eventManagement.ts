@@ -177,12 +177,14 @@ export const eventManagementPage = `
             <!-- Analytics Charts -->
             <div class="grid md:grid-cols-2 gap-6 mb-8">
                 <!-- RSVP Status Chart -->
-                <div class="bg-white rounded-xl shadow-lg p-6">
+                <div class="bg-white rounded-xl shadow-lg p-6" style="max-height: 350px; overflow: hidden; position: relative;">
                     <h3 class="text-xl font-bold text-gray-800 mb-4">
                         <i class="fas fa-chart-pie text-pink-500 ml-2"></i>
                         סטטוס אישורי הגעה
                     </h3>
-                    <canvas id="rsvp-chart" height="250"></canvas>
+                    <div style="height: 250px; max-height: 250px; overflow: hidden; position: relative;">
+                        <canvas id="rsvp-chart" height="250"></canvas>
+                    </div>
                 </div>
                 
                 <!-- Guest Groups Chart -->
@@ -197,21 +199,25 @@ export const eventManagementPage = `
                 </div>
                 
                 <!-- Seating Progress Chart -->
-                <div class="bg-white rounded-xl shadow-lg p-6">
+                <div class="bg-white rounded-xl shadow-lg p-6" style="max-height: 350px; overflow: hidden; position: relative;">
                     <h3 class="text-xl font-bold text-gray-800 mb-4">
                         <i class="fas fa-chart-line text-blue-500 ml-2"></i>
                         התקדמות הושבה
                     </h3>
-                    <canvas id="seating-chart" height="250"></canvas>
+                    <div style="height: 250px; max-height: 250px; overflow: hidden; position: relative;">
+                        <canvas id="seating-chart" height="250"></canvas>
+                    </div>
                 </div>
                 
                 <!-- Side Distribution Chart -->
-                <div class="bg-white rounded-xl shadow-lg p-6">
+                <div class="bg-white rounded-xl shadow-lg p-6" style="max-height: 350px; overflow: hidden; position: relative;">
                     <h3 class="text-xl font-bold text-gray-800 mb-4">
                         <i class="fas fa-chart-pie text-green-500 ml-2"></i>
                         חלוקה לפי צד (חתן/כלה)
                     </h3>
-                    <canvas id="side-chart" height="250"></canvas>
+                    <div style="height: 250px; max-height: 250px; overflow: hidden; position: relative;">
+                        <canvas id="side-chart" height="250"></canvas>
+                    </div>
                 </div>
             </div>
 
