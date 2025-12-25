@@ -121,18 +121,33 @@ publicRsvpsRouter.post('/:slug', rsvpRateLimiter, zValidator('json', createRsvpS
         )
         .get();
       
-      // בדיקה ב-Guests
+      // בדיקה ב-Guests (גם בפורמט מקורי וגם ב-E164)
       if (!existingRsvp) {
+        // נסה קודם עם הפורמט המקורי
         existingGuest = await db
           .select()
           .from(guests)
           .where(
             and(
               eq(guests.eventId, event.id),
-              eq(guests.phone, formattedPhone)
+              eq(guests.phone, data.phone)
             )
           )
           .get();
+        
+        // אם לא נמצא, נסה עם פורמט E164
+        if (!existingGuest) {
+          existingGuest = await db
+            .select()
+            .from(guests)
+            .where(
+              and(
+                eq(guests.eventId, event.id),
+                eq(guests.phone, formattedPhone)
+              )
+            )
+            .get();
+        }
       }
     } else {
       // אם אין טלפון, בדוק לפי שם בלבד
