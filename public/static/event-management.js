@@ -2002,23 +2002,25 @@ function renderAnalyticsCharts(rsvps, guests, seating, tables) {
     });
     
     // Side Distribution Chart
-    const groomSide = [...rsvps, ...guests].filter(p => p.side === 'groom').length;
-    const brideSide = [...rsvps, ...guests].filter(p => p.side === 'bride').length;
-    const bothSide = [...rsvps, ...guests].filter(p => p.side === 'both').length;
-    const undefinedSide = [...rsvps, ...guests].filter(p => !p.side || p.side === null || p.side === '' || p.side === 'undefined').length;
+    const allPeople = [...rsvps, ...guests];
+    const groomSide = allPeople.filter(p => p.side === 'groom').length;
+    const brideSide = allPeople.filter(p => p.side === 'bride').length;
+    const bothSide = allPeople.filter(p => p.side === 'both').length;
+    // Calculate undefined as: total - (groom + bride + both)
+    const undefinedSide = allPeople.length - (groomSide + brideSide + bothSide);
     
     // Debug logging
     console.log('🔍 Side Chart Debug:', {
-        totalPeople: [...rsvps, ...guests].length,
+        totalPeople: allPeople.length,
         groomSide,
         brideSide,
         bothSide,
         undefinedSide,
-        samplePerson: [...rsvps, ...guests][0]
+        samplePerson: allPeople[0]
     });
     
     const sideCtx = document.getElementById('side-chart');
-    const totalSides = groomSide + brideSide + bothSide + undefinedSide;
+    const totalSides = allPeople.length; // Use total people, not sum of categories
     
     // Show placeholder if no data
     if (totalSides === 0) {
