@@ -75,12 +75,12 @@ app.get('/api/health', (c) => {
 app.route('/api/auth', authRouter);
 app.route('/api/auth/google', googleRouter);
 app.route('/api', eventsRouter);
-app.route('/api/rsvp', rsvpsRouter);  // Public RSVP routes (/:slug, /:slug/event)
-app.route('/api', rsvpsRouter);       // Protected RSVP routes (/events/:eventId/rsvps)
 app.route('/api', guestsRouter);
 app.route('/api', tablesRouter);
 app.route('/api', seatingRouter);
 app.route('/api', checkinsRouter);
+app.route('/api', rsvpsRouter);       // Protected RSVP routes (/events/:eventId/rsvps)
+app.route('/api/rsvp', rsvpsRouter);  // Public RSVP routes - MUST BE LAST (/:slug, /:slug/event)
 
 // Public RSVP page by slug
 app.get('/e/:slug', async (c) => {
