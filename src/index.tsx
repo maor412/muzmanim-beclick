@@ -60,8 +60,8 @@ app.use('/api/*', cors({
 // Dev Authentication middleware
 app.use('*', devAuthMiddleware);
 
-// Serve static files
-app.use('/static/*', serveStatic({ root: './public' }));
+// Serve static files from dist (Cloudflare Pages deployment)
+app.use('/static/*', serveStatic({ root: './' }));
 
 // Health check (before other routes)
 app.get('/api/health', (c) => {
