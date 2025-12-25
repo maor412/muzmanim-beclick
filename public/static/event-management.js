@@ -2003,9 +2003,10 @@ function renderAnalyticsCharts(rsvps, guests, seating, tables) {
     
     // Side Distribution Chart
     const allPeople = [...rsvps, ...guests];
-    const groomSide = allPeople.filter(p => p.side === 'groom').length;
-    const brideSide = allPeople.filter(p => p.side === 'bride').length;
-    const bothSide = allPeople.filter(p => p.side === 'both').length;
+    // Support both English and Hebrew values
+    const groomSide = allPeople.filter(p => p.side === 'groom' || p.side === 'חתן').length;
+    const brideSide = allPeople.filter(p => p.side === 'bride' || p.side === 'כלה').length;
+    const bothSide = allPeople.filter(p => p.side === 'both' || p.side === 'משותף').length;
     // Calculate undefined as: total - (groom + bride + both)
     const undefinedSide = allPeople.length - (groomSide + brideSide + bothSide);
     
