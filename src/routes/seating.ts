@@ -24,7 +24,11 @@ seatingRouter.use('/*', apiRateLimiter);
  */
 seatingRouter.get('/events/:eventId/seating', async (c) => {
   const db = initDb(c.env.DB);
-  const userId = c.get('userId') as string;
+  const currentUser = c.get('user') as any;
+  if (!currentUser || !currentUser.id) {
+    throw new AppError(401, 'נדרשת התחברות', 'UNAUTHORIZED');
+  }
+  const userId = currentUser.id;
   const eventId = c.req.param('eventId');
 
   try {
@@ -35,7 +39,7 @@ seatingRouter.get('/events/:eventId/seating', async (c) => {
     }
 
     const user = await db.query.users.findFirst({
-      where: (users, { eq }) => eq(users.clerkId, userId)
+      where: (users, { eq }) => eq(users.id, userId)
     });
 
     if (!user || event.ownerUserId !== user.id) {
@@ -89,7 +93,11 @@ seatingRouter.get('/events/:eventId/seating', async (c) => {
  */
 seatingRouter.post('/events/:eventId/seating', zValidator('json', createSeatingSchema), async (c) => {
   const db = initDb(c.env.DB);
-  const userId = c.get('userId') as string;
+  const currentUser = c.get('user') as any;
+  if (!currentUser || !currentUser.id) {
+    throw new AppError(401, 'נדרשת התחברות', 'UNAUTHORIZED');
+  }
+  const userId = currentUser.id;
   const eventId = c.req.param('eventId');
   const data = c.req.valid('json');
 
@@ -101,7 +109,7 @@ seatingRouter.post('/events/:eventId/seating', zValidator('json', createSeatingS
     }
 
     const user = await db.query.users.findFirst({
-      where: (users, { eq }) => eq(users.clerkId, userId)
+      where: (users, { eq }) => eq(users.id, userId)
     });
 
     if (!user || event.ownerUserId !== user.id) {
@@ -161,7 +169,11 @@ seatingRouter.post('/events/:eventId/seating', zValidator('json', createSeatingS
  */
 seatingRouter.post('/events/:eventId/seating/bulk', async (c) => {
   const db = initDb(c.env.DB);
-  const userId = c.get('userId') as string;
+  const currentUser = c.get('user') as any;
+  if (!currentUser || !currentUser.id) {
+    throw new AppError(401, 'נדרשת התחברות', 'UNAUTHORIZED');
+  }
+  const userId = currentUser.id;
   const eventId = c.req.param('eventId');
   const data = await c.req.json();
 
@@ -173,7 +185,7 @@ seatingRouter.post('/events/:eventId/seating/bulk', async (c) => {
     }
 
     const user = await db.query.users.findFirst({
-      where: (users, { eq }) => eq(users.clerkId, userId)
+      where: (users, { eq }) => eq(users.id, userId)
     });
 
     if (!user || event.ownerUserId !== user.id) {
@@ -254,7 +266,11 @@ seatingRouter.post('/events/:eventId/seating/bulk', async (c) => {
  */
 seatingRouter.delete('/seating/:id', async (c) => {
   const db = initDb(c.env.DB);
-  const userId = c.get('userId') as string;
+  const currentUser = c.get('user') as any;
+  if (!currentUser || !currentUser.id) {
+    throw new AppError(401, 'נדרשת התחברות', 'UNAUTHORIZED');
+  }
+  const userId = currentUser.id;
   const seatingId = c.req.param('id');
 
   try {
@@ -271,7 +287,7 @@ seatingRouter.delete('/seating/:id', async (c) => {
     }
 
     const user = await db.query.users.findFirst({
-      where: (users, { eq }) => eq(users.clerkId, userId)
+      where: (users, { eq }) => eq(users.id, userId)
     });
 
     if (!user || event.ownerUserId !== user.id) {

@@ -24,7 +24,11 @@ checkinsRouter.use('/*', apiRateLimiter);
  */
 checkinsRouter.get('/events/:eventId/checkins', async (c) => {
   const db = initDb(c.env.DB);
-  const userId = c.get('userId') as string;
+  const currentUser = c.get('user') as any;
+  if (!currentUser || !currentUser.id) {
+    throw new AppError(401, 'נדרשת התחברות', 'UNAUTHORIZED');
+  }
+  const userId = currentUser.id;
   const eventId = c.req.param('eventId');
 
   try {
@@ -35,7 +39,7 @@ checkinsRouter.get('/events/:eventId/checkins', async (c) => {
     }
 
     const user = await db.query.users.findFirst({
-      where: (users, { eq }) => eq(users.clerkId, userId)
+      where: (users, { eq }) => eq(users.id, userId)
     });
 
     if (!user || event.ownerUserId !== user.id) {
@@ -91,7 +95,11 @@ checkinsRouter.get('/events/:eventId/checkins', async (c) => {
  */
 checkinsRouter.post('/events/:eventId/checkins', zValidator('json', createCheckinSchema), async (c) => {
   const db = initDb(c.env.DB);
-  const userId = c.get('userId') as string;
+  const currentUser = c.get('user') as any;
+  if (!currentUser || !currentUser.id) {
+    throw new AppError(401, 'נדרשת התחברות', 'UNAUTHORIZED');
+  }
+  const userId = currentUser.id;
   const eventId = c.req.param('eventId');
   const data = c.req.valid('json');
 
@@ -103,7 +111,7 @@ checkinsRouter.post('/events/:eventId/checkins', zValidator('json', createChecki
     }
 
     const user = await db.query.users.findFirst({
-      where: (users, { eq }) => eq(users.clerkId, userId)
+      where: (users, { eq }) => eq(users.id, userId)
     });
 
     if (!user || event.ownerUserId !== user.id) {
@@ -167,7 +175,11 @@ checkinsRouter.post('/events/:eventId/checkins', zValidator('json', createChecki
  */
 checkinsRouter.delete('/:id', async (c) => {
   const db = initDb(c.env.DB);
-  const userId = c.get('userId') as string;
+  const currentUser = c.get('user') as any;
+  if (!currentUser || !currentUser.id) {
+    throw new AppError(401, 'נדרשת התחברות', 'UNAUTHORIZED');
+  }
+  const userId = currentUser.id;
   const checkinId = c.req.param('id');
 
   try {
@@ -184,7 +196,7 @@ checkinsRouter.delete('/:id', async (c) => {
     }
 
     const user = await db.query.users.findFirst({
-      where: (users, { eq }) => eq(users.clerkId, userId)
+      where: (users, { eq }) => eq(users.id, userId)
     });
 
     if (!user || event.ownerUserId !== user.id) {

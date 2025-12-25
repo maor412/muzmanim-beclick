@@ -223,7 +223,11 @@ rsvpsRouter.post('/:slug', rsvpRateLimiter, zValidator('json', createRsvpSchema)
  */
 rsvpsRouter.get('/events/:eventId/rsvps', authMiddleware, apiRateLimiter, async (c) => {
   const db = initDb(c.env.DB);
-  const userId = c.get('userId') as string;
+  const currentUser = c.get('user') as any;
+  if (!currentUser || !currentUser.id) {
+    throw new AppError(401, 'נדרשת התחברות', 'UNAUTHORIZED');
+  }
+  const userId = currentUser.id;
   const eventId = c.req.param('eventId');
   const search = c.req.query('search') || '';
 
@@ -237,7 +241,7 @@ rsvpsRouter.get('/events/:eventId/rsvps', authMiddleware, apiRateLimiter, async 
 
     // בדיקה שהמשתמש הוא הבעלים
     const user = await db.query.users.findFirst({
-      where: (users, { eq }) => eq(users.clerkId, userId)
+      where: (users, { eq }) => eq(users.id, userId)
     });
 
     if (!user || event.ownerUserId !== user.id) {
@@ -294,7 +298,11 @@ rsvpsRouter.get('/events/:eventId/rsvps', authMiddleware, apiRateLimiter, async 
  */
 rsvpsRouter.put('/:id', authMiddleware, apiRateLimiter, zValidator('json', updateRsvpSchema), async (c) => {
   const db = initDb(c.env.DB);
-  const userId = c.get('userId') as string;
+  const currentUser = c.get('user') as any;
+  if (!currentUser || !currentUser.id) {
+    throw new AppError(401, 'נדרשת התחברות', 'UNAUTHORIZED');
+  }
+  const userId = currentUser.id;
   const rsvpId = c.req.param('id');
   const data = c.req.valid('json');
 
@@ -313,7 +321,7 @@ rsvpsRouter.put('/:id', authMiddleware, apiRateLimiter, zValidator('json', updat
     }
 
     const user = await db.query.users.findFirst({
-      where: (users, { eq }) => eq(users.clerkId, userId)
+      where: (users, { eq }) => eq(users.id, userId)
     });
 
     if (!user || event.ownerUserId !== user.id) {
@@ -360,7 +368,11 @@ rsvpsRouter.put('/:id', authMiddleware, apiRateLimiter, zValidator('json', updat
  */
 rsvpsRouter.delete('/:id', authMiddleware, apiRateLimiter, async (c) => {
   const db = initDb(c.env.DB);
-  const userId = c.get('userId') as string;
+  const currentUser = c.get('user') as any;
+  if (!currentUser || !currentUser.id) {
+    throw new AppError(401, 'נדרשת התחברות', 'UNAUTHORIZED');
+  }
+  const userId = currentUser.id;
   const rsvpId = c.req.param('id');
 
   try {
@@ -377,7 +389,7 @@ rsvpsRouter.delete('/:id', authMiddleware, apiRateLimiter, async (c) => {
     }
 
     const user = await db.query.users.findFirst({
-      where: (users, { eq }) => eq(users.clerkId, userId)
+      where: (users, { eq }) => eq(users.id, userId)
     });
 
     if (!user || event.ownerUserId !== user.id) {

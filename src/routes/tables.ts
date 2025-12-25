@@ -24,7 +24,11 @@ tablesRouter.use('/*', apiRateLimiter);
  */
 tablesRouter.get('/events/:eventId/tables', async (c) => {
   const db = initDb(c.env.DB);
-  const userId = c.get('userId') as string;
+  const currentUser = c.get('user') as any;
+  if (!currentUser || !currentUser.id) {
+    throw new AppError(401, 'נדרשת התחברות', 'UNAUTHORIZED');
+  }
+  const userId = currentUser.id;
   const eventId = c.req.param('eventId');
 
   try {
@@ -35,7 +39,7 @@ tablesRouter.get('/events/:eventId/tables', async (c) => {
     }
 
     const user = await db.query.users.findFirst({
-      where: (users, { eq }) => eq(users.clerkId, userId)
+      where: (users, { eq }) => eq(users.id, userId)
     });
 
     if (!user || event.ownerUserId !== user.id) {
@@ -81,7 +85,11 @@ tablesRouter.get('/events/:eventId/tables', async (c) => {
  */
 tablesRouter.post('/events/:eventId/tables', zValidator('json', createTableSchema), async (c) => {
   const db = initDb(c.env.DB);
-  const userId = c.get('userId') as string;
+  const currentUser = c.get('user') as any;
+  if (!currentUser || !currentUser.id) {
+    throw new AppError(401, 'נדרשת התחברות', 'UNAUTHORIZED');
+  }
+  const userId = currentUser.id;
   const eventId = c.req.param('eventId');
   const data = c.req.valid('json');
 
@@ -93,7 +101,7 @@ tablesRouter.post('/events/:eventId/tables', zValidator('json', createTableSchem
     }
 
     const user = await db.query.users.findFirst({
-      where: (users, { eq }) => eq(users.clerkId, userId)
+      where: (users, { eq }) => eq(users.id, userId)
     });
 
     if (!user || event.ownerUserId !== user.id) {
@@ -139,7 +147,11 @@ tablesRouter.post('/events/:eventId/tables', zValidator('json', createTableSchem
  */
 tablesRouter.put('/:id', zValidator('json', updateTableSchema), async (c) => {
   const db = initDb(c.env.DB);
-  const userId = c.get('userId') as string;
+  const currentUser = c.get('user') as any;
+  if (!currentUser || !currentUser.id) {
+    throw new AppError(401, 'נדרשת התחברות', 'UNAUTHORIZED');
+  }
+  const userId = currentUser.id;
   const tableId = c.req.param('id');
   const data = c.req.valid('json');
 
@@ -157,7 +169,7 @@ tablesRouter.put('/:id', zValidator('json', updateTableSchema), async (c) => {
     }
 
     const user = await db.query.users.findFirst({
-      where: (users, { eq }) => eq(users.clerkId, userId)
+      where: (users, { eq }) => eq(users.id, userId)
     });
 
     if (!user || event.ownerUserId !== user.id) {
@@ -201,7 +213,11 @@ tablesRouter.put('/:id', zValidator('json', updateTableSchema), async (c) => {
  */
 tablesRouter.delete('/:id', async (c) => {
   const db = initDb(c.env.DB);
-  const userId = c.get('userId') as string;
+  const currentUser = c.get('user') as any;
+  if (!currentUser || !currentUser.id) {
+    throw new AppError(401, 'נדרשת התחברות', 'UNAUTHORIZED');
+  }
+  const userId = currentUser.id;
   const tableId = c.req.param('id');
 
   try {
@@ -218,7 +234,7 @@ tablesRouter.delete('/:id', async (c) => {
     }
 
     const user = await db.query.users.findFirst({
-      where: (users, { eq }) => eq(users.clerkId, userId)
+      where: (users, { eq }) => eq(users.id, userId)
     });
 
     if (!user || event.ownerUserId !== user.id) {

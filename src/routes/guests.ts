@@ -24,7 +24,11 @@ guestsRouter.use('/*', apiRateLimiter);
  */
 guestsRouter.get('/events/:eventId/guests', async (c) => {
   const db = initDb(c.env.DB);
-  const userId = c.get('userId') as string;
+  const currentUser = c.get('user') as any;
+  if (!currentUser || !currentUser.id) {
+    throw new AppError(401, 'נדרשת התחברות', 'UNAUTHORIZED');
+  }
+  const userId = currentUser.id;
   const eventId = c.req.param('eventId');
 
   try {
@@ -35,7 +39,7 @@ guestsRouter.get('/events/:eventId/guests', async (c) => {
     }
 
     const user = await db.query.users.findFirst({
-      where: (users, { eq }) => eq(users.clerkId, userId)
+      where: (users, { eq }) => eq(users.id, userId)
     });
 
     if (!user || event.ownerUserId !== user.id) {
@@ -69,7 +73,11 @@ guestsRouter.get('/events/:eventId/guests', async (c) => {
  */
 guestsRouter.post('/events/:eventId/guests', zValidator('json', createGuestSchema), async (c) => {
   const db = initDb(c.env.DB);
-  const userId = c.get('userId') as string;
+  const currentUser = c.get('user') as any;
+  if (!currentUser || !currentUser.id) {
+    throw new AppError(401, 'נדרשת התחברות', 'UNAUTHORIZED');
+  }
+  const userId = currentUser.id;
   const eventId = c.req.param('eventId');
   const data = c.req.valid('json');
 
@@ -81,7 +89,7 @@ guestsRouter.post('/events/:eventId/guests', zValidator('json', createGuestSchem
     }
 
     const user = await db.query.users.findFirst({
-      where: (users, { eq }) => eq(users.clerkId, userId)
+      where: (users, { eq }) => eq(users.id, userId)
     });
 
     if (!user || event.ownerUserId !== user.id) {
@@ -128,7 +136,11 @@ guestsRouter.post('/events/:eventId/guests', zValidator('json', createGuestSchem
  */
 guestsRouter.post('/events/:eventId/guests/bulk', zValidator('json', bulkGuestsSchema), async (c) => {
   const db = initDb(c.env.DB);
-  const userId = c.get('userId') as string;
+  const currentUser = c.get('user') as any;
+  if (!currentUser || !currentUser.id) {
+    throw new AppError(401, 'נדרשת התחברות', 'UNAUTHORIZED');
+  }
+  const userId = currentUser.id;
   const eventId = c.req.param('eventId');
   const guestsData = c.req.valid('json');
 
@@ -140,7 +152,7 @@ guestsRouter.post('/events/:eventId/guests/bulk', zValidator('json', bulkGuestsS
     }
 
     const user = await db.query.users.findFirst({
-      where: (users, { eq }) => eq(users.clerkId, userId)
+      where: (users, { eq }) => eq(users.id, userId)
     });
 
     if (!user || event.ownerUserId !== user.id) {
@@ -190,7 +202,11 @@ guestsRouter.post('/events/:eventId/guests/bulk', zValidator('json', bulkGuestsS
  */
 guestsRouter.put('/guests/:id', zValidator('json', updateGuestSchema), async (c) => {
   const db = initDb(c.env.DB);
-  const userId = c.get('userId') as string;
+  const currentUser = c.get('user') as any;
+  if (!currentUser || !currentUser.id) {
+    throw new AppError(401, 'נדרשת התחברות', 'UNAUTHORIZED');
+  }
+  const userId = currentUser.id;
   const guestId = c.req.param('id');
   const body = c.req.valid('json');
 
@@ -208,7 +224,7 @@ guestsRouter.put('/guests/:id', zValidator('json', updateGuestSchema), async (c)
     }
 
     const user = await db.query.users.findFirst({
-      where: (users, { eq }) => eq(users.clerkId, userId)
+      where: (users, { eq }) => eq(users.id, userId)
     });
 
     if (!user || event.ownerUserId !== user.id) {
@@ -252,7 +268,11 @@ guestsRouter.put('/guests/:id', zValidator('json', updateGuestSchema), async (c)
  */
 guestsRouter.delete('/guests/:id', async (c) => {
   const db = initDb(c.env.DB);
-  const userId = c.get('userId') as string;
+  const currentUser = c.get('user') as any;
+  if (!currentUser || !currentUser.id) {
+    throw new AppError(401, 'נדרשת התחברות', 'UNAUTHORIZED');
+  }
+  const userId = currentUser.id;
   const guestId = c.req.param('id');
 
   try {
@@ -269,7 +289,7 @@ guestsRouter.delete('/guests/:id', async (c) => {
     }
 
     const user = await db.query.users.findFirst({
-      where: (users, { eq }) => eq(users.clerkId, userId)
+      where: (users, { eq }) => eq(users.id, userId)
     });
 
     if (!user || event.ownerUserId !== user.id) {
