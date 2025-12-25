@@ -182,8 +182,11 @@ async function loadOverview() {
         const checkins = checkinsRes.data.checkins || [];
         const seating = seatingRes.data.seating || [];
         
-        // Update stats
-        document.getElementById('stat-rsvps').textContent = rsvps.filter(r => r.status === 'confirmed').length;
+        // Update stats - count total attending people, not just confirmed RSVPs
+        const totalAttending = rsvps
+            .filter(r => r.status === 'confirmed')
+            .reduce((sum, r) => sum + (r.attendingCount || 1), 0);
+        document.getElementById('stat-rsvps').textContent = totalAttending;
         document.getElementById('stat-guests').textContent = guests.length;
         document.getElementById('stat-tables').textContent = tables.length;
         document.getElementById('stat-checkins').textContent = checkins.filter(c => c.arrived).length;
@@ -1925,14 +1928,16 @@ function renderAnalyticsCharts(rsvps, guests, seating, tables) {
     if (seatingChart) seatingChart.destroy();
     if (sideChart) sideChart.destroy();
     
-    // RSVP Status Chart
-    const confirmed = rsvps.filter(r => r.status === 'confirmed').length;
-    const declined = rsvps.filter(r => r.status === 'declined').length;
-    const pending = rsvps.filter(r => r.status === 'pending').length;
+    // RSVP Status Chart - sum attendingCount instead of counting rows
+    const confirmedCount = rsvps
+        .filter(r => r.status === 'confirmed')
+        .reduce((sum, r) => sum + (r.attendingCount || 1), 0);
+    const declinedCount = rsvps.filter(r => r.status === 'declined').length;
+    const pendingCount = rsvps.filter(r => r.status === 'pending').length;
     const guestsWithoutRsvp = guests.length; // מוזמנים שטרם אישרו הגעה
     
     const rsvpCtx = document.getElementById('rsvp-chart');
-    const totalRsvps = confirmed + declined + pending + guestsWithoutRsvp;
+    const totalRsvps = confirmedCount + declinedCount + pendingCount + guestsWithoutRsvp;
     
     // Show placeholder if no data
     if (totalRsvps === 0) {
@@ -1962,7 +1967,7 @@ function renderAnalyticsCharts(rsvps, guests, seating, tables) {
             data: {
                 labels: ['מאושר', 'לא מגיע', 'ממתין', 'טרם אישר'],
                 datasets: [{
-                    data: [confirmed, declined, pending, guestsWithoutRsvp],
+                    data: [confirmedCount, declinedCount, pendingCount, guestsWithoutRsvp],
                     backgroundColor: ['#10b981', '#ef4444', '#f59e0b', '#9ca3af'],
                     borderWidth: 2,
                     borderColor: '#ffffff'
@@ -2015,8 +2020,8 @@ function renderAnalyticsCharts(rsvps, guests, seating, tables) {
         }
     });
     
-    // Seating Progress Chart
-    const totalGuests = confirmed + guests.length;
+    // Seating Progress Chart - use attendingCount for total guests
+    const totalGuests = confirmedCount + guests.length;
     const seated = seating.length;
     const unseated = totalGuests - seated;
     
