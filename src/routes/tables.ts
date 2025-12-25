@@ -145,7 +145,7 @@ tablesRouter.post('/events/:eventId/tables', zValidator('json', createTableSchem
  * PUT /api/tables/:id
  * עדכון שולחן
  */
-tablesRouter.put('/:id', zValidator('json', updateTableSchema), async (c) => {
+tablesRouter.put('/tables/:id', zValidator('json', updateTableSchema), async (c) => {
   const db = initDb(c.env.DB);
   const currentUser = c.get('user') as any;
   if (!currentUser || !currentUser.id) {
@@ -211,7 +211,7 @@ tablesRouter.put('/:id', zValidator('json', updateTableSchema), async (c) => {
  * DELETE /api/tables/:id
  * מחיקת שולחן
  */
-tablesRouter.delete('/:id', async (c) => {
+tablesRouter.delete('/tables/:id', async (c) => {
   const db = initDb(c.env.DB);
   const currentUser = c.get('user') as any;
   if (!currentUser || !currentUser.id) {

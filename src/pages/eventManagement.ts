@@ -191,7 +191,9 @@ export const eventManagementPage = `
                         <i class="fas fa-chart-bar text-purple-500 ml-2"></i>
                         פילוח קבוצות אורחים
                     </h3>
-                    <canvas id="groups-chart" height="250"></canvas>
+                    <div style="height: 250px; max-height: 250px;">
+                        <canvas id="groups-chart"></canvas>
+                    </div>
                 </div>
                 
                 <!-- Seating Progress Chart -->

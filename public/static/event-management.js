@@ -479,7 +479,7 @@ function renderSeating() {
                 <div class="flex justify-between items-center mb-3">
                     <div>
                         <h4 class="font-bold text-lg">${table.tableName}</h4>
-                        <span class="text-xs text-gray-500">שולחן ${table.tableNumber}</span>
+                        ${table.tableNumber ? `<span class="text-xs text-gray-500">שולחן ${table.tableNumber}</span>` : ''}
                     </div>
                     <div class="flex items-center gap-2">
                         <span class="text-sm ${availableSeats > 0 ? 'text-green-600' : 'text-red-600'}">
@@ -1933,8 +1933,7 @@ function renderAnalyticsCharts(rsvps, guests, seating, tables) {
         },
         options: {
             responsive: true,
-            maintainAspectRatio: true,
-            aspectRatio: 2,
+            maintainAspectRatio: false,
             plugins: {
                 legend: { display: false }
             },
