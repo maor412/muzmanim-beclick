@@ -36,42 +36,141 @@ auth.post('/magic-link', async (c) => {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        from: 'מוזמנים בקליק <onboarding@resend.dev>',
+        from: 'מוזמנים בקליק <noreply@yourdomain.com>', // שנה ל-yourdomain.com אחרי הוספת domain
         to: [email],
         subject: 'קישור התחברות למערכת',
+        reply_to: 'support@yourdomain.com', // אופציונלי - אם יש תמיכה
+        text: `
+שלום,
+
+קיבלנו בקשה להתחברות למערכת ניהול האירועים שלך.
+
+לחץ על הקישור הבא להתחברות:
+${magicLinkUrl}
+
+⚠️ הערת אבטחה:
+קישור זה תקף ל-15 דקות בלבד ומיועד רק לשימושך האישי.
+
+לא ביקשת את המייל הזה?
+אין צורך לעשות דבר - הקישור יפוג אוטומטית תוך 15 דקות.
+
+---
+מערכת מוזמנים בקליק
+מערכת מקצועית לניהול מוזמנים לאירועים
+בקר באתר: ${APP_URL}
+        `.trim(),
         html: `
           <!DOCTYPE html>
           <html dir="rtl" lang="he">
           <head>
             <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>קישור התחברות</title>
             <style>
-              body { font-family: Arial, sans-serif; text-align: right; }
-              .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+              body { 
+                font-family: Arial, sans-serif; 
+                text-align: right; 
+                background-color: #f5f5f5;
+                margin: 0;
+                padding: 20px;
+              }
+              .container { 
+                max-width: 600px; 
+                margin: 0 auto; 
+                background-color: white;
+                border-radius: 8px;
+                padding: 40px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+              }
+              .header {
+                text-align: center;
+                margin-bottom: 30px;
+              }
+              .header h1 {
+                color: #ec4899;
+                font-size: 24px;
+                margin: 0;
+              }
+              .content {
+                color: #333;
+                line-height: 1.6;
+              }
               .button { 
                 display: inline-block; 
-                padding: 12px 24px; 
+                padding: 14px 32px; 
                 background-color: #ec4899; 
-                color: white; 
+                color: white !important; 
                 text-decoration: none; 
                 border-radius: 6px;
                 margin: 20px 0;
+                font-weight: bold;
+                text-align: center;
               }
-              .footer { color: #666; font-size: 12px; margin-top: 30px; }
+              .button:hover {
+                background-color: #db2777;
+              }
+              .link-box {
+                background-color: #f9fafb;
+                padding: 12px;
+                border-radius: 4px;
+                word-break: break-all;
+                color: #666;
+                font-size: 12px;
+                margin: 15px 0;
+              }
+              .footer { 
+                color: #999; 
+                font-size: 12px; 
+                margin-top: 30px;
+                padding-top: 20px;
+                border-top: 1px solid #eee;
+                text-align: center;
+              }
+              .security-notice {
+                background-color: #fef3c7;
+                padding: 12px;
+                border-radius: 4px;
+                margin: 20px 0;
+                font-size: 14px;
+                color: #92400e;
+              }
             </style>
           </head>
           <body>
             <div class="container">
-              <h1>התחבר למערכת מוזמנים בקליק</h1>
-              <p>שלום,</p>
-              <p>קיבלנו בקשה להתחברות למערכת עם כתובת המייל שלך.</p>
-              <p>לחץ על הכפתור הבא כדי להתחבר:</p>
-              <a href="${magicLinkUrl}" class="button">התחבר למערכת</a>
-              <p>או העתק את הקישור הבא לדפדפן:</p>
-              <p style="word-break: break-all; color: #666;">${magicLinkUrl}</p>
-              <p class="footer">
-                קישור זה תקף ל-15 דקות בלבד.<br>
-                אם לא ביקשת את המייל הזה, אפשר להתעלם ממנו.
-              </p>
+              <div class="header">
+                <h1>🎉 מוזמנים בקליק</h1>
+              </div>
+              
+              <div class="content">
+                <p><strong>שלום,</strong></p>
+                <p>קיבלנו בקשה להתחברות למערכת ניהול האירועים שלך.</p>
+                
+                <div style="text-align: center; margin: 30px 0;">
+                  <a href="${magicLinkUrl}" class="button">👉 לחץ כאן להתחברות 👈</a>
+                </div>
+                
+                <div class="security-notice">
+                  <strong>⚠️ הערת אבטחה:</strong><br>
+                  קישור זה תקף ל-15 דקות בלבד ומיועד רק לשימושך האישי.
+                </div>
+                
+                <p>אם הכפתור לא עובד, העתק והדבק את הקישור הבא בדפדפן:</p>
+                <div class="link-box">
+                  ${magicLinkUrl}
+                </div>
+                
+                <p style="margin-top: 30px; color: #666; font-size: 14px;">
+                  <strong>לא ביקשת את המייל הזה?</strong><br>
+                  אין צורך לעשות דבר - הקישור יפוג אוטומטית תוך 15 דקות.
+                </p>
+              </div>
+              
+              <div class="footer">
+                מערכת מוזמנים בקליק<br>
+                מערכת מקצועית לניהול מוזמנים לאירועים<br>
+                <a href="${APP_URL}" style="color: #ec4899; text-decoration: none;">בקר באתר</a>
+              </div>
             </div>
           </body>
           </html>
