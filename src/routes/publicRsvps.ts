@@ -342,8 +342,8 @@ publicRsvpsRouter.post('/:slug', rsvpRateLimiter, zValidator('json', createRsvpS
         id: rsvpId,
         attendingCount: data.attendingCount,
         status: data.attendingCount > 0 ? 'confirmed' : 'declined'
-      },
-      ...(removalNote && { warning: removalNote })
+      }
+      // Note: removalNote is saved in DB but NOT shown to public user
     }, 201);
 
   } catch (error) {
