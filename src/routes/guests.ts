@@ -318,4 +318,60 @@ guestsRouter.delete('/guests/:id', async (c) => {
   }
 });
 
+/**
+ * DELETE /api/events/:eventId/guests/all
+ * מחיקה המונית של כל האורחים באירוע
+ */
+guestsRouter.delete('/events/:eventId/guests/all', async (c) => {
+  const db = initDb(c.env.DB);
+  const currentUser = c.get('user') as any;
+  if (!currentUser || !currentUser.id) {
+    throw new AppError(401, 'נדרשת התחברות', 'UNAUTHORIZED');
+  }
+  const userId = currentUser.id;
+  const eventId = c.req.param('eventId');
+
+  try {
+    const event = await db.select().from(events).where(eq(events.id, eventId)).get();
+    
+    if (!event) {
+      throw new AppError(404, 'אירוע לא נמצא', 'EVENT_NOT_FOUND');
+    }
+
+    const user = await db.query.users.findFirst({
+      where: (users, { eq }) => eq(users.id, userId)
+    });
+
+    if (!user || event.ownerUserId !== user.id) {
+      throw new AppError(403, 'אין לך הרשאה', 'FORBIDDEN');
+    }
+
+    // Count guests before deletion
+    const guestList = await db.select().from(guests).where(eq(guests.eventId, eventId)).all();
+    const count = guestList.length;
+
+    // Delete all guests for this event
+    await db.delete(guests).where(eq(guests.eventId, eventId));
+    await logAudit(c, 'DELETE_ALL_GUESTS', 'guest', eventId, { count });
+
+    return c.json({
+      success: true,
+      message: `${count} אורחים נמחקו בהצלחה`,
+      count
+    });
+
+  } catch (error) {
+    console.error('Error deleting all guests:', error);
+    
+    if (error instanceof AppError) {
+      return c.json({ success: false, error: error.message }, error.statusCode);
+    }
+    
+    return c.json({ 
+      success: false, 
+      error: 'שגיאה במחיקת אורחים' 
+    }, 500);
+  }
+});
+
 export default guestsRouter;

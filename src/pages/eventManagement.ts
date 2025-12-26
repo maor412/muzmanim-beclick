@@ -382,6 +382,10 @@ export const eventManagementPage = () => `
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-3xl font-bold text-gray-800">רשימת מוזמנים</h2>
                 <div class="flex space-x-reverse space-x-3">
+                    <button onclick="deleteAllGuests()" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition border-2 border-red-700">
+                        <i class="fas fa-trash-alt ml-2"></i>
+                        מחק הכל
+                    </button>
                     <button onclick="showImportModal()" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition">
                         <i class="fas fa-upload ml-2"></i>
                         ייבוא CSV

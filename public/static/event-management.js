@@ -1942,6 +1942,51 @@ async function deleteGuest(id) {
     }
 }
 
+// Delete all guests
+async function deleteAllGuests() {
+    const count = allGuests.length;
+    
+    if (count === 0) {
+        showToast('אין מוזמנים למחיקה', 'info');
+        return;
+    }
+    
+    const confirmed = confirm(
+        `⚠️ אזהרה: פעולה זו תמחק את כל ${count} המוזמנים!\n\n` +
+        `האם אתה בטוח לחלוטין?\n\n` +
+        `(פעולה זו אינה ניתנת לביטול)`
+    );
+    
+    if (!confirmed) return;
+    
+    // Double confirmation for safety
+    const doubleConfirm = confirm(
+        `אישור סופי:\n\n` +
+        `למחוק ${count} מוזמנים?\n\n` +
+        `לחץ OK למחיקה או Cancel לביטול`
+    );
+    
+    if (!doubleConfirm) return;
+    
+    try {
+        showToast(`מוחק ${count} מוזמנים...`, 'info');
+        
+        const response = await axios.delete(`/api/events/${currentEvent.id}/guests/all`);
+        
+        if (response.data.success) {
+            showToast(`✅ ${response.data.count} מוזמנים נמחקו בהצלחה!`, 'success');
+            loadGuests();
+            loadSeating();
+            loadOverview(); // Refresh stats
+        } else {
+            showToast(response.data.error || 'שגיאה במחיקת מוזמנים', 'error');
+        }
+    } catch (error) {
+        console.error('Error deleting all guests:', error);
+        showToast(error.response?.data?.error || 'שגיאה במחיקת מוזמנים', 'error');
+    }
+}
+
 // Analytics Charts
 let rsvpChart, groupsChart, seatingChart, sideChart;
 
