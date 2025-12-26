@@ -2581,7 +2581,7 @@ async function autoCreateAndFill() {
         for (const group of groups) {
             const capacity = calculateTableSize(group.count);
             const tableData = {
-                name: `שולחן ${group.name}`,
+                tableName: `שולחן ${group.name}`,
                 capacity: capacity,
                 notes: group.isMixed ? 'שולחן מעורב (קבוצות קטנות)' : `${group.count} אורחים מקבוצת ${group.name}`
             };
@@ -2751,7 +2751,7 @@ async function autoCreateTablesAuto() {
         for (const group of groups) {
             const capacity = calculateTableSize(group.count);
             const tableData = {
-                name: `שולחן ${group.name}`,
+                tableName: `שולחן ${group.name}`,
                 capacity: capacity,
                 notes: group.isMixed ? 'שולחן מעורב (קבוצות קטנות)' : `${group.count} אורחים מקבוצת ${group.name}`
             };
@@ -2886,7 +2886,7 @@ async function createTablesFromManualSizes() {
             }
             
             const tableData = {
-                name: `שולחן ${group.name}`,
+                tableName: `שולחן ${group.name}`,
                 capacity: capacity,
                 notes: group.isMixed ? 'שולחן מעורב (קבוצות קטנות)' : `${group.count} אורחים מקבוצת ${group.name}`
             };
