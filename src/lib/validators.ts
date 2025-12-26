@@ -47,12 +47,13 @@ export const updateRsvpSchema = createRsvpSchema.partial();
 export const createGuestSchema = z.object({
   fullName: z.string().min(2, 'שם מלא נדרש').max(100),
   phone: z.string()
-    .regex(/^(05[0-9]|972-?5[0-9])[0-9]{7}$/, 'מספר טלפון לא תקין')
+    .max(20, 'מספר טלפון ארוך מדי')
     .optional()
-    .or(z.literal('')),
-  side: z.string().max(50).optional().or(z.literal('')),
-  groupLabel: z.string().max(100).optional().or(z.literal('')),
-  notes: z.string().max(500).optional().or(z.literal(''))
+    .or(z.literal(''))
+    .nullable(),
+  side: z.string().max(50).optional().or(z.literal('')).nullable(),
+  groupLabel: z.string().max(100).optional().or(z.literal('')).nullable(),
+  notes: z.string().max(500).optional().or(z.literal('')).nullable()
 });
 
 export const updateGuestSchema = createGuestSchema.partial();
