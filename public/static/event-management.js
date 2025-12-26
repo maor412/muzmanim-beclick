@@ -2582,7 +2582,8 @@ async function autoCreateAndFill() {
         // Step 2: Create tables for each group
         let created = 0;
         for (const group of groups) {
-            const capacity = calculateTableSize(group.count);
+            const capacity = parseInt(calculateTableSize(group.count));
+            console.log(`Creating table for ${group.name}: ${group.count} guests, capacity: ${capacity}`);
             const tableData = {
                 tableName: `שולחן ${group.name}`,
                 capacity: capacity,
@@ -2752,7 +2753,8 @@ async function autoCreateTablesAuto() {
         
         let created = 0;
         for (const group of groups) {
-            const capacity = calculateTableSize(group.count);
+            const capacity = parseInt(calculateTableSize(group.count));
+            console.log(`Creating table for ${group.name}: ${group.count} guests, capacity: ${capacity}`);
             const tableData = {
                 tableName: `שולחן ${group.name}`,
                 capacity: capacity,

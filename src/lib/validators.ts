@@ -66,7 +66,7 @@ export const bulkGuestsSchema = z.array(createGuestSchema);
 export const createTableSchema = z.object({
   tableName: z.string().min(1, 'שם שולחן נדרש').max(100),
   tableNumber: z.number().int().min(1).max(500).optional().nullable(),
-  capacity: z.number().int().min(1, 'קיבולת חייבת להיות לפחות 1').max(50).default(10).optional(),
+  capacity: z.number().int().min(1, 'קיבולת חייבת להיות לפחות 1').max(100), // Removed .optional() and .default(10), increased max to 100
   notes: z.string().max(500).optional().or(z.literal(''))
 });
 
