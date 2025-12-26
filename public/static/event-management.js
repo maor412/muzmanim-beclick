@@ -2553,14 +2553,30 @@ async function autoCreateAndFill() {
     }
     
     try {
-        // Step 1: Create tables automatically
+        showToast('טוען נתונים...', 'info');
+        
+        // Step 0: Make sure we have guests and RSVPs data
+        if (allGuests.length === 0 && allRsvps.length === 0) {
+            // Load guests if not loaded
+            const guestsRes = await axios.get(`/api/events/${currentEvent.id}/guests`);
+            allGuests = guestsRes.data.guests || [];
+            
+            // Load RSVPs if not loaded
+            const rsvpsRes = await axios.get(`/api/events/${currentEvent.id}/rsvps`);
+            allRsvps = rsvpsRes.data.rsvps || [];
+        }
+        
+        // Step 1: Analyze groups
         const groups = analyzeGroups();
         
         if (groups.length === 0) {
-            showToast('לא נמצאו קבוצות לבניית שולחנות', 'warning');
+            showToast('לא נמצאו קבוצות לבניית שולחנות. וודא שהמוזמנים שלך מוגדרים עם קבוצות.', 'warning');
             return;
         }
         
+        showToast(`נמצאו ${groups.length} קבוצות. יוצר שולחנות...`, 'info');
+        
+        // Step 2: Create tables for each group
         let created = 0;
         for (const group of groups) {
             const capacity = calculateTableSize(group.count);
@@ -2576,23 +2592,24 @@ async function autoCreateAndFill() {
             }
         }
         
-        showToast(`נוצרו ${created} שולחנות! מתחיל הושבה...`, 'success');
+        showToast(`✅ נוצרו ${created} שולחנות! מתחיל הושבה...`, 'success');
         
-        // Wait a bit for tables to be created
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        // Step 3: Wait for tables to be created in DB
+        await new Promise(resolve => setTimeout(resolve, 1500));
         
-        // Step 2: Reload seating data
+        // Step 4: Reload seating data (tables, guests, rsvps)
         await loadSeating();
         
-        // Wait a bit more
-        await new Promise(resolve => setTimeout(resolve, 500));
+        // Step 5: Wait for data to load
+        await new Promise(resolve => setTimeout(resolve, 1000));
         
-        // Step 3: Auto fill seating
+        // Step 6: Auto fill seating
+        showToast('מושיב אורחים...', 'info');
         await autoFillSeating();
         
     } catch (error) {
         console.error('Error in autoCreateAndFill:', error);
-        showToast('שגיאה בתהליך האוטומטי', 'error');
+        showToast(`שגיאה בתהליך האוטומטי: ${error.message}`, 'error');
     }
 }
 
@@ -2701,22 +2718,36 @@ async function autoCreateTablesAuto() {
     // Close modal
     document.querySelector('.fixed')?.remove();
     
-    const groups = analyzeGroups();
-    
-    if (groups.length === 0) {
-        showToast('לא נמצאו קבוצות לבניית שולחנות', 'warning');
-        return;
-    }
-    
-    // Confirm action
-    const totalGuests = groups.reduce((sum, g) => sum + g.count, 0);
-    if (!confirm(`נמצאו ${groups.length} קבוצות עם סך של ${totalGuests} אורחים.\n\nהאם ליצור ${groups.length} שולחנות אוטומטית?`)) {
-        return;
-    }
-    
     try {
-        let created = 0;
+        showToast('טוען נתונים...', 'info');
         
+        // Make sure we have guests data
+        if (allGuests.length === 0 && allRsvps.length === 0) {
+            // Load guests if not loaded
+            const guestsRes = await axios.get(`/api/events/${currentEvent.id}/guests`);
+            allGuests = guestsRes.data.guests || [];
+            
+            // Load RSVPs if not loaded
+            const rsvpsRes = await axios.get(`/api/events/${currentEvent.id}/rsvps`);
+            allRsvps = rsvpsRes.data.rsvps || [];
+        }
+        
+        const groups = analyzeGroups();
+        
+        if (groups.length === 0) {
+            showToast('לא נמצאו קבוצות לבניית שולחנות. וודא שהמוזמנים שלך מוגדרים עם קבוצות.', 'warning');
+            return;
+        }
+        
+        // Confirm action
+        const totalGuests = groups.reduce((sum, g) => sum + g.count, 0);
+        if (!confirm(`נמצאו ${groups.length} קבוצות עם סך של ${totalGuests} אורחים.\n\nהאם ליצור ${groups.length} שולחנות אוטומטית?`)) {
+            return;
+        }
+        
+        showToast(`יוצר ${groups.length} שולחנות...`, 'info');
+        
+        let created = 0;
         for (const group of groups) {
             const capacity = calculateTableSize(group.count);
             const tableData = {
@@ -2731,26 +2762,40 @@ async function autoCreateTablesAuto() {
             }
         }
         
-        showToast(`נוצרו ${created} שולחנות בהצלחה! 🎉`, 'success');
+        showToast(`✅ נוצרו ${created} שולחנות בהצלחה! 🎉`, 'success');
         loadSeating(); // Refresh
         
     } catch (error) {
         console.error('Error creating tables:', error);
-        showToast('שגיאה ביצירת שולחנות', 'error');
+        showToast(`שגיאה ביצירת שולחנות: ${error.message}`, 'error');
     }
 }
 
 // Show manual table size configuration modal
-function showManualTableSizeModal() {
+async function showManualTableSizeModal() {
     // Close previous modal
     document.querySelector('.fixed')?.remove();
     
-    const groups = analyzeGroups();
-    
-    if (groups.length === 0) {
-        showToast('לא נמצאו קבוצות לבניית שולחנות', 'warning');
-        return;
-    }
+    try {
+        showToast('טוען נתונים...', 'info');
+        
+        // Make sure we have guests data
+        if (allGuests.length === 0 && allRsvps.length === 0) {
+            // Load guests if not loaded
+            const guestsRes = await axios.get(`/api/events/${currentEvent.id}/guests`);
+            allGuests = guestsRes.data.guests || [];
+            
+            // Load RSVPs if not loaded
+            const rsvpsRes = await axios.get(`/api/events/${currentEvent.id}/rsvps`);
+            allRsvps = rsvpsRes.data.rsvps || [];
+        }
+        
+        const groups = analyzeGroups();
+        
+        if (groups.length === 0) {
+            showToast('לא נמצאו קבוצות לבניית שולחנות. וודא שהמוזמנים שלך מוגדרים עם קבוצות.', 'warning');
+            return;
+        }
     
     const modal = document.createElement('div');
     modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 overflow-y-auto';
@@ -2815,6 +2860,11 @@ function showManualTableSizeModal() {
     
     document.body.appendChild(modal);
     modal.closest = function(selector) { return modal; };
+    
+    } catch (error) {
+        console.error('Error loading groups:', error);
+        showToast(`שגיאה בטעינת קבוצות: ${error.message}`, 'error');
+    }
 }
 
 // Create tables from manual sizes
