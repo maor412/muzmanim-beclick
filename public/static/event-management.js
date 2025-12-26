@@ -467,14 +467,16 @@ function renderUnseatedGuests() {
             type: 'rsvp', 
             name: r.fullName, 
             count: (r.attendingCount || 1),
-            subtitle: r.attendingCount > 1 ? `${r.attendingCount} מגיעים` : 'מגיע אחד'
+            subtitle: r.attendingCount > 1 ? `${r.attendingCount} מגיעים` : 'מגיע אחד',
+            seatingNote: r.seatingNote || null  // Add seating note
         })),
         ...unseatedGuests.map(g => ({ 
             id: g.id, 
             type: 'guest', 
             name: g.fullName, 
             count: 1,
-            subtitle: g.groupLabel || 'מוזמן'
+            subtitle: g.groupLabel || 'מוזמן',
+            seatingNote: null  // Guests don't have seating notes
         }))
     ];
     
@@ -491,6 +493,7 @@ function renderUnseatedGuests() {
                 <p class="font-semibold text-sm">${person.name}</p>
                 <p class="text-xs text-gray-600">${person.subtitle}</p>
                 ${person.type === 'guest' ? '<span class="text-xs bg-purple-100 text-purple-600 px-2 py-0.5 rounded">מוזמן ידני</span>' : ''}
+                ${person.seatingNote ? `<p class="text-xs text-red-600 mt-1 border-t border-red-200 pt-1"><i class="fas fa-exclamation-triangle ml-1"></i>${person.seatingNote}</p>` : ''}
             </div>
         `).join('');
     }

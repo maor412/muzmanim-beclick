@@ -125,8 +125,32 @@ seatingRouter.post('/events/:eventId/seating', zValidator('json', createSeatingS
 
     const currentSeats = await db.select().from(seating).where(eq(seating.tableId, data.tableId)).all();
     
-    if (currentSeats.length >= table.capacity) {
-      throw new AppError(400, 'השולחן מלא', 'TABLE_FULL');
+    // Calculate total occupied seats (including +1 companions)
+    let occupiedSeats = 0;
+    for (const seat of currentSeats) {
+      if (seat.rsvpId) {
+        const rsvp = await db.select().from(rsvps).where(eq(rsvps.id, seat.rsvpId)).get();
+        occupiedSeats += (rsvp?.attendingCount || 1);
+      } else if (seat.guestId) {
+        const guest = await db.select().from(guests).where(eq(guests.id, seat.guestId)).get();
+        occupiedSeats += (guest?.attendingCount || 1);
+      } else {
+        occupiedSeats += 1;
+      }
+    }
+    
+    // Check if there's room for the new guest/RSVP
+    let newGuestCount = 1;
+    if (data.rsvpId) {
+      const rsvp = await db.select().from(rsvps).where(eq(rsvps.id, data.rsvpId)).get();
+      newGuestCount = rsvp?.attendingCount || 1;
+    } else if (data.guestId) {
+      const guest = await db.select().from(guests).where(eq(guests.id, data.guestId)).get();
+      newGuestCount = guest?.attendingCount || 1;
+    }
+    
+    if (occupiedSeats + newGuestCount > table.capacity) {
+      throw new AppError(400, `אין מספיק מקום בשולחן. תפוס: ${occupiedSeats}, נדרש: ${newGuestCount}, קיבולת: ${table.capacity}`, 'TABLE_FULL');
     }
 
     const seatingId = generateId();
