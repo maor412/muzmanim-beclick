@@ -1462,12 +1462,12 @@ function showImportModal() {
             </div>
             
             <div class="hidden flex space-x-reverse space-x-3" id="import-confirm-actions">
-                <button onclick="confirmImport()" 
+                <button id="confirm-import-btn" onclick="confirmImport()" 
                         class="flex-1 bg-gradient-to-r from-blue-500 to-purple-500 text-white px-6 py-3 rounded-lg hover:from-blue-600 hover:to-purple-600 transition font-semibold">
                     <i class="fas fa-check ml-2"></i>
                     אישור וייבוא (<span id="import-count">0</span> מוזמנים)
                 </button>
-                <button onclick="cancelImport()" 
+                <button id="cancel-import-btn" onclick="cancelImport()" 
                         class="flex-1 bg-gray-300 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-400 transition font-semibold">
                     ביטול
                 </button>
@@ -1621,20 +1621,44 @@ async function confirmImport() {
         return;
     }
     
+    // Get button and disable it
+    const importBtn = document.getElementById('confirm-import-btn');
+    const cancelBtn = document.getElementById('cancel-import-btn');
+    const originalBtnText = importBtn.innerHTML;
+    
+    // Show loading state
+    importBtn.disabled = true;
+    cancelBtn.disabled = true;
+    importBtn.classList.add('opacity-50', 'cursor-not-allowed');
+    importBtn.innerHTML = `
+        <i class="fas fa-spinner fa-spin ml-2"></i>
+        מייבא ${parsedGuestsData.length} אורחים...
+    `;
+    
     try {
         const response = await axios.post(`/api/events/${currentEvent.id}/guests/bulk`, parsedGuestsData);
         
         if (response.data.success) {
-            showToast(`${parsedGuestsData.length} מוזמנים יובאו בהצלחה!`, 'success');
+            showToast(`${parsedGuestsData.length} מוזמנים יובאו בהצלחה! 🎉`, 'success');
             document.querySelector('.fixed').remove();
             loadGuests();
             loadSeating();
         } else {
             showToast(response.data.error || 'שגיאה בייבוא מוזמנים', 'error');
+            // Restore button state on error
+            importBtn.disabled = false;
+            cancelBtn.disabled = false;
+            importBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            importBtn.innerHTML = originalBtnText;
         }
     } catch (error) {
         console.error('Error importing guests:', error);
         showToast(error.response?.data?.error || 'שגיאה בייבוא מוזמנים', 'error');
+        // Restore button state on error
+        importBtn.disabled = false;
+        cancelBtn.disabled = false;
+        importBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        importBtn.innerHTML = originalBtnText;
     }
 }
 
