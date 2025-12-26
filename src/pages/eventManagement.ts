@@ -443,10 +443,44 @@ export const eventManagementPage = () => `
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-3xl font-bold text-gray-800">הושבה</h2>
                 <div class="flex space-x-reverse space-x-3">
-                    <button onclick="autoFillSeating()" class="bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600 transition">
-                        <i class="fas fa-magic ml-2"></i>
-                        השלמה אוטומטית
-                    </button>
+                    <!-- Automation Dropdown Menu -->
+                    <div class="relative inline-block" id="automation-dropdown">
+                        <button onclick="toggleAutomationMenu()" 
+                                class="bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600 transition flex items-center">
+                            <i class="fas fa-magic ml-2"></i>
+                            אוטומציה
+                            <i class="fas fa-chevron-down mr-2 text-sm"></i>
+                        </button>
+                        <div id="automation-menu" class="hidden absolute left-0 mt-2 w-64 bg-white rounded-lg shadow-xl border border-gray-200 z-50">
+                            <div class="py-2">
+                                <button onclick="showAutoTableCreationModal(); closeAutomationMenu();" 
+                                        class="w-full text-right px-4 py-3 hover:bg-purple-50 transition flex items-center">
+                                    <i class="fas fa-table ml-3 text-purple-600 w-5"></i>
+                                    <div>
+                                        <div class="font-semibold text-gray-800">בנה שולחנות לפי קבוצות</div>
+                                        <div class="text-xs text-gray-500">יצירת שולחנות אוטומטית</div>
+                                    </div>
+                                </button>
+                                <button onclick="autoFillSeating(); closeAutomationMenu();" 
+                                        class="w-full text-right px-4 py-3 hover:bg-blue-50 transition flex items-center">
+                                    <i class="fas fa-chair ml-3 text-blue-600 w-5"></i>
+                                    <div>
+                                        <div class="font-semibold text-gray-800">השלם הושבה</div>
+                                        <div class="text-xs text-gray-500">הושב אורחים בשולחנות קיימים</div>
+                                    </div>
+                                </button>
+                                <button onclick="autoCreateAndFill(); closeAutomationMenu();" 
+                                        class="w-full text-right px-4 py-3 hover:bg-green-50 transition flex items-center border-t border-gray-100">
+                                    <i class="fas fa-bolt ml-3 text-green-600 w-5"></i>
+                                    <div>
+                                        <div class="font-semibold text-gray-800">בנה + הושב (הכל ביחד)</div>
+                                        <div class="text-xs text-gray-500">פתרון מהיר ומלא</div>
+                                    </div>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <button onclick="exportSeating()" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition">
                         <i class="fas fa-file-excel ml-2"></i>
                         CSV

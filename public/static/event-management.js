@@ -2453,6 +2453,341 @@ async function exportSeatingPDF() {
     }
 }
 
+// ============================================
+// AUTO TABLE CREATION BY GROUPS
+// ============================================
+
+// Toggle automation dropdown menu
+function toggleAutomationMenu() {
+    const menu = document.getElementById('automation-menu');
+    menu.classList.toggle('hidden');
+}
+
+// Close automation menu
+function closeAutomationMenu() {
+    const menu = document.getElementById('automation-menu');
+    menu.classList.add('hidden');
+}
+
+// Close menu when clicking outside
+document.addEventListener('click', (e) => {
+    const dropdown = document.getElementById('automation-dropdown');
+    if (dropdown && !dropdown.contains(e.target)) {
+        closeAutomationMenu();
+    }
+});
+
+// Auto create tables AND fill seating (combined action)
+async function autoCreateAndFill() {
+    if (!confirm('פעולה זו תיצור שולחנות אוטומטית לפי קבוצות ותמלא אותם באורחים.\n\nהאם להמשיך?')) {
+        return;
+    }
+    
+    try {
+        // Step 1: Create tables automatically
+        const groups = analyzeGroups();
+        
+        if (groups.length === 0) {
+            showToast('לא נמצאו קבוצות לבניית שולחנות', 'warning');
+            return;
+        }
+        
+        let created = 0;
+        for (const group of groups) {
+            const capacity = calculateTableSize(group.count);
+            const tableData = {
+                name: `שולחן ${group.name}`,
+                capacity: capacity,
+                notes: group.isMixed ? 'שולחן מעורב (קבוצות קטנות)' : `${group.count} אורחים מקבוצת ${group.name}`
+            };
+            
+            const response = await axios.post(`/api/events/${currentEvent.id}/tables`, tableData);
+            if (response.data.success) {
+                created++;
+            }
+        }
+        
+        showToast(`נוצרו ${created} שולחנות! מתחיל הושבה...`, 'success');
+        
+        // Wait a bit for tables to be created
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Step 2: Reload seating data
+        await loadSeating();
+        
+        // Wait a bit more
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        // Step 3: Auto fill seating
+        await autoFillSeating();
+        
+    } catch (error) {
+        console.error('Error in autoCreateAndFill:', error);
+        showToast('שגיאה בתהליך האוטומטי', 'error');
+    }
+}
+
+// Show modal to choose auto/manual table creation
+function showAutoTableCreationModal() {
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+    modal.innerHTML = `
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 m-4">
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-magic text-white text-2xl"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">בניית שולחנות אוטומטית</h2>
+                <p class="text-gray-600">איך תרצה לבנות את השולחנות?</p>
+            </div>
+            
+            <div class="space-y-4">
+                <button onclick="autoCreateTablesAuto()" 
+                        class="w-full bg-gradient-to-r from-purple-500 to-blue-500 text-white px-6 py-4 rounded-xl hover:from-purple-600 hover:to-blue-600 transition font-semibold flex items-center justify-center">
+                    <i class="fas fa-bolt ml-2"></i>
+                    בניה אוטומטית מלאה
+                    <span class="text-sm opacity-90 mr-2">(מומלץ)</span>
+                </button>
+                
+                <button onclick="showManualTableSizeModal()" 
+                        class="w-full bg-white border-2 border-purple-500 text-purple-600 px-6 py-4 rounded-xl hover:bg-purple-50 transition font-semibold flex items-center justify-center">
+                    <i class="fas fa-cog ml-2"></i>
+                    קביעה ידנית של גדלים
+                </button>
+                
+                <button onclick="this.closest('.fixed').remove()" 
+                        class="w-full bg-gray-200 text-gray-700 px-6 py-3 rounded-xl hover:bg-gray-300 transition font-semibold">
+                    ביטול
+                </button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+    modal.closest = function(selector) { return modal; };
+}
+
+// Analyze groups from guests
+function analyzeGroups() {
+    const groups = {};
+    const SMALL_GROUP_THRESHOLD = 4;
+    
+    // Group all guests and RSVPs by groupLabel
+    [...allGuests, ...allRsvps].forEach(person => {
+        const groupName = person.groupLabel || 'מעורב';
+        if (!groups[groupName]) {
+            groups[groupName] = [];
+        }
+        groups[groupName].push(person);
+    });
+    
+    // Remove duplicates (same person in both guests and rsvps)
+    Object.keys(groups).forEach(groupName => {
+        const unique = new Map();
+        groups[groupName].forEach(person => {
+            const key = person.fullName + (person.phone || '');
+            if (!unique.has(key)) {
+                unique.set(key, person);
+            }
+        });
+        groups[groupName] = Array.from(unique.values());
+    });
+    
+    // Separate large and small groups
+    const largeGroups = [];
+    const smallGroups = [];
+    
+    Object.entries(groups).forEach(([name, members]) => {
+        const groupData = { name, members, count: members.length };
+        if (members.length >= SMALL_GROUP_THRESHOLD) {
+            largeGroups.push(groupData);
+        } else {
+            smallGroups.push(groupData);
+        }
+    });
+    
+    // Merge small groups into "מעורב"
+    if (smallGroups.length > 0) {
+        const mixedMembers = smallGroups.flatMap(g => g.members);
+        largeGroups.push({
+            name: 'מעורב',
+            members: mixedMembers,
+            count: mixedMembers.length,
+            isMixed: true
+        });
+    }
+    
+    // Sort by size (largest first)
+    largeGroups.sort((a, b) => b.count - a.count);
+    
+    return largeGroups;
+}
+
+// Calculate table size with buffer
+function calculateTableSize(guestCount, bufferPercent = 15) {
+    return Math.ceil(guestCount * (1 + bufferPercent / 100));
+}
+
+// Auto create tables (full auto mode)
+async function autoCreateTablesAuto() {
+    // Close modal
+    document.querySelector('.fixed')?.remove();
+    
+    const groups = analyzeGroups();
+    
+    if (groups.length === 0) {
+        showToast('לא נמצאו קבוצות לבניית שולחנות', 'warning');
+        return;
+    }
+    
+    // Confirm action
+    const totalGuests = groups.reduce((sum, g) => sum + g.count, 0);
+    if (!confirm(`נמצאו ${groups.length} קבוצות עם סך של ${totalGuests} אורחים.\n\nהאם ליצור ${groups.length} שולחנות אוטומטית?`)) {
+        return;
+    }
+    
+    try {
+        let created = 0;
+        
+        for (const group of groups) {
+            const capacity = calculateTableSize(group.count);
+            const tableData = {
+                name: `שולחן ${group.name}`,
+                capacity: capacity,
+                notes: group.isMixed ? 'שולחן מעורב (קבוצות קטנות)' : `${group.count} אורחים מקבוצת ${group.name}`
+            };
+            
+            const response = await axios.post(`/api/events/${currentEvent.id}/tables`, tableData);
+            if (response.data.success) {
+                created++;
+            }
+        }
+        
+        showToast(`נוצרו ${created} שולחנות בהצלחה! 🎉`, 'success');
+        loadSeating(); // Refresh
+        
+    } catch (error) {
+        console.error('Error creating tables:', error);
+        showToast('שגיאה ביצירת שולחנות', 'error');
+    }
+}
+
+// Show manual table size configuration modal
+function showManualTableSizeModal() {
+    // Close previous modal
+    document.querySelector('.fixed')?.remove();
+    
+    const groups = analyzeGroups();
+    
+    if (groups.length === 0) {
+        showToast('לא נמצאו קבוצות לבניית שולחנות', 'warning');
+        return;
+    }
+    
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 overflow-y-auto';
+    
+    const groupsHTML = groups.map((group, index) => {
+        const suggestedSize = calculateTableSize(group.count);
+        return `
+            <div class="bg-gray-50 rounded-lg p-4 hover:bg-gray-100 transition">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="flex-1">
+                        <h4 class="font-bold text-gray-800 text-lg">${group.name}</h4>
+                        <p class="text-sm text-gray-600">
+                            ${group.count} אורחים
+                            ${group.isMixed ? '(קבוצות קטנות משולבות)' : ''}
+                        </p>
+                    </div>
+                    <div class="text-right">
+                        <label class="block text-xs text-gray-500 mb-1">קיבולת שולחן</label>
+                        <input type="number" 
+                               id="table-size-${index}"
+                               min="${group.count}" 
+                               max="50" 
+                               value="${suggestedSize}"
+                               class="w-20 px-3 py-2 border border-gray-300 rounded-lg text-center font-bold text-lg focus:ring-2 focus:ring-purple-500">
+                    </div>
+                </div>
+                <div class="text-xs text-gray-500 flex items-center">
+                    <i class="fas fa-lightbulb ml-1 text-yellow-500"></i>
+                    מומלץ: ${suggestedSize} מקומות (${group.count} אורחים + 15% buffer)
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    modal.innerHTML = `
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-8 m-4 max-h-[90vh] overflow-y-auto">
+            <div class="mb-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-2 flex items-center">
+                    <i class="fas fa-table ml-2 text-purple-600"></i>
+                    קביעת גדלי שולחנות
+                </h2>
+                <p class="text-gray-600">זוהו ${groups.length} קבוצות. קבע את הקיבולת לכל שולחן:</p>
+            </div>
+            
+            <div class="space-y-3 mb-6">
+                ${groupsHTML}
+            </div>
+            
+            <div class="flex space-x-reverse space-x-3 pt-4 border-t">
+                <button onclick="createTablesFromManualSizes()" 
+                        class="flex-1 bg-gradient-to-r from-purple-500 to-blue-500 text-white px-6 py-3 rounded-xl hover:from-purple-600 hover:to-blue-600 transition font-semibold">
+                    <i class="fas fa-check ml-2"></i>
+                    צור ${groups.length} שולחנות
+                </button>
+                <button onclick="this.closest('.fixed').remove()" 
+                        class="flex-1 bg-gray-300 text-gray-700 px-6 py-3 rounded-xl hover:bg-gray-400 transition font-semibold">
+                    ביטול
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    modal.closest = function(selector) { return modal; };
+}
+
+// Create tables from manual sizes
+async function createTablesFromManualSizes() {
+    const groups = analyzeGroups();
+    const modal = document.querySelector('.fixed');
+    
+    try {
+        let created = 0;
+        
+        for (let i = 0; i < groups.length; i++) {
+            const group = groups[i];
+            const sizeInput = document.getElementById(`table-size-${i}`);
+            const capacity = parseInt(sizeInput.value);
+            
+            if (capacity < group.count) {
+                showToast(`קיבולת שולחן ${group.name} קטנה מדי (${capacity} < ${group.count})`, 'error');
+                return;
+            }
+            
+            const tableData = {
+                name: `שולחן ${group.name}`,
+                capacity: capacity,
+                notes: group.isMixed ? 'שולחן מעורב (קבוצות קטנות)' : `${group.count} אורחים מקבוצת ${group.name}`
+            };
+            
+            const response = await axios.post(`/api/events/${currentEvent.id}/tables`, tableData);
+            if (response.data.success) {
+                created++;
+            }
+        }
+        
+        modal?.remove();
+        showToast(`נוצרו ${created} שולחנות בהצלחה! 🎉`, 'success');
+        loadSeating(); // Refresh
+        
+    } catch (error) {
+        console.error('Error creating tables:', error);
+        showToast('שגיאה ביצירת שולחנות', 'error');
+    }
+}
+
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
     loadEvent();
