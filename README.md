@@ -9,7 +9,7 @@
 
 - **Production**: `https://webapp-cio.pages.dev`
 - **Login**: `https://webapp-cio.pages.dev/login`
-- **Latest Deploy**: `https://4e12e699.webapp-cio.pages.dev`
+- **Latest Deploy**: `https://d5388cdd.webapp-cio.pages.dev`
 - **API Health**: `/api/health`
 - **Dev Login** (for development): `/dev-login`
 - **Public RSVP Demo**: `/e/wedding-demo-abc123`
@@ -605,6 +605,41 @@ npm run test             # Health check
 - **בעיה**: מחיקת אירוע נכשלה (FK constraints)
 - **פתרון**: Cascade delete בסדר נכון
 - **תוצאה**: מחיקה מלאה של אירוע ונתונים
+
+### ✅ Auto Table Creation with Buffer (דצמבר 2024)
+- **בעיה 1**: שולחנות נוצרו בגודל מדויק (46 guests → capacity 46) ללא buffer
+- **פתרון**: תיקון הקוד כך ש-capacity תמיד יכלול buffer 15% (46 guests → capacity 53)
+- **בעיה 2**: capacity validation היה optional עם default(10), זה דרס את הערכים שנשלחו
+- **פתרון**: הסרת .optional() ו-.default(10) מה-schema, הגדלת max ל-100
+- **תוצאה**: כל שולחן נוצר עם מקום נוסף (buffer 15%) כך שיש מרווח נשימה
+
+### ✅ Seating Note & Removal Warning (דצמבר 2024)
+- **בעיה 1**: כשאורח הוסר מהושבה (RSVP capacity change), לא הוצגה הערה מתאימה ברשימת "אורחים ללא הושבה"
+- **פתרון**: הוספת seatingNote לרשומת ה-unseated עם אייקון אזהרה ⚠️ וטקסט אדום
+- **בעיה 2**: הסרת אורח מ-RSVP הציגה אזהרה גם למשתמש הציבורי
+- **פתרון**: הסרת ה-warning מתגובת ה-RSVP הציבורי (נשאר רק בצד האדמין)
+- **תוצאה**: רשימת "אורחים ללא הושבה" מציגה למה האורח הוסר, וההערה נמחקת אוטומטית בהושבה חדשה
+
+### ✅ Capacity Validation with attendingCount (דצמבר 2024)
+- **בעיה**: בדיקת קיבולת לא התחשבה ב-attendingCount של RSVPs, כך שניתן היה להוסיף אורח לשולחן מלא
+- **פתרון**: Backend מחשב תפוסה אמיתית: `occupiedSeats = RSVPs.attendingCount + Guests`
+- **תוצאה**: הודעת שגיאה ברורה: "אין מספיק מקום. תפוס: 46, נדרש: 3, קיבולת: 46"
+
+### ✅ Magic Link Email Fix (דצמבר 2024)
+- **בעיה**: Magic Link emails לא נשלחו בפרודקשן (Frontend הציג הצלחה אבל המייל לא הגיע)
+- **סיבה**: RESEND_API_KEY לא הוגדר כ-secret ב-Cloudflare Pages
+- **פתרון**: הוספת secrets בפרודקשן:
+  - `RESEND_API_KEY`: re_8Xzeixn6_Ff9rYGE6qv1FfKLpPMzMx68m
+  - `APP_URL`: https://webapp-cio.pages.dev
+  - `JWT_SECRET`: סיסמה חזקה אקראית (32+ bytes)
+- **תוצאה**: התחברות עם Magic Link עובדת מצוין בפרודקשן
+
+### ✅ CSV Import Loading & Duplicate Prevention (דצמבר 2024)
+- **בעיה 1**: ייבוא CSV לא הציג spinner, גרם ללחיצות כפולות ויצירת 1,400 כפילויות במקום 350
+- **פתרון**: הוספת spinner עם טקסט "מייבא 350 אורחים...", השבתת כפתורים במהלך הייבוא
+- **בעיה 2**: קושי למחוק כפילויות ידנית
+- **פתרון**: כפתור "מחק הכל" בצבע אדום עם אישור כפול
+- **תוצאה**: ייבוא מהיר יותר וידידותי למשתמש, ניקוי מהיר של כפילויות
 
 ## 📝 תכונות שהושלמו
 
