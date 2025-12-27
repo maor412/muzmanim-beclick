@@ -2800,8 +2800,25 @@ function analyzeGroups() {
     const smallGroups = [];
     
     Object.entries(groups).forEach(([name, members]) => {
-        const groupData = { name, members, count: members.length };
-        if (members.length >= SMALL_GROUP_THRESHOLD) {
+        // Calculate actual count including attendingCount for RSVPs
+        let actualCount = 0;
+        members.forEach(person => {
+            if (person.status === 'confirmed' && person.attendingCount) {
+                // This is an RSVP with attendingCount
+                actualCount += person.attendingCount;
+            } else {
+                // This is a guest or RSVP without attendingCount
+                actualCount += 1;
+            }
+        });
+        
+        const groupData = { 
+            name, 
+            members, 
+            count: actualCount  // Use actualCount instead of members.length
+        };
+        
+        if (actualCount >= SMALL_GROUP_THRESHOLD) {
             largeGroups.push(groupData);
         } else {
             smallGroups.push(groupData);
@@ -2811,10 +2828,21 @@ function analyzeGroups() {
     // Merge small groups into "מעורב"
     if (smallGroups.length > 0) {
         const mixedMembers = smallGroups.flatMap(g => g.members);
+        
+        // Calculate actual count for mixed group
+        let mixedCount = 0;
+        mixedMembers.forEach(person => {
+            if (person.status === 'confirmed' && person.attendingCount) {
+                mixedCount += person.attendingCount;
+            } else {
+                mixedCount += 1;
+            }
+        });
+        
         largeGroups.push({
             name: 'מעורב',
             members: mixedMembers,
-            count: mixedMembers.length,
+            count: mixedCount,  // Use actualCount
             isMixed: true
         });
     }
