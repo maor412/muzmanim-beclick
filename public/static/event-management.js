@@ -131,63 +131,26 @@ async function loadEvent() {
     }
     
     try {
-        const response = await axios.get(`/api/events/${eventId}`);
+        console.log('🔵 Loading event:', eventId);
+        const response = await axios.get(`/api/events/${eventId}`, { timeout: 10000 });
+        console.log('✅ Event loaded:', response.data);
+        
         if (response.data.success) {
             currentEvent = response.data.event;
             document.getElementById('event-title').textContent = currentEvent.eventName;
             
-            // START: Monitor DOM for white square
-            console.log('🔍 [MONITOR] Starting DOM mutation observer...');
-            let foundElements = [];
-            const observer = new MutationObserver((mutations) => {
-                mutations.forEach((mutation) => {
-                    mutation.addedNodes.forEach(node => {
-                        if (node.nodeType === 1) {
-                            const rect = node.getBoundingClientRect();
-                            const styles = window.getComputedStyle(node);
-                            
-                            if (rect.top >= 0 && rect.top < 150 && rect.right > window.innerWidth - 100 && rect.width > 5 && rect.height > 5) {
-                                const info = {
-                                    tag: node.tagName,
-                                    id: node.id || 'NO_ID',
-                                    class: node.className || 'NO_CLASS',
-                                    bg: styles.backgroundColor,
-                                    position: styles.position,
-                                    zIndex: styles.zIndex,
-                                    html: node.outerHTML?.substring(0, 150)
-                                };
-                                foundElements.push(info);
-                                console.warn('⚠️ [MONITOR] Element added to top-right:', info);
-                                
-                                // Send to API immediately
-                                axios.post('/api/debug/log', {
-                                    type: 'dom_mutation',
-                                    element: info,
-                                    timestamp: new Date().toISOString()
-                                }).catch(err => console.error('Failed to log:', err));
-                            }
-                        }
-                    });
-                });
+            console.log('🔵 Calling loadOverview()...');
+            loadOverview().catch(err => {
+                console.error('❌ Error in loadOverview:', err);
+                document.getElementById('loading')?.classList.add('hidden');
+                showToast('שגיאה בטעינת נתוני הסקירה', 'error');
             });
-            observer.observe(document.body, { childList: true, subtree: true });
-            setTimeout(() => { 
-                observer.disconnect(); 
-                console.log('🔍 [MONITOR] Stopped. Found ' + foundElements.length + ' elements');
-                if (foundElements.length > 0) {
-                    // Show alert with findings
-                    const summary = foundElements.map(e => `${e.tag}#${e.id}.${e.class} bg:${e.bg}`).join('\n');
-                    console.log('Found elements:\n' + summary);
-                }
-            }, 5000);
-            // END: Monitor DOM
-            
-            loadOverview();
         } else {
             showError(response.data.error || 'שגיאה בטעינת האירוע');
         }
     } catch (error) {
         console.error('Error loading event:', error);
+        document.getElementById('loading')?.classList.add('hidden');
         showError('שגיאה בטעינת האירוע');
     }
 }
@@ -212,9 +175,9 @@ async function loadOverview() {
     
     try {
         console.log('📡 Making 5 API calls for overview...');
-        // Load stats with timeout
+        // Load stats with timeout using Promise.allSettled for better error handling
         const apiTimeout = 10000; // 10 seconds
-        const [rsvpsRes, guestsRes, tablesRes, checkinsRes, seatingRes] = await Promise.all([
+        const results = await Promise.allSettled([
             axios.get(`/api/events/${currentEvent.id}/rsvps`, { timeout: apiTimeout }),
             axios.get(`/api/events/${currentEvent.id}/guests`, { timeout: apiTimeout }),
             axios.get(`/api/events/${currentEvent.id}/tables`, { timeout: apiTimeout }),
@@ -222,13 +185,22 @@ async function loadOverview() {
             axios.get(`/api/events/${currentEvent.id}/seating`, { timeout: apiTimeout })
         ]);
         
-        console.log('✅ Overview API calls successful');
+        console.log('✅ Overview API calls completed', results.map(r => r.status));
         
-        const rsvps = rsvpsRes.data.rsvps || [];
-        const guests = guestsRes.data.guests || [];
-        const tables = tablesRes.data.tables || [];
-        const checkins = checkinsRes.data.checkins || [];
-        const seating = seatingRes.data.seating || [];
+        // Extract data even if some calls failed
+        const rsvps = results[0].status === 'fulfilled' ? (results[0].value.data.rsvps || []) : [];
+        const guests = results[1].status === 'fulfilled' ? (results[1].value.data.guests || []) : [];
+        const tables = results[2].status === 'fulfilled' ? (results[2].value.data.tables || []) : [];
+        const checkins = results[3].status === 'fulfilled' ? (results[3].value.data.checkins || []) : [];
+        const seating = results[4].status === 'fulfilled' ? (results[4].value.data.seating || []) : [];
+        
+        // Log any failed calls
+        results.forEach((result, index) => {
+            if (result.status === 'rejected') {
+                const names = ['rsvps', 'guests', 'tables', 'checkins', 'seating'];
+                console.error(`❌ Failed to load ${names[index]}:`, result.reason);
+            }
+        });
         
         // Update stats - count total attending people, not just confirmed RSVPs
         const totalAttending = rsvps
