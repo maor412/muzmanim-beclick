@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import { setCookie } from 'hono/cookie';
 import { generateId, createJWT, getCurrentTimestamp } from '../utils/auth';
 
 const google = new Hono<{ Bindings: CloudflareBindings }>();
@@ -135,7 +136,16 @@ google.get('/callback', async (c) => {
       new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
     ).run();
     
-    // Redirect to app with token
+    // Set session cookie for automatic login
+    setCookie(c, 'mozmanim_token', sessionToken, {
+      httpOnly: true,
+      secure: true, // HTTPS only in production
+      sameSite: 'Lax',
+      maxAge: 60 * 60 * 24 * 7, // 7 days
+      path: '/'
+    });
+    
+    // Redirect to app with token (for backward compatibility with localStorage)
     return c.redirect(`/auth/success?token=${sessionToken}`);
     
   } catch (error) {

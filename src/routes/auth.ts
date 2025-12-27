@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import { getCookie, deleteCookie } from 'hono/cookie';
 import { generateId, generateToken, createJWT, verifyJWT, getCurrentTimestamp, getFutureTimestamp } from '../utils/auth';
 
 const auth = new Hono<{ Bindings: CloudflareBindings }>();
@@ -286,12 +287,21 @@ auth.get('/verify/:token', async (c) => {
 // GET /api/auth/me - Get current user
 auth.get('/me', async (c) => {
   try {
+    // Try to get token from Authorization header first, then from cookie
+    let token: string | undefined;
+    
     const authHeader = c.req.header('Authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.substring(7);
+    } else {
+      // Fallback to cookie
+      token = getCookie(c, 'mozmanim_token');
+    }
+    
+    if (!token) {
       return c.json({ error: 'No authorization token' }, 401);
     }
     
-    const token = authHeader.substring(7);
     const { DB, JWT_SECRET } = c.env;
     
     // Verify JWT
@@ -334,18 +344,29 @@ auth.get('/me', async (c) => {
 // POST /api/auth/logout - Logout user
 auth.post('/logout', async (c) => {
   try {
+    // Try to get token from Authorization header first, then from cookie
+    let token: string | undefined;
+    
     const authHeader = c.req.header('Authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.substring(7);
+    } else {
+      token = getCookie(c, 'mozmanim_token');
+    }
+    
+    if (!token) {
       return c.json({ error: 'No authorization token' }, 401);
     }
     
-    const token = authHeader.substring(7);
     const { DB } = c.env;
     
-    // Delete session
+    // Delete session from database
     await DB.prepare(`
       DELETE FROM sessions WHERE token = ?
     `).bind(token).run();
+    
+    // Delete cookie
+    deleteCookie(c, 'mozmanim_token');
     
     return c.json({ success: true, message: 'Logged out successfully' });
     
