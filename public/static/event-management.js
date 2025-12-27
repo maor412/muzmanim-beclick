@@ -257,8 +257,10 @@ async function loadOverview() {
         // START: Real-time DOM monitor for white square creation
         console.log('🚨 [WHITE SQUARE HUNT] Starting real-time monitor...');
         const createdElements = [];
+        const modifiedElements = [];
         const domObserver = new MutationObserver((mutations) => {
             mutations.forEach((mutation) => {
+                // Check for new nodes
                 mutation.addedNodes.forEach(node => {
                     if (node.nodeType === 1) { // Element node
                         const rect = node.getBoundingClientRect();
@@ -310,21 +312,63 @@ async function loadOverview() {
                         }
                     }
                 });
+                
+                // CHECK FOR ATTRIBUTE/STYLE CHANGES
+                if (mutation.type === 'attributes' && mutation.target.nodeType === 1) {
+                    const node = mutation.target;
+                    const rect = node.getBoundingClientRect();
+                    const styles = window.getComputedStyle(node);
+                    
+                    // Check if it's in top-right corner
+                    if (rect.top >= 0 && rect.top < 150 && rect.right > window.innerWidth - 100 && rect.width > 20 && rect.height > 20) {
+                        const info = {
+                            mutationType: mutation.type,
+                            attributeName: mutation.attributeName,
+                            tag: node.tagName,
+                            id: node.id || 'NO_ID',
+                            classes: node.className || 'NO_CLASS',
+                            bg: styles.backgroundColor,
+                            display: styles.display,
+                            visibility: styles.visibility,
+                            opacity: styles.opacity,
+                            position: styles.position,
+                            zIndex: styles.zIndex,
+                            coords: `${rect.top}x${rect.right} - ${rect.width}x${rect.height}`
+                        };
+                        modifiedElements.push(info);
+                        console.warn('⚠️ [ATTRIBUTE CHANGE] Element in top-right modified:', info);
+                        
+                        // Send to API
+                        axios.post('/api/debug/log', {
+                            type: 'element_modified',
+                            element: info,
+                            timestamp: new Date().toISOString()
+                        }).catch(err => console.error('Failed to log:', err));
+                    }
+                }
             });
         });
         
-        // Observe everything
+        // Observe everything - including attributes
         domObserver.observe(document.body, { 
             childList: true, 
-            subtree: true 
+            subtree: true,
+            attributes: true,
+            attributeFilter: ['class', 'style']
         });
         
         // Stop after 10 seconds
         setTimeout(() => {
             domObserver.disconnect();
-            console.log(`🚨 [WHITE SQUARE HUNT] Monitor stopped. Found ${createdElements.length} white empty elements`);
+            console.log(`🚨 [WHITE SQUARE HUNT] Monitor stopped.`);
+            console.log(`  Created: ${createdElements.length} white empty elements`);
+            console.log(`  Modified: ${modifiedElements.length} attribute changes in top-right`);
             if (createdElements.length > 0) {
                 console.table(createdElements);
+            }
+            if (modifiedElements.length > 0) {
+                console.log('Modified elements:');
+                console.table(modifiedElements);
             }
         }, 10000);
         // END: Real-time DOM monitor
