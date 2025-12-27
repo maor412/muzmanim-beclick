@@ -82,6 +82,17 @@ export const eventManagementPage = () => `
         .grid.md\\:grid-cols-4 {
           grid-template-columns: repeat(2, 1fr) !important;
         }
+        
+        /* Hide any rogue white divs */
+        body > div:empty {
+          display: none !important;
+        }
+        div[style*="background: white"]:empty,
+        div[style*="background-color: white"]:empty,
+        div[style*="background:#fff"]:empty,
+        div[style*="background-color:#fff"]:empty {
+          display: none !important;
+        }
       }
     </style>
 </head>
