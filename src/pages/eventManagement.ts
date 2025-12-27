@@ -546,10 +546,13 @@ export const eventManagementPage = () => `
                     <!-- Automation Dropdown -->
                     <div class="relative col-span-2 md:flex-1 md:basis-0 md:min-w-0" id="automation-dropdown">
                         <button onclick="toggleAutomationMenu()" 
-                                class="w-full bg-purple-500 text-white px-4 py-3 rounded-lg hover:bg-purple-600 transition shadow-md flex items-center justify-center font-semibold whitespace-nowrap">
-                            <i class="fas fa-magic ml-2"></i>
-                            <span>אוטומציה</span>
-                            <i class="fas fa-chevron-down mr-2 text-sm"></i>
+                                class="w-full bg-purple-500 text-white px-4 py-3 rounded-lg hover:bg-purple-600 transition shadow-md flex flex-col items-center justify-center font-semibold">
+                            <div class="flex items-center">
+                                <i class="fas fa-magic text-lg ml-2"></i>
+                                <span class="text-sm md:text-base">אוטומציה</span>
+                                <i class="fas fa-chevron-down mr-2 text-sm"></i>
+                            </div>
+                            <span class="text-xs mt-0.5 opacity-90 hidden md:block">ניהול מתקדם</span>
                         </button>
                         <div id="automation-menu" class="hidden absolute left-0 mt-2 w-full md:w-64 bg-white rounded-lg shadow-xl border border-gray-200 z-50">
                             <div class="py-2">
