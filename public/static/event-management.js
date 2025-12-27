@@ -206,6 +206,31 @@ async function loadOverview() {
         
         // Generate insights
         generateInsights(rsvps, guests, seating, tables);
+        
+        // Clean up any rogue white divs (mobile fix for white square bug)
+        setTimeout(() => {
+            document.querySelectorAll('div').forEach(el => {
+                const rect = el.getBoundingClientRect();
+                const styles = window.getComputedStyle(el);
+                
+                // Remove suspicious white divs in top-right corner
+                if (
+                    (styles.backgroundColor === 'rgb(255, 255, 255)' || 
+                     styles.backgroundColor === 'white' ||
+                     styles.backgroundColor === '#ffffff') &&
+                    rect.top >= 0 && rect.top < 200 &&
+                    rect.right > window.innerWidth - 100 &&
+                    rect.width > 10 && rect.width < 100 &&
+                    rect.height > 10 && rect.height < 200 &&
+                    !el.id && !el.className.includes('bg-white') &&
+                    el.children.length === 0 &&
+                    (!el.textContent || el.textContent.trim() === '')
+                ) {
+                    console.warn('🐛 Removing suspicious white div:', el, rect);
+                    el.remove();
+                }
+            });
+        }, 500);
     } catch (error) {
         console.error('❌ Error loading overview:', error);
         console.error('Error details:', {
