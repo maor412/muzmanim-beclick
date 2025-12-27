@@ -112,42 +112,56 @@ app.get('/', (c) => {
         <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
         <style>
           body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+          
+          /* Mobile Responsive */
+          @media (max-width: 768px) {
+            .hero-title { font-size: 2rem !important; line-height: 1.2 !important; }
+            .hero-subtitle { font-size: 1.125rem !important; }
+            .nav-links { display: none; }
+            .mobile-menu-btn { display: block; }
+          }
+          @media (min-width: 769px) {
+            .mobile-menu-btn { display: none; }
+          }
         </style>
     </head>
     <body class="bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50 min-h-screen">
         <!-- Header -->
         <nav class="bg-white shadow-lg">
-            <div class="container mx-auto px-4 py-4">
+            <div class="container mx-auto px-3 md:px-4 py-3 md:py-4">
                 <div class="flex justify-between items-center">
-                    <div class="flex items-center space-x-reverse space-x-2">
-                        <i class="fas fa-heart text-pink-500 text-3xl"></i>
-                        <h1 class="text-2xl font-bold text-gray-800">מוזמנים בקליק</h1>
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-heart text-pink-500 text-2xl md:text-3xl"></i>
+                        <h1 class="text-lg md:text-2xl font-bold text-gray-800">מוזמנים בקליק</h1>
                     </div>
-                    <div class="space-x-reverse space-x-4">
+                    <div class="nav-links flex gap-4">
                         <a href="/about" class="text-gray-600 hover:text-pink-500">אודות</a>
                         <a href="/contact" class="text-gray-600 hover:text-pink-500">צור קשר</a>
                         <a href="/login" class="bg-pink-500 text-white px-6 py-2 rounded-full hover:bg-pink-600 transition">התחברות</a>
                     </div>
+                    <a href="/login" class="mobile-menu-btn bg-pink-500 text-white px-3 py-1.5 rounded-full hover:bg-pink-600 transition text-sm">
+                        התחברות
+                    </a>
                 </div>
             </div>
         </nav>
 
         <!-- Hero Section -->
-        <div class="container mx-auto px-4 py-16">
+        <div class="container mx-auto px-4 py-8 md:py-16">
             <div class="max-w-4xl mx-auto text-center">
-                <h2 class="text-5xl font-bold text-gray-800 mb-6">
+                <h2 class="hero-title text-3xl md:text-5xl font-bold text-gray-800 mb-4 md:mb-6">
                     ניהול מוזמנים לחתונה<br />
                     <span class="text-pink-500">בקליק אחד</span>
                 </h2>
-                <p class="text-xl text-gray-600 mb-8">
+                <p class="hero-subtitle text-base md:text-xl text-gray-600 mb-6 md:mb-8 px-4">
                     מערכת מתקדמת לניהול אירועים: RSVP, רשימות מוזמנים, סידורי הושבה, צ'ק-אין ועוד
                 </p>
-                <div class="flex justify-center space-x-reverse space-x-4">
-                    <a href="/signup" class="bg-pink-500 text-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-pink-600 transition shadow-lg">
-                        <i class="fas fa-rocket ml-2"></i>
+                <div class="flex flex-col md:flex-row justify-center gap-3 md:gap-4 px-4">
+                    <a href="/signup" class="bg-pink-500 text-white px-6 py-3 md:px-8 md:py-4 rounded-full text-base md:text-lg font-semibold hover:bg-pink-600 transition shadow-lg">
+                        <i class="fas fa-rocket mr-2"></i>
                         התחל עכשיו בחינם
                     </a>
-                    <a href="#features" class="bg-white text-gray-800 px-8 py-4 rounded-full text-lg font-semibold hover:bg-gray-100 transition shadow-lg">
+                    <a href="#features" class="bg-white text-gray-800 px-6 py-3 md:px-8 md:py-4 rounded-full text-base md:text-lg font-semibold hover:bg-gray-100 transition shadow-lg">
                         <i class="fas fa-info-circle ml-2"></i>
                         למד עוד
                     </a>
