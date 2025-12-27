@@ -135,6 +135,53 @@ async function loadEvent() {
         if (response.data.success) {
             currentEvent = response.data.event;
             document.getElementById('event-title').textContent = currentEvent.eventName;
+            
+            // START: Monitor DOM for white square
+            console.log('🔍 [MONITOR] Starting DOM mutation observer...');
+            let foundElements = [];
+            const observer = new MutationObserver((mutations) => {
+                mutations.forEach((mutation) => {
+                    mutation.addedNodes.forEach(node => {
+                        if (node.nodeType === 1) {
+                            const rect = node.getBoundingClientRect();
+                            const styles = window.getComputedStyle(node);
+                            
+                            if (rect.top >= 0 && rect.top < 150 && rect.right > window.innerWidth - 100 && rect.width > 5 && rect.height > 5) {
+                                const info = {
+                                    tag: node.tagName,
+                                    id: node.id || 'NO_ID',
+                                    class: node.className || 'NO_CLASS',
+                                    bg: styles.backgroundColor,
+                                    position: styles.position,
+                                    zIndex: styles.zIndex,
+                                    html: node.outerHTML?.substring(0, 150)
+                                };
+                                foundElements.push(info);
+                                console.warn('⚠️ [MONITOR] Element added to top-right:', info);
+                                
+                                // Send to API immediately
+                                axios.post('/api/debug/log', {
+                                    type: 'dom_mutation',
+                                    element: info,
+                                    timestamp: new Date().toISOString()
+                                }).catch(err => console.error('Failed to log:', err));
+                            }
+                        }
+                    });
+                });
+            });
+            observer.observe(document.body, { childList: true, subtree: true });
+            setTimeout(() => { 
+                observer.disconnect(); 
+                console.log('🔍 [MONITOR] Stopped. Found ' + foundElements.length + ' elements');
+                if (foundElements.length > 0) {
+                    // Show alert with findings
+                    const summary = foundElements.map(e => `${e.tag}#${e.id}.${e.class} bg:${e.bg}`).join('\n');
+                    console.log('Found elements:\n' + summary);
+                }
+            }, 5000);
+            // END: Monitor DOM
+            
             loadOverview();
         } else {
             showError(response.data.error || 'שגיאה בטעינת האירוע');

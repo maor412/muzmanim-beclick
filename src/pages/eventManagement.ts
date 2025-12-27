@@ -126,9 +126,9 @@ export const eventManagementPage = () => `
     </nav>
 
     <!-- Tabs Navigation -->
-    <div class="bg-white border-b sticky top-[45px] md:top-[73px] z-30">
+    <div class="bg-white border-b sticky top-[46px] md:top-[73px] z-30">
         <div class="w-full px-2 md:container md:mx-auto md:px-4">
-            <div class="flex space-x-reverse overflow-x-auto scrollbar-hide">
+            <div class="flex space-x-reverse overflow-x-auto scrollbar-hide" style="overflow-x: hidden;">
                 <button onclick="switchTab('overview')" id="tab-overview" class="tab-active px-3 py-3 md:px-6 md:py-4 font-semibold transition whitespace-nowrap text-sm md:text-base">
                     <i class="fas fa-chart-line ml-1 md:ml-2"></i>
                     סקירה
