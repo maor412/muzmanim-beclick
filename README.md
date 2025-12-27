@@ -9,7 +9,7 @@
 
 - **Production**: `https://webapp-cio.pages.dev`
 - **Login**: `https://webapp-cio.pages.dev/login`
-- **Latest Deploy**: `https://bd364de9.webapp-cio.pages.dev`
+- **Latest Deploy**: `https://8f8ee0a8.webapp-cio.pages.dev`
 - **API Health**: `/api/health`
 - **Dev Login** (for development): `/dev-login`
 - **Public RSVP Demo**: `/e/wedding-demo-abc123`
@@ -719,6 +719,12 @@ npm run test             # Health check
 - [x] ✅ Audit logging
 - [x] ✅ Rate limiting (optimized 100 req/min)
 - [x] ✅ **Improved error messages**
+- [x] ✅ **Mobile Responsive UI** (27/12/2025)
+  - [x] Header optimized for mobile
+  - [x] Tabs navigation with smaller icons
+  - [x] Stats cards in 2-column grid
+  - [x] Proper text sizing for all screen sizes
+  - [x] Public RSVP page mobile-friendly
 
 ## 🚧 פיתוח עתידי (Nice to Have)
 
