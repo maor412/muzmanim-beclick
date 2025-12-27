@@ -93,19 +93,6 @@ export const eventManagementPage = () => `
         div[style*="background-color:#fff"]:empty {
           display: none !important;
         }
-        
-        /* NUCLEAR OPTION: Cover the white square with transparent overlay */
-        body::after {
-          content: '';
-          position: fixed;
-          top: 0;
-          right: 0;
-          width: 80px;
-          height: 150px;
-          background: linear-gradient(to left, #f9fafb 0%, transparent 100%);
-          pointer-events: none;
-          z-index: 999;
-        }
       }
     </style>
 </head>
