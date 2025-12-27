@@ -2333,7 +2333,7 @@ async function exportRsvpsPDF() {
         
         // Create hidden container for rendering
         const container = document.createElement('div');
-        container.style.cssText = 'position: absolute; left: -9999px; top: 0; width: 800px; background: white; padding: 20px; font-family: Arial, sans-serif;';
+        container.style.cssText = 'position: absolute; left: -9999px; top: 0; width: 800px; background: white; padding: 20px; font-family: Arial, sans-serif; visibility: hidden; pointer-events: none; z-index: -1;';
         container.innerHTML = `
             <div dir="rtl" style="text-align: center; margin-bottom: 20px;">
                 <h1 style="font-size: 24px; margin-bottom: 10px;">אירוע: ${currentEvent.eventName}</h1>
@@ -2427,7 +2427,7 @@ async function exportGuestsPDF() {
             
             // Create container for this page
             const container = document.createElement('div');
-            container.style.cssText = 'position: absolute; left: -9999px; top: 0; width: 800px; background: white; padding: 20px; font-family: Arial, sans-serif;';
+            container.style.cssText = 'position: absolute; left: -9999px; top: 0; width: 800px; background: white; padding: 20px; font-family: Arial, sans-serif; visibility: hidden; pointer-events: none; z-index: -1;';
             container.innerHTML = `
                 <div dir="rtl" style="text-align: center; margin-bottom: 20px;">
                     <h1 style="font-size: 24px; margin-bottom: 10px;">אירוע: ${currentEvent.eventName}</h1>
@@ -2565,7 +2565,7 @@ async function exportSeatingPDF() {
             
             // Create container for this page
             const container = document.createElement('div');
-            container.style.cssText = 'position: absolute; left: -9999px; top: 0; width: 800px; background: white; padding: 20px; font-family: Arial, sans-serif;';
+            container.style.cssText = 'position: absolute; left: -9999px; top: 0; width: 800px; background: white; padding: 20px; font-family: Arial, sans-serif; visibility: hidden; pointer-events: none; z-index: -1;';
             container.innerHTML = `
                 <div dir="rtl" style="text-align: center; margin-bottom: 20px;">
                     <h1 style="font-size: 24px; margin-bottom: 10px;">אירוע: ${currentEvent.eventName}</h1>
