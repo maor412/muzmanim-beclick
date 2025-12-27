@@ -9,7 +9,7 @@
 
 - **Production**: `https://webapp-cio.pages.dev`
 - **Login**: `https://webapp-cio.pages.dev/login`
-- **Latest Deploy**: `https://9463f32f.webapp-cio.pages.dev`
+- **Latest Deploy**: `https://658d7310.webapp-cio.pages.dev`
 - **API Health**: `/api/health`
 - **Dev Login** (for development): `/dev-login`
 - **Public RSVP Demo**: `/e/wedding-demo-abc123`
@@ -642,16 +642,18 @@ npm run test             # Health check
 - **תוצאה**: ייבוא מהיר יותר וידידותי למשתמש, ניקוי מהיר של כפילויות
 
 ### ✅ Multi-Page PDF Export (דצמבר 2024)
-- **בעיה**: PDF export היה מוגבל לעמוד אחד, חיתוך של מוזמנים כשיש יותר מ-30-40 שורות
-- **פתרון**: שכתוב מלא של מנוע ה-PDF:
-  - מעבר מ-html2canvas (single page) ל-jsPDF native (multi-page)
-  - חישוב דינמי של שורות לכל עמוד (~35 שורות לעמוד)
-  - הוספת header לכל עמוד עם מספר עמוד
-  - footer עם סטטיסטיקות בעמוד האחרון
-  - תמיכה בעברית RTL מלאה
+- **בעיה 1**: PDF export היה מוגבל לעמוד אחד, חיתוך של מוזמנים כשיש יותר מ-30-40 שורות
+- **פתרון 1 (נכשל)**: מעבר ל-jsPDF native - אך גרם לטקסט עברי gibberish
+- **פתרון 2 (הצליח)**: שימוש ב-html2canvas עם לולאה על עמודים:
+  - פיצול המוזמנים ל-chunks של 30 שורות לכל עמוד
+  - יצירת HTML נפרד לכל עמוד עם header ומספר עמוד
+  - המרת כל עמוד ל-canvas ואז ל-PDF
+  - הוספת footer בעמוד האחרון
+  - תמיכה מלאה בעברית RTL (כי html2canvas מרנדר HTML אמיתי)
 - **תוצאה**: 
-  - ✅ **350 מוזמנים** → **~10 עמודים** (במקום 1 עמוד חתוך)
-  - ✅ הודעה: "PDF יוצא בהצלחה! (10 עמודים)"
+  - ✅ **350 מוזמנים** → **~12 עמודים** (30 שורות לעמוד)
+  - ✅ עברית מושלמת (ללא gibberish)
+  - ✅ הודעה: "PDF יוצא בהצלחה! (12 עמודים)"
   - ✅ עובד גם ל-guests PDF וגם ל-seating PDF
 
 ## 📝 תכונות שהושלמו
