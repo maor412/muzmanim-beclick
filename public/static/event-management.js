@@ -170,8 +170,15 @@ async function loadOverview() {
     
     if (!currentEvent) {
         console.error('❌ No current event!');
+        showToast('שגיאה: אין אירוע נוכחי', 'error');
         return;
     }
+    
+    // Set a maximum timeout for the entire operation
+    const overallTimeout = setTimeout(() => {
+        console.error('⏰ Overview loading timed out after 15 seconds');
+        showToast('הטעינה לוקחת יותר מדי זמן. רענן את הדף או נסה שוב מאוחר יותר.', 'warning');
+    }, 15000); // 15 seconds overall timeout
     
     try {
         console.log('📡 Making 5 API calls for overview...');
@@ -226,6 +233,9 @@ async function loadOverview() {
         
         // Generate insights
         generateInsights(rsvps, guests, seating, tables);
+        
+        // Clear the overall timeout since we succeeded
+        clearTimeout(overallTimeout);
         
         // START: Real-time DOM monitor for white square creation
         console.log('🚨 [WHITE SQUARE HUNT] Starting real-time monitor...');
@@ -414,6 +424,9 @@ async function loadOverview() {
             }
         }, 1000); // Wait 1 second after data load
     } catch (error) {
+        // Clear the timeout
+        clearTimeout(overallTimeout);
+        
         console.error('❌ Error loading overview:', error);
         console.error('Error details:', {
             message: error.message,
