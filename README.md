@@ -9,7 +9,7 @@
 
 - **Production**: `https://webapp-cio.pages.dev`
 - **Login**: `https://webapp-cio.pages.dev/login`
-- **Latest Deploy**: `https://658d7310.webapp-cio.pages.dev`
+- **Latest Deploy**: `https://bd364de9.webapp-cio.pages.dev`
 - **API Health**: `/api/health`
 - **Dev Login** (for development): `/dev-login`
 - **Public RSVP Demo**: `/e/wedding-demo-abc123`
@@ -655,6 +655,19 @@ npm run test             # Health check
   - ✅ עברית מושלמת (ללא gibberish)
   - ✅ הודעה: "PDF יוצא בהצלחה! (12 עמודים)"
   - ✅ עובד גם ל-guests PDF וגם ל-seating PDF
+
+### ✅ Auto-Fill Seating with attendingCount (דצמבר 2024)
+- **בעיה**: הושבה אוטומטית התעלמה מ-attendingCount של RSVPs, גרמה למילוי יתר של שולחנות
+- **דוגמה**: RSVP עם 4 מלווים → הוכנס לשולחן עם 2 מקומות פנויים → שולחן מלא מדי!
+- **פתרון**: 
+  - הוספת `attendingCount` לכל unseated RSVP ב-frontend
+  - חישוב תפוסה אמיתית לפני הושבה: `occupiedSeats = sum(RSVP.attendingCount) + guests`
+  - בדיקת מקום פנוי לפני הושבה: `if (seatsNeeded <= availableSeats)`
+  - אם אין מקום - דילוג על ה-RSVP הזה והמשך לבא
+- **תוצאה**:
+  - ✅ שולחנות לא נמלאים מעבר לקיבולת
+  - ✅ RSVPs עם מלווים רבים מושבים רק בשולחנות עם מספיק מקום
+  - ✅ אזהרה אם יש אורחים שלא ניתן להושיב
 
 ## 📝 תכונות שהושלמו
 
