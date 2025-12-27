@@ -79,26 +79,26 @@ export const eventManagementPage = () => `
 <body class="bg-gray-50">
     <!-- Header -->
     <nav class="bg-white shadow-lg sticky top-0 z-40">
-        <div class="container mx-auto px-4 py-4">
+        <div class="container mx-auto px-2 md:px-4 py-2 md:py-4">
             <div class="flex justify-between items-center">
-                <div class="flex items-center space-x-reverse space-x-2 md:space-x-4">
-                    <a href="/dashboard" class="text-gray-600 hover:text-pink-500">
-                        <i class="fas fa-arrow-right text-lg md:text-xl"></i>
+                <div class="flex items-center gap-2 md:gap-4">
+                    <a href="/dashboard" class="text-gray-600 hover:text-pink-500 flex items-center">
+                        <i class="fas fa-arrow-right text-base md:text-xl"></i>
                     </a>
-                    <div class="flex items-center space-x-reverse space-x-1 md:space-x-2">
-                        <i class="fas fa-heart text-pink-500 text-xl md:text-2xl"></i>
-                        <h1 class="text-base md:text-xl font-bold text-gray-800 truncate max-w-[150px] md:max-w-none" id="event-title">מוזמנים בקליק</h1>
+                    <div class="flex items-center gap-1 md:gap-2">
+                        <i class="fas fa-heart text-pink-500 text-lg md:text-2xl"></i>
+                        <h1 class="text-sm md:text-xl font-bold text-gray-800 truncate max-w-[120px] md:max-w-none" id="event-title">מוזמנים בקליק</h1>
                     </div>
                 </div>
-                <div class="flex items-center space-x-reverse space-x-1 md:space-x-3">
-                    <button onclick="copyRsvpLink()" class="bg-blue-500 text-white px-2 py-1 md:px-4 md:py-2 rounded-lg hover:bg-blue-600 transition text-sm md:text-base">
-                        <i class="fas fa-link ml-1 md:ml-2"></i>
+                <div class="flex items-center gap-1 md:gap-3">
+                    <button onclick="copyRsvpLink()" class="bg-blue-500 text-white px-2 py-1 md:px-4 md:py-2 rounded-lg hover:bg-blue-600 transition text-sm md:text-base flex items-center gap-1">
                         <span class="hidden md:inline">לינק</span>
-                        <span class="md:hidden">RSVP</span>
+                        <span class="md:hidden text-xs">RSVP</span>
+                        <i class="fas fa-link text-xs md:text-base"></i>
                     </button>
-                    <button onclick="logout()" class="bg-red-500 text-white px-2 py-1 md:px-4 md:py-2 rounded-lg hover:bg-red-600 transition text-sm md:text-base">
-                        <i class="fas fa-sign-out-alt ml-1 md:ml-2"></i>
+                    <button onclick="logout()" class="bg-red-500 text-white px-2 py-1 md:px-4 md:py-2 rounded-lg hover:bg-red-600 transition text-sm md:text-base flex items-center gap-1">
                         <span class="hidden md:inline">התנתק</span>
+                        <i class="fas fa-sign-out-alt text-xs md:text-base"></i>
                     </button>
                 </div>
             </div>
