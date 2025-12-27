@@ -538,17 +538,17 @@ export const eventManagementPage = () => `
                 <div class="grid grid-cols-2 md:flex md:flex-row-reverse gap-2 md:gap-3">
                     <!-- Primary Action -->
                     <button onclick="showAddTableModal()" class="col-span-2 md:col-span-1 bg-pink-500 text-white px-4 py-3 rounded-lg hover:bg-pink-600 transition shadow-md flex items-center justify-center font-semibold">
-                        <i class="fas fa-plus ml-2"></i>
-                        הוסף שולחן
+                        <i class="fas fa-plus-circle ml-2"></i>
+                        <span class="hidden md:inline">הוסף שולחן חדש</span>
+                        <span class="md:hidden">הוסף שולחן</span>
                     </button>
                     
                     <!-- Automation Dropdown -->
-                    <div class="relative col-span-2 md:col-span-1" id="automation-dropdown">
+                    <div class="relative" id="automation-dropdown">
                         <button onclick="toggleAutomationMenu()" 
-                                class="w-full bg-purple-500 text-white px-4 py-3 rounded-lg hover:bg-purple-600 transition flex items-center justify-center">
+                                class="bg-purple-500 text-white px-4 py-3 rounded-lg hover:bg-purple-600 transition flex items-center justify-center">
                             <i class="fas fa-magic ml-2"></i>
-                            <span class="hidden md:inline">אוטומציה</span>
-                            <span class="md:hidden">אוטומטי</span>
+                            <span>אוטומציה</span>
                             <i class="fas fa-chevron-down mr-2 text-sm"></i>
                         </button>
                         <div id="automation-menu" class="hidden absolute left-0 mt-2 w-full md:w-64 bg-white rounded-lg shadow-xl border border-gray-200 z-50">
