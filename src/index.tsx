@@ -301,8 +301,10 @@ app.get('/', (c) => {
                         axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
                     }
 
-                    // Check authentication status
-                    const response = await axios.get('/api/auth/me');
+                    // Check authentication status (with credentials to send cookies)
+                    const response = await axios.get('/api/auth/me', {
+                        withCredentials: true
+                    });
                     
                     if (response.data.user) {
                         // User is logged in - redirect to dashboard
@@ -312,6 +314,7 @@ app.get('/', (c) => {
                         showLandingPage();
                     }
                 } catch (error) {
+                    console.log('Auth check:', error.response?.status || error.message);
                     // Auth check failed - show landing page
                     showLandingPage();
                 }
