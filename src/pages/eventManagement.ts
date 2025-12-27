@@ -52,6 +52,12 @@ export const eventManagementPage = () => `
       
       /* Mobile Responsive Fixes */
       @media (max-width: 768px) {
+        /* Force sticky positioning to work */
+        nav.sticky, .sticky {
+          position: -webkit-sticky !important;
+          position: sticky !important;
+        }
+        
         h1, h2, h3 { 
           font-size: 1.25rem !important; 
           line-height: 1.5 !important;
