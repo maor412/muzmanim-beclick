@@ -2686,10 +2686,10 @@ async function exportGuestsPDF() {
                                 <td style="padding: 6px; border: 1px solid #ddd; text-align: right;">${guest.fullName}</td>
                                 <td style="padding: 6px; border: 1px solid #ddd; text-align: right;">${guest.phone || 'לא צוין'}</td>
                                 <td style="padding: 6px; border: 1px solid #ddd; text-align: center;">
-                                    ${guest.side === 'groom' ? 'חתן' : guest.side === 'bride' ? 'כלה' : 'משותף'}
+                                    ${guest.side === 'groom' ? 'חתן' : guest.side === 'bride' ? 'כלה' : guest.side === 'both' ? 'משותף' : (guest.side || 'לא צוין')}
                                 </td>
                                 <td style="padding: 6px; border: 1px solid #ddd; text-align: right;">
-                                    ${guest.groupLabel === 'family' ? 'משפחה' : guest.groupLabel === 'friends' ? 'חברים' : guest.groupLabel === 'work' ? 'עבודה' : 'אחר'}
+                                    ${guest.groupLabel === 'family' ? 'משפחה' : guest.groupLabel === 'friends' ? 'חברים' : guest.groupLabel === 'work' ? 'עבודה' : guest.groupLabel === 'other' ? 'אחרים' : (guest.groupLabel || 'לא צוין')}
                                 </td>
                                 <td style="padding: 6px; border: 1px solid #ddd; text-align: right;">${(guest.notes || '-').substring(0, 30)}</td>
                             </tr>
