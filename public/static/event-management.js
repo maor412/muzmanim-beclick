@@ -207,100 +207,73 @@ async function loadOverview() {
         // Generate insights
         generateInsights(rsvps, guests, seating, tables);
         
-        // Clean up any rogue white elements (mobile fix for white square bug)
+        // CRITICAL DEBUG: Monitor DOM changes and find white square
         setTimeout(async () => {
-            console.log('🔍 Starting element detection in top-right corner...');
-            let found = [];
-            let suspiciousElements = [];
+            console.log('🔍 [DEBUG] Scanning for white square element...');
             
-            // Check ALL elements, not just divs
-            document.querySelectorAll('*').forEach(el => {
+            // Get ALL elements in document
+            const allElements = Array.from(document.querySelectorAll('*'));
+            const topRightElements = [];
+            
+            allElements.forEach(el => {
                 const rect = el.getBoundingClientRect();
                 const styles = window.getComputedStyle(el);
                 
-                // Log ALL elements in top-right area (for debugging)
-                // Exact position based on your screenshot: top 0-150px, right edge
+                // Check if element is in top-right corner (where the white square appears)
                 if (
                     rect.top >= 0 && rect.top < 150 &&
                     rect.right > window.innerWidth - 100 &&
                     rect.width > 5 && rect.height > 5
                 ) {
-                    const elementData = {
+                    const elementInfo = {
                         tag: el.tagName,
                         id: el.id || 'NO_ID',
-                        class: el.className || 'NO_CLASS',
+                        classes: el.className || 'NO_CLASS',
                         bg: styles.backgroundColor,
+                        color: styles.color,
                         display: styles.display,
                         position: styles.position,
                         zIndex: styles.zIndex,
-                        coords: `top:${rect.top.toFixed(0)} right:${rect.right.toFixed(0)} w:${rect.width.toFixed(0)} h:${rect.height.toFixed(0)}`,
-                        children: el.children.length,
-                        text: el.textContent?.substring(0, 30) || 'EMPTY',
                         opacity: styles.opacity,
                         visibility: styles.visibility,
-                        overflow: styles.overflow
+                        top: Math.round(rect.top),
+                        right: Math.round(rect.right),
+                        width: Math.round(rect.width),
+                        height: Math.round(rect.height),
+                        html: el.outerHTML.substring(0, 200)
                     };
-                    found.push(elementData);
-                }
-                
-                // SUPER AGGRESSIVE: Remove ANY suspicious white element in that area
-                const isWhiteBg = styles.backgroundColor === 'rgb(255, 255, 255)' || 
-                                  styles.backgroundColor === 'white' ||
-                                  styles.backgroundColor === '#ffffff' ||
-                                  styles.backgroundColor === '#fff';
-                
-                const isInTopRight = rect.top >= 0 && rect.top < 150 &&
-                                     rect.right > window.innerWidth - 100;
-                
-                const isSuspiciousSize = rect.width > 5 && rect.width < 150 &&
-                                         rect.height > 5 && rect.height < 250;
-                
-                const hasNoMeaningfulContent = el.children.length === 0 &&
-                                               (!el.textContent || el.textContent.trim().length < 3);
-                
-                const isNotKnownElement = !el.id && 
-                                         !el.className?.includes('fas fa-') &&
-                                         !el.className?.includes('text-') &&
-                                         el.tagName !== 'SCRIPT' &&
-                                         el.tagName !== 'STYLE';
-                
-                if (isWhiteBg && isInTopRight && isSuspiciousSize && hasNoMeaningfulContent && isNotKnownElement) {
-                    const suspiciousData = {
-                        tag: el.tagName,
-                        id: el.id,
-                        class: el.className,
-                        coords: `top:${rect.top.toFixed(0)} right:${rect.right.toFixed(0)} w:${rect.width.toFixed(0)} h:${rect.height.toFixed(0)}`,
-                        bg: styles.backgroundColor,
-                        removed: true
-                    };
-                    suspiciousElements.push(suspiciousData);
-                    console.warn('🐛 REMOVING SUSPICIOUS WHITE ELEMENT:', suspiciousData);
-                    el.style.display = 'none'; // Hide first
-                    setTimeout(() => el.remove(), 100); // Then remove
+                    
+                    topRightElements.push(elementInfo);
+                    
+                    // If it's white background and suspicious
+                    const isWhite = styles.backgroundColor === 'rgb(255, 255, 255)' || 
+                                   styles.backgroundColor === 'white';
+                    if (isWhite) {
+                        console.warn('⚠️ [DEBUG] Found WHITE element:', elementInfo);
+                    }
                 }
             });
             
-            console.table(found);
-            console.log(`📊 Found ${found.length} elements in top-right area (0-150px from top)`);
+            console.table(topRightElements);
+            console.log(`📊 [DEBUG] Total elements in top-right: ${topRightElements.length}`);
             
-            // Send logs to API
+            // Send to API
             try {
                 await axios.post('/api/debug/log', {
-                    type: 'element_scan',
+                    type: 'white_square_scan',
                     eventId: getEventId(),
+                    timestamp: new Date().toISOString(),
                     windowWidth: window.innerWidth,
                     windowHeight: window.innerHeight,
                     userAgent: navigator.userAgent,
-                    foundElements: found,
-                    suspiciousElements: suspiciousElements,
-                    totalFound: found.length,
-                    totalRemoved: suspiciousElements.length
+                    topRightElements: topRightElements,
+                    totalElements: allElements.length
                 });
-                console.log('✅ Debug logs sent to /api/debug/logs');
-            } catch (logError) {
-                console.error('❌ Failed to send debug logs:', logError);
+                console.log('✅ [DEBUG] Scan results sent to /api/debug/logs');
+            } catch (err) {
+                console.error('❌ [DEBUG] Failed to send logs:', err);
             }
-        }, 500);
+        }, 1000); // Wait 1 second after data load
     } catch (error) {
         console.error('❌ Error loading overview:', error);
         console.error('Error details:', {

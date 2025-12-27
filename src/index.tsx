@@ -57,41 +57,7 @@ app.use('/api/*', cors({
   credentials: true
 }));
 
-// Dev Authentication middleware
-app.use('*', devAuthMiddleware);
-
-// Serve static files from dist (Cloudflare Pages deployment)
-app.use('/static/*', serveStatic({ root: './' }));
-
-// Health check (before other routes)
-app.get('/api/health', (c) => {
-  return c.json({ 
-    success: true, 
-    status: 'healthy',
-    timestamp: new Date().toISOString()
-  });
-});
-
-// API Routes (order matters!)
-// Mount public routes FIRST (before protected routers with auth middleware)
-app.route('/api/rsvp', publicRsvpsRouter);         // Public RSVP routes (:slug, :slug/event) - NO AUTH
-app.route('/api/auth', authRouter);
-app.route('/api/auth/google', googleRouter);
-app.route('/api', eventsRouter);
-app.route('/api', guestsRouter);
-app.route('/api', tablesRouter);
-app.route('/api', seatingRouter);
-app.route('/api', checkinsRouter);
-app.route('/api/events', rsvpsRouter);            // Protected RSVP routes (/:eventId/rsvps)
-
-// Public RSVP page by slug
-app.get('/e/:slug', async (c) => {
-  const slug = c.req.param('slug');
-  console.log('📄 Public RSVP page requested for slug:', slug);
-  return c.html(publicRsvpPage(slug));
-});
-
-// Debug logging system (in-memory)
+// Debug logging system (in-memory) - BEFORE auth middleware
 const debugLogs: any[] = [];
 const MAX_LOGS = 200;
 
@@ -127,6 +93,40 @@ app.get('/api/debug/logs', (c) => {
 app.delete('/api/debug/logs', (c) => {
   debugLogs.length = 0;
   return c.json({ success: true, message: 'Logs cleared' });
+});
+
+// Dev Authentication middleware (after debug endpoints)
+app.use('*', devAuthMiddleware);
+
+// Serve static files from dist (Cloudflare Pages deployment)
+app.use('/static/*', serveStatic({ root: './' }));
+
+// Health check (before other routes)
+app.get('/api/health', (c) => {
+  return c.json({ 
+    success: true, 
+    status: 'healthy',
+    timestamp: new Date().toISOString()
+  });
+});
+
+// API Routes (order matters!)
+// Mount public routes FIRST (before protected routers with auth middleware)
+app.route('/api/rsvp', publicRsvpsRouter);         // Public RSVP routes (:slug, :slug/event) - NO AUTH
+app.route('/api/auth', authRouter);
+app.route('/api/auth/google', googleRouter);
+app.route('/api', eventsRouter);
+app.route('/api', guestsRouter);
+app.route('/api', tablesRouter);
+app.route('/api', seatingRouter);
+app.route('/api', checkinsRouter);
+app.route('/api/events', rsvpsRouter);            // Protected RSVP routes (/:eventId/rsvps)
+
+// Public RSVP page by slug
+app.get('/e/:slug', async (c) => {
+  const slug = c.req.param('slug');
+  console.log('📄 Public RSVP page requested for slug:', slug);
+  return c.html(publicRsvpPage(slug));
 });
 
 // Debug: List all routes
