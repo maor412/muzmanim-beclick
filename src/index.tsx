@@ -160,6 +160,16 @@ app.get('/', (c) => {
         </style>
     </head>
     <body class="bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50 min-h-screen">
+        <!-- Loading Spinner (shown while checking auth) -->
+        <div id="auth-check-loading" class="fixed inset-0 bg-white flex items-center justify-center z-50">
+            <div class="text-center">
+                <i class="fas fa-spinner fa-spin text-6xl text-pink-500 mb-4"></i>
+                <p class="text-gray-600 text-lg">בודק אימות...</p>
+            </div>
+        </div>
+
+        <!-- Main Content (hidden until auth check completes) -->
+        <div id="main-content" class="hidden">
         <!-- Header -->
         <nav class="bg-white shadow-lg">
             <div class="container mx-auto px-3 md:px-4 py-3 md:py-4">
@@ -278,6 +288,43 @@ app.get('/', (c) => {
                 </div>
             </div>
         </footer>
+        </div>
+
+        <script src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"></script>
+        <script>
+            // Check if user is already logged in
+            async function checkAuth() {
+                try {
+                    // Try to get token from localStorage first
+                    const token = localStorage.getItem('auth_token');
+                    if (token) {
+                        axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
+                    }
+
+                    // Check authentication status
+                    const response = await axios.get('/api/auth/me');
+                    
+                    if (response.data.user) {
+                        // User is logged in - redirect to dashboard
+                        window.location.href = '/dashboard';
+                    } else {
+                        // Not logged in - show landing page
+                        showLandingPage();
+                    }
+                } catch (error) {
+                    // Auth check failed - show landing page
+                    showLandingPage();
+                }
+            }
+
+            function showLandingPage() {
+                document.getElementById('auth-check-loading').classList.add('hidden');
+                document.getElementById('main-content').classList.remove('hidden');
+            }
+
+            // Run auth check on page load
+            checkAuth();
+        </script>
     </body>
     </html>
   `);
