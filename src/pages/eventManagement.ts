@@ -202,8 +202,6 @@ export const eventManagementPage = () => `
 
         <!-- Tab Content: Overview -->
         <div id="content-overview" class="tab-content hidden">
-            <h2 class="text-xl md:text-3xl font-bold text-gray-800 mb-4 md:mb-6">סקירת אירוע</h2>
-            
             <!-- Stats Cards -->
             <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6 mb-6 md:mb-8">
                 <div class="bg-white rounded-lg md:rounded-xl shadow-lg p-3 md:p-6">
@@ -363,22 +361,17 @@ export const eventManagementPage = () => `
 
         <!-- Tab Content: RSVPs -->
         <div id="content-rsvps" class="tab-content hidden">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-3xl font-bold text-gray-800">אישורי הגעה</h2>
-                <div class="flex space-x-reverse space-x-3">
-                    <button onclick="exportRsvps('csv')" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition">
-                        <i class="fas fa-file-csv ml-2"></i>
-                        CSV
-                    </button>
-                    <button onclick="exportRsvps('excel')" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition">
-                        <i class="fas fa-file-excel ml-2"></i>
-                        Excel
-                    </button>
-                    <button onclick="exportRsvpsPDF()" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition">
-                        <i class="fas fa-file-pdf ml-2"></i>
-                        PDF
-                    </button>
-                </div>
+            <!-- Action Buttons - Mobile Optimized -->
+            <div class="grid grid-cols-2 md:flex md:flex-row-reverse gap-2 md:gap-3 mb-6">
+                <!-- Export Buttons -->
+                <button onclick="exportRsvpsPDF()" class="bg-red-500 text-white px-4 py-2.5 rounded-lg hover:bg-red-600 transition shadow-md flex items-center justify-center">
+                    <i class="fas fa-file-pdf ml-2"></i>
+                    <span class="hidden md:inline">ייצוא לקובץ </span>PDF
+                </button>
+                <button onclick="exportRsvps('excel')" class="bg-green-500 text-white px-4 py-2.5 rounded-lg hover:bg-green-600 transition shadow-md flex items-center justify-center">
+                    <i class="fas fa-file-excel ml-2"></i>
+                    <span class="hidden md:inline">ייצוא ל-</span>Excel
+                </button>
             </div>
 
             <!-- Filters -->
@@ -453,8 +446,6 @@ export const eventManagementPage = () => `
         <!-- Tab Content: Guests -->
         <div id="content-guests" class="tab-content hidden">
             <div class="mb-6">
-                <h2 class="text-2xl md:text-3xl font-bold text-gray-800 mb-4">רשימת מוזמנים</h2>
-                
                 <!-- Action Buttons - Mobile Optimized -->
                 <div class="grid grid-cols-2 md:flex md:flex-row-reverse gap-2 md:gap-3">
                     <!-- Primary Action -->
@@ -466,17 +457,17 @@ export const eventManagementPage = () => `
                     <!-- Export Buttons -->
                     <button onclick="exportGuestsPDF()" class="bg-red-500 text-white px-4 py-2.5 rounded-lg hover:bg-red-600 transition flex items-center justify-center">
                         <i class="fas fa-file-pdf ml-2"></i>
-                        <span class="hidden md:inline">ייצוא </span>PDF
+                        <span class="hidden md:inline">ייצוא לקובץ </span>PDF
                     </button>
                     <button onclick="exportGuests('csv')" class="bg-green-500 text-white px-4 py-2.5 rounded-lg hover:bg-green-600 transition flex items-center justify-center">
-                        <i class="fas fa-file-csv ml-2"></i>
-                        <span class="hidden md:inline">ייצוא </span>CSV
+                        <i class="fas fa-file-excel ml-2"></i>
+                        <span class="hidden md:inline">ייצוא ל-</span>Excel
                     </button>
                     
                     <!-- Import Button -->
                     <button onclick="showImportModal()" class="bg-blue-500 text-white px-4 py-2.5 rounded-lg hover:bg-blue-600 transition flex items-center justify-center">
                         <i class="fas fa-upload ml-2"></i>
-                        <span class="hidden md:inline">ייבוא </span>CSV
+                        <span class="hidden md:inline">ייבוא מ-</span>Excel
                     </button>
                     
                     <!-- Delete All Button -->
@@ -528,8 +519,6 @@ export const eventManagementPage = () => `
         <!-- Tab Content: Seating -->
         <div id="content-seating" class="tab-content hidden">
             <div class="mb-6">
-                <h2 class="text-2xl md:text-3xl font-bold text-gray-800 mb-4">הושבה</h2>
-                
                 <!-- Action Buttons - Mobile Optimized -->
                 <div class="grid grid-cols-2 md:flex md:flex-row-reverse gap-2 md:gap-3">
                     <!-- Primary Action -->
@@ -580,11 +569,11 @@ export const eventManagementPage = () => `
                     <!-- Export Buttons -->
                     <button onclick="exportSeatingPDF()" class="bg-red-500 text-white px-4 py-2.5 rounded-lg hover:bg-red-600 transition flex items-center justify-center">
                         <i class="fas fa-file-pdf ml-2"></i>
-                        <span class="hidden md:inline">ייצוא </span>PDF
+                        <span class="hidden md:inline">ייצוא לקובץ </span>PDF
                     </button>
                     <button onclick="exportSeating()" class="bg-green-500 text-white px-4 py-2.5 rounded-lg hover:bg-green-600 transition flex items-center justify-center">
                         <i class="fas fa-file-excel ml-2"></i>
-                        <span class="hidden md:inline">ייצוא </span>CSV
+                        <span class="hidden md:inline">ייצוא ל-</span>Excel
                     </button>
                 </div>
             </div>
@@ -624,8 +613,6 @@ export const eventManagementPage = () => `
 
         <!-- Tab Content: Check-in -->
         <div id="content-checkin" class="tab-content hidden">
-            <h2 class="text-3xl font-bold text-gray-800 mb-6">צ'ק-אין לאירוע</h2>
-            
             <!-- Stats -->
             <div class="grid md:grid-cols-3 gap-6 mb-6">
                 <div class="bg-green-50 border border-green-200 rounded-xl p-6">
@@ -675,11 +662,6 @@ export const eventManagementPage = () => `
 
         <!-- Tab Content: Walk-ins -->
         <div id="content-walkins" class="tab-content hidden">
-            <h2 class="text-3xl font-bold text-gray-800 mb-6">
-                <i class="fas fa-person-walking text-pink-500 ml-2"></i>
-                רישום Walk-ins (מגיעים ללא הזמנה)
-            </h2>
-            
             <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
                 <p class="text-blue-800">
                     <i class="fas fa-info-circle ml-2"></i>
@@ -787,8 +769,6 @@ export const eventManagementPage = () => `
 
         <!-- Tab Content: Messages -->
         <div id="content-messages" class="tab-content hidden">
-            <h2 class="text-3xl font-bold text-gray-800 mb-6">הודעות למוזמנים (Test Mode)</h2>
-            
             <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
                 <p class="text-sm text-blue-800">
                     <i class="fas fa-info-circle ml-2"></i>
@@ -854,8 +834,6 @@ export const eventManagementPage = () => `
 
         <!-- Tab Content: Settings -->
         <div id="content-settings" class="tab-content hidden">
-            <h2 class="text-3xl font-bold text-gray-800 mb-6">הגדרות אירוע</h2>
-            
             <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
                 <h3 class="text-xl font-bold text-gray-800 mb-4">סטטוס RSVP</h3>
                 <div class="flex items-center space-x-reverse space-x-4 mb-4">
