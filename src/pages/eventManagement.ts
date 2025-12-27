@@ -542,24 +542,24 @@ export const eventManagementPage = () => `
                                         class="w-full text-right px-4 py-3 hover:bg-purple-50 transition flex items-center">
                                     <i class="fas fa-table ml-3 text-purple-600 w-5"></i>
                                     <div>
-                                        <div class="font-semibold text-gray-800">בנה שולחנות לפי קבוצות</div>
-                                        <div class="text-xs text-gray-500">יצירת שולחנות אוטומטית</div>
+                                        <div class="font-semibold text-gray-800">צור שולחנות אוטומטית</div>
+                                        <div class="text-xs text-gray-500">לפי משפחות וקבוצות</div>
                                     </div>
                                 </button>
                                 <button onclick="autoFillSeating(); closeAutomationMenu();" 
                                         class="w-full text-right px-4 py-3 hover:bg-blue-50 transition flex items-center">
                                     <i class="fas fa-chair ml-3 text-blue-600 w-5"></i>
                                     <div>
-                                        <div class="font-semibold text-gray-800">השלם הושבה</div>
-                                        <div class="text-xs text-gray-500">הושב אורחים בשולחנות קיימים</div>
+                                        <div class="font-semibold text-gray-800">השב אורחים בשולחנות</div>
+                                        <div class="text-xs text-gray-500">השלמה אוטומטית</div>
                                     </div>
                                 </button>
                                 <button onclick="autoCreateAndFill(); closeAutomationMenu();" 
                                         class="w-full text-right px-4 py-3 hover:bg-green-50 transition flex items-center border-t border-gray-100">
                                     <i class="fas fa-bolt ml-3 text-green-600 w-5"></i>
                                     <div>
-                                        <div class="font-semibold text-gray-800">בנה + הושב (הכל ביחד)</div>
-                                        <div class="text-xs text-gray-500">פתרון מהיר ומלא</div>
+                                        <div class="font-semibold text-gray-800">עשה הכל בלחיצה אחת</div>
+                                        <div class="text-xs text-gray-500">צור שולחנות והושב אורחים</div>
                                     </div>
                                 </button>
                             </div>
