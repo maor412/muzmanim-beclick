@@ -118,10 +118,6 @@ app.get('/', (c) => {
             .hero-title { font-size: 2rem !important; line-height: 1.2 !important; }
             .hero-subtitle { font-size: 1.125rem !important; }
             .nav-links { display: none; }
-            .mobile-menu-btn { display: block; }
-          }
-          @media (min-width: 769px) {
-            .mobile-menu-btn { display: none; }
           }
         </style>
     </head>
@@ -139,9 +135,6 @@ app.get('/', (c) => {
                         <a href="/contact" class="text-gray-600 hover:text-pink-500">צור קשר</a>
                         <a href="/login" class="bg-pink-500 text-white px-6 py-2 rounded-full hover:bg-pink-600 transition">התחברות</a>
                     </div>
-                    <a href="/login" class="mobile-menu-btn bg-pink-500 text-white px-3 py-1.5 rounded-full hover:bg-pink-600 transition text-sm">
-                        התחברות
-                    </a>
                 </div>
             </div>
         </nav>
