@@ -99,7 +99,7 @@ export const eventManagementPage = () => `
 <body class="bg-gray-50">
     <!-- Header -->
     <nav class="bg-white shadow-lg sticky top-0 z-40">
-        <div class="container mx-auto px-2 md:px-4 py-2 md:py-4">
+        <div class="w-full px-2 md:container md:mx-auto md:px-4 py-2 md:py-4">
             <div class="flex justify-between items-center gap-2">
                 <div class="flex items-center gap-2 md:gap-4 flex-shrink min-w-0">
                     <a href="/dashboard" class="text-gray-600 hover:text-pink-500 flex items-center flex-shrink-0">
@@ -126,8 +126,8 @@ export const eventManagementPage = () => `
     </nav>
 
     <!-- Tabs Navigation -->
-    <div class="bg-white border-b sticky top-[57px] md:top-[73px] z-30">
-        <div class="container mx-auto px-2 md:px-4">
+    <div class="bg-white border-b sticky top-[45px] md:top-[73px] z-30">
+        <div class="w-full px-2 md:container md:mx-auto md:px-4">
             <div class="flex space-x-reverse overflow-x-auto scrollbar-hide">
                 <button onclick="switchTab('overview')" id="tab-overview" class="tab-active px-3 py-3 md:px-6 md:py-4 font-semibold transition whitespace-nowrap text-sm md:text-base">
                     <i class="fas fa-chart-line ml-1 md:ml-2"></i>
