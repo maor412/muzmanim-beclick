@@ -15,6 +15,17 @@ export const eventManagementPage = () => `
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
       body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+      
+      /* Prevent horizontal scroll */
+      html, body {
+        overflow-x: hidden !important;
+        max-width: 100vw !important;
+      }
+      
+      * {
+        max-width: 100%;
+      }
+      
       .tab-active { 
         border-bottom: 3px solid #ec4899; 
         color: #ec4899; 
@@ -134,7 +145,7 @@ export const eventManagementPage = () => `
     <!-- Tabs Navigation -->
     <div class="bg-white border-b sticky top-[46px] md:top-[73px] z-30">
         <div class="w-full px-2 md:container md:mx-auto md:px-4">
-            <div class="flex space-x-reverse overflow-x-auto scrollbar-hide" style="overflow-x: hidden;">
+            <div class="flex space-x-reverse overflow-x-auto scrollbar-hide">
                 <button onclick="switchTab('overview')" id="tab-overview" class="tab-active px-3 py-3 md:px-6 md:py-4 font-semibold transition whitespace-nowrap text-sm md:text-base">
                     <i class="fas fa-chart-line ml-1 md:ml-2"></i>
                     סקירה
