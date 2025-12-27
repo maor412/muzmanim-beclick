@@ -91,6 +91,44 @@ app.get('/e/:slug', async (c) => {
   return c.html(publicRsvpPage(slug));
 });
 
+// Debug logging system (in-memory)
+const debugLogs: any[] = [];
+const MAX_LOGS = 200;
+
+app.post('/api/debug/log', async (c) => {
+  try {
+    const body = await c.req.json();
+    const logEntry = {
+      timestamp: new Date().toISOString(),
+      ...body
+    };
+    
+    debugLogs.push(logEntry);
+    
+    // Keep only last MAX_LOGS entries
+    if (debugLogs.length > MAX_LOGS) {
+      debugLogs.shift();
+    }
+    
+    return c.json({ success: true, count: debugLogs.length });
+  } catch (error) {
+    return c.json({ success: false, error: String(error) }, 500);
+  }
+});
+
+app.get('/api/debug/logs', (c) => {
+  return c.json({ 
+    logs: debugLogs,
+    count: debugLogs.length,
+    timestamp: new Date().toISOString()
+  });
+});
+
+app.delete('/api/debug/logs', (c) => {
+  debugLogs.length = 0;
+  return c.json({ success: true, message: 'Logs cleared' });
+});
+
 // Debug: List all routes
 app.get('/debug/routes', (c) => {
   return c.json({

@@ -208,9 +208,10 @@ async function loadOverview() {
         generateInsights(rsvps, guests, seating, tables);
         
         // Clean up any rogue white elements (mobile fix for white square bug)
-        setTimeout(() => {
+        setTimeout(async () => {
             console.log('🔍 Starting element detection in top-right corner...');
             let found = [];
+            let suspiciousElements = [];
             
             // Check ALL elements, not just divs
             document.querySelectorAll('*').forEach(el => {
@@ -224,7 +225,7 @@ async function loadOverview() {
                     rect.right > window.innerWidth - 100 &&
                     rect.width > 5 && rect.height > 5
                 ) {
-                    found.push({
+                    const elementData = {
                         tag: el.tagName,
                         id: el.id || 'NO_ID',
                         class: el.className || 'NO_CLASS',
@@ -234,8 +235,12 @@ async function loadOverview() {
                         zIndex: styles.zIndex,
                         coords: `top:${rect.top.toFixed(0)} right:${rect.right.toFixed(0)} w:${rect.width.toFixed(0)} h:${rect.height.toFixed(0)}`,
                         children: el.children.length,
-                        text: el.textContent?.substring(0, 30) || 'EMPTY'
-                    });
+                        text: el.textContent?.substring(0, 30) || 'EMPTY',
+                        opacity: styles.opacity,
+                        visibility: styles.visibility,
+                        overflow: styles.overflow
+                    };
+                    found.push(elementData);
                 }
                 
                 // SUPER AGGRESSIVE: Remove ANY suspicious white element in that area
@@ -260,13 +265,16 @@ async function loadOverview() {
                                          el.tagName !== 'STYLE';
                 
                 if (isWhiteBg && isInTopRight && isSuspiciousSize && hasNoMeaningfulContent && isNotKnownElement) {
-                    console.warn('🐛 REMOVING SUSPICIOUS WHITE ELEMENT:', {
+                    const suspiciousData = {
                         tag: el.tagName,
                         id: el.id,
                         class: el.className,
-                        rect: rect,
-                        element: el
-                    });
+                        coords: `top:${rect.top.toFixed(0)} right:${rect.right.toFixed(0)} w:${rect.width.toFixed(0)} h:${rect.height.toFixed(0)}`,
+                        bg: styles.backgroundColor,
+                        removed: true
+                    };
+                    suspiciousElements.push(suspiciousData);
+                    console.warn('🐛 REMOVING SUSPICIOUS WHITE ELEMENT:', suspiciousData);
                     el.style.display = 'none'; // Hide first
                     setTimeout(() => el.remove(), 100); // Then remove
                 }
@@ -274,6 +282,24 @@ async function loadOverview() {
             
             console.table(found);
             console.log(`📊 Found ${found.length} elements in top-right area (0-150px from top)`);
+            
+            // Send logs to API
+            try {
+                await axios.post('/api/debug/log', {
+                    type: 'element_scan',
+                    eventId: getEventId(),
+                    windowWidth: window.innerWidth,
+                    windowHeight: window.innerHeight,
+                    userAgent: navigator.userAgent,
+                    foundElements: found,
+                    suspiciousElements: suspiciousElements,
+                    totalFound: found.length,
+                    totalRemoved: suspiciousElements.length
+                });
+                console.log('✅ Debug logs sent to /api/debug/logs');
+            } catch (logError) {
+                console.error('❌ Failed to send debug logs:', logError);
+            }
         }, 500);
     } catch (error) {
         console.error('❌ Error loading overview:', error);
