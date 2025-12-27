@@ -545,7 +545,7 @@ export const eventManagementPage = () => `
                     <!-- Automation Dropdown -->
                     <div class="relative col-span-2 md:col-span-1" id="automation-dropdown">
                         <button onclick="toggleAutomationMenu()" 
-                                class="w-full bg-purple-500 text-white px-4 py-2.5 rounded-lg hover:bg-purple-600 transition flex items-center justify-center">
+                                class="w-full bg-purple-500 text-white px-4 py-3 rounded-lg hover:bg-purple-600 transition flex items-center justify-center">
                             <i class="fas fa-magic ml-2"></i>
                             <span class="hidden md:inline">אוטומציה</span>
                             <span class="md:hidden">אוטומטי</span>
