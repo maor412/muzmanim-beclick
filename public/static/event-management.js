@@ -212,13 +212,14 @@ async function loadOverview() {
     
     try {
         console.log('📡 Making 5 API calls for overview...');
-        // Load stats
+        // Load stats with timeout
+        const apiTimeout = 10000; // 10 seconds
         const [rsvpsRes, guestsRes, tablesRes, checkinsRes, seatingRes] = await Promise.all([
-            axios.get(`/api/events/${currentEvent.id}/rsvps`),
-            axios.get(`/api/events/${currentEvent.id}/guests`),
-            axios.get(`/api/events/${currentEvent.id}/tables`),
-            axios.get(`/api/events/${currentEvent.id}/checkins`),
-            axios.get(`/api/events/${currentEvent.id}/seating`)
+            axios.get(`/api/events/${currentEvent.id}/rsvps`, { timeout: apiTimeout }),
+            axios.get(`/api/events/${currentEvent.id}/guests`, { timeout: apiTimeout }),
+            axios.get(`/api/events/${currentEvent.id}/tables`, { timeout: apiTimeout }),
+            axios.get(`/api/events/${currentEvent.id}/checkins`, { timeout: apiTimeout }),
+            axios.get(`/api/events/${currentEvent.id}/seating`, { timeout: apiTimeout })
         ]);
         
         console.log('✅ Overview API calls successful');
@@ -448,6 +449,10 @@ async function loadOverview() {
             status: error.response?.status,
             url: error.config?.url
         });
+        
+        // Hide loading state
+        document.getElementById('loading')?.classList.add('hidden');
+        
         showToast('שגיאה בטעינת נתוני הסקירה', 'error');
     }
 }
