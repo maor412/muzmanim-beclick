@@ -537,14 +537,14 @@ export const eventManagementPage = () => `
                 <!-- Action Buttons - Mobile Optimized -->
                 <div class="grid grid-cols-2 md:flex md:flex-row-reverse gap-2 md:gap-3">
                     <!-- Primary Action -->
-                    <button onclick="showAddTableModal()" class="col-span-2 md:col-span-1 bg-pink-500 text-white px-4 py-3 rounded-lg hover:bg-pink-600 transition shadow-md flex items-center justify-center font-semibold">
+                    <button onclick="showAddTableModal()" class="col-span-2 md:col-span-1 md:flex-1 bg-pink-500 text-white px-4 py-3 rounded-lg hover:bg-pink-600 transition shadow-md flex items-center justify-center font-semibold">
                         <i class="fas fa-plus-circle ml-2"></i>
                         <span class="hidden md:inline">הוסף שולחן חדש</span>
                         <span class="md:hidden">הוסף שולחן</span>
                     </button>
                     
                     <!-- Automation Dropdown -->
-                    <div class="relative col-span-2 md:col-span-1" id="automation-dropdown">
+                    <div class="relative col-span-2 md:col-span-1 md:flex-1" id="automation-dropdown">
                         <button onclick="toggleAutomationMenu()" 
                                 class="w-full bg-purple-500 text-white px-4 md:px-6 py-3 md:py-4 rounded-lg hover:bg-purple-600 transition shadow-md flex items-center justify-center font-semibold">
                             <i class="fas fa-magic ml-2"></i>
@@ -582,14 +582,14 @@ export const eventManagementPage = () => `
                     </div>
                     
                     <!-- Export Buttons -->
-                    <button onclick="exportSeatingPDF()" class="bg-red-500 text-white px-4 py-3 rounded-lg hover:bg-red-600 transition flex flex-col items-center justify-center">
+                    <button onclick="exportSeatingPDF()" class="md:flex-1 bg-red-500 text-white px-4 py-3 rounded-lg hover:bg-red-600 transition flex flex-col items-center justify-center">
                         <div class="flex items-center">
                             <i class="fas fa-file-pdf text-lg ml-2"></i>
                             <span class="font-semibold text-sm md:text-base">הורד PDF</span>
                         </div>
                         <span class="text-xs mt-0.5 opacity-90 hidden md:block">סידור ישיבה</span>
                     </button>
-                    <button onclick="exportSeating()" class="bg-green-500 text-white px-4 py-3 rounded-lg hover:bg-green-600 transition flex flex-col items-center justify-center">
+                    <button onclick="exportSeating()" class="md:flex-1 bg-green-500 text-white px-4 py-3 rounded-lg hover:bg-green-600 transition flex flex-col items-center justify-center">
                         <div class="flex items-center">
                             <i class="fas fa-file-excel text-lg ml-2"></i>
                             <span class="font-semibold text-sm md:text-base">הורד Excel</span>
