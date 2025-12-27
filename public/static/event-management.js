@@ -669,7 +669,8 @@ async function autoFillSeating() {
         id: r.id,
         side: r.side || 'both',
         group: r.groupLabel || 'other',
-        name: r.fullName
+        name: r.fullName,
+        attendingCount: r.attendingCount || 1 // CRITICAL: track how many seats needed
     }));
     
     const unseatedGuests = allGuests.filter(g => !seatedGuestIds.includes(g.id))
@@ -678,7 +679,8 @@ async function autoFillSeating() {
             id: g.id,
             side: g.side || 'both',
             group: g.groupLabel || 'other',
-            name: g.fullName
+            name: g.fullName,
+            attendingCount: 1 // Guests always count as 1
         }));
     
     // Combine and group by side and group
@@ -746,9 +748,21 @@ async function autoFillSeating() {
     // Phase 1: Try to match groups to their corresponding tables
     for (const table of allTables) {
         const tableSeating = allSeating.filter(s => s.tableId === table.id);
-        let availableSeats = table.capacity - tableSeating.length;
         
-        if (availableSeats === 0) continue;
+        // Calculate actual occupied seats (considering attendingCount for RSVPs)
+        let occupiedSeats = 0;
+        for (const seat of tableSeating) {
+            if (seat.rsvpId) {
+                const rsvp = allRsvps.find(r => r.id === seat.rsvpId);
+                occupiedSeats += rsvp?.attendingCount || 1;
+            } else {
+                occupiedSeats += 1; // Guest
+            }
+        }
+        
+        let availableSeats = table.capacity - occupiedSeats;
+        
+        if (availableSeats <= 0) continue;
         
         // Find groups that match this table's name
         for (let i = 0; i < sortedGroups.length && availableSeats > 0; i++) {
@@ -759,22 +773,29 @@ async function autoFillSeating() {
             // Check if table name matches group
             if (!tableMatchesGroup(table.tableName, groupData.group)) continue;
             
-            // Can we fit the whole group or part of it?
-            const toSeat = Math.min(groupData.people.length, availableSeats);
-            
-            for (let j = 0; j < toSeat; j++) {
-                const person = groupData.people.shift();
+            // Try to seat people from this group
+            while (groupData.people.length > 0 && availableSeats > 0) {
+                const person = groupData.people[0]; // Peek at first person
+                const seatsNeeded = person.attendingCount || 1;
                 
-                const seatingData = { tableId: table.id };
-                
-                if (person.type === 'rsvp') {
-                    seatingData.rsvpId = person.id;
+                // Check if we have enough space for this person + companions
+                if (seatsNeeded <= availableSeats) {
+                    groupData.people.shift(); // Remove from array
+                    
+                    const seatingData = { tableId: table.id };
+                    
+                    if (person.type === 'rsvp') {
+                        seatingData.rsvpId = person.id;
+                    } else {
+                        seatingData.guestId = person.id;
+                    }
+                    
+                    seatings.push(seatingData);
+                    availableSeats -= seatsNeeded;
                 } else {
-                    seatingData.guestId = person.id;
+                    // Not enough space, move to next group
+                    break;
                 }
-                
-                seatings.push(seatingData);
-                availableSeats--;
             }
         }
     }
@@ -783,9 +804,33 @@ async function autoFillSeating() {
     for (const table of allTables) {
         const tableSeating = allSeating.filter(s => s.tableId === table.id);
         const currentSeatings = seatings.filter(s => s.tableId === table.id);
-        let availableSeats = table.capacity - tableSeating.length - currentSeatings.length;
         
-        if (availableSeats === 0) continue;
+        // Calculate actual occupied seats (existing + planned)
+        let occupiedSeats = 0;
+        
+        // Count existing seated
+        for (const seat of tableSeating) {
+            if (seat.rsvpId) {
+                const rsvp = allRsvps.find(r => r.id === seat.rsvpId);
+                occupiedSeats += rsvp?.attendingCount || 1;
+            } else {
+                occupiedSeats += 1;
+            }
+        }
+        
+        // Count planned seatings
+        for (const planned of currentSeatings) {
+            if (planned.rsvpId) {
+                const rsvp = allRsvps.find(r => r.id === planned.rsvpId);
+                occupiedSeats += rsvp?.attendingCount || 1;
+            } else {
+                occupiedSeats += 1;
+            }
+        }
+        
+        let availableSeats = table.capacity - occupiedSeats;
+        
+        if (availableSeats <= 0) continue;
         
         // Fill with any remaining guests
         for (let i = 0; i < sortedGroups.length && availableSeats > 0; i++) {
@@ -793,21 +838,29 @@ async function autoFillSeating() {
             
             if (groupData.people.length === 0) continue;
             
-            const toSeat = Math.min(groupData.people.length, availableSeats);
-            
-            for (let j = 0; j < toSeat; j++) {
-                const person = groupData.people.shift();
+            // Try to seat people from this group
+            while (groupData.people.length > 0 && availableSeats > 0) {
+                const person = groupData.people[0]; // Peek at first person
+                const seatsNeeded = person.attendingCount || 1;
                 
-                const seatingData = { tableId: table.id };
-                
-                if (person.type === 'rsvp') {
-                    seatingData.rsvpId = person.id;
+                // Check if we have enough space
+                if (seatsNeeded <= availableSeats) {
+                    groupData.people.shift(); // Remove from array
+                    
+                    const seatingData = { tableId: table.id };
+                    
+                    if (person.type === 'rsvp') {
+                        seatingData.rsvpId = person.id;
+                    } else {
+                        seatingData.guestId = person.id;
+                    }
+                    
+                    seatings.push(seatingData);
+                    availableSeats -= seatsNeeded;
                 } else {
-                    seatingData.guestId = person.id;
+                    // Not enough space, move to next group
+                    break;
                 }
-                
-                seatings.push(seatingData);
-                availableSeats--;
             }
         }
     }
