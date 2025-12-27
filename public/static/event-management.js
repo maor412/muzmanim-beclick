@@ -2354,171 +2354,275 @@ async function exportRsvpsPDF() {
 async function exportGuestsPDF() {
     try {
         const { jsPDF } = window.jspdf;
+        const doc = new jsPDF('p', 'mm', 'a4');
         
-        // Create hidden container for rendering
-        const container = document.createElement('div');
-        container.style.cssText = 'position: absolute; left: -9999px; top: 0; width: 800px; background: white; padding: 20px; font-family: Arial, sans-serif;';
-        container.innerHTML = `
-            <div dir="rtl" style="text-align: center; margin-bottom: 20px;">
-                <h1 style="font-size: 24px; margin-bottom: 10px;">אירוע: ${currentEvent.eventName}</h1>
-                <h3 style="font-size: 16px; color: #666;">רשימת אורחים - ${new Date().toLocaleDateString('he-IL')}</h3>
-            </div>
-            <table dir="rtl" style="width: 100%; border-collapse: collapse; font-size: 11px;">
-                <thead>
-                    <tr style="background-color: #ec4899; color: white;">
-                        <th style="padding: 8px; border: 1px solid #ddd; text-align: right;">#</th>
-                        <th style="padding: 8px; border: 1px solid #ddd; text-align: right;">שם מלא</th>
-                        <th style="padding: 8px; border: 1px solid #ddd; text-align: right;">טלפון</th>
-                        <th style="padding: 8px; border: 1px solid #ddd; text-align: right;">צד</th>
-                        <th style="padding: 8px; border: 1px solid #ddd; text-align: right;">קבוצה</th>
-                        <th style="padding: 8px; border: 1px solid #ddd; text-align: right;">הערות</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${allGuests.map((guest, index) => `
-                        <tr style="background-color: ${index % 2 === 0 ? '#fce7f3' : 'white'};">
-                            <td style="padding: 6px; border: 1px solid #ddd; text-align: center;">${index + 1}</td>
-                            <td style="padding: 6px; border: 1px solid #ddd; text-align: right;">${guest.fullName}</td>
-                            <td style="padding: 6px; border: 1px solid #ddd; text-align: right;">${guest.phone || 'לא צוין'}</td>
-                            <td style="padding: 6px; border: 1px solid #ddd; text-align: center;">
-                                ${guest.side === 'groom' ? 'חתן' : guest.side === 'bride' ? 'כלה' : 'משותף'}
-                            </td>
-                            <td style="padding: 6px; border: 1px solid #ddd; text-align: right;">
-                                ${guest.groupLabel === 'family' ? 'משפחה' : guest.groupLabel === 'friends' ? 'חברים' : guest.groupLabel === 'work' ? 'עבודה' : 'אחר'}
-                            </td>
-                            <td style="padding: 6px; border: 1px solid #ddd; text-align: right;">${(guest.notes || '-').substring(0, 30)}</td>
-                        </tr>
-                    `).join('')}
-                </tbody>
-            </table>
-            <div dir="rtl" style="margin-top: 20px; text-align: right; font-size: 14px;">
-                <p><strong>סה"כ אורחים:</strong> ${allGuests.length}</p>
-                <p><strong>צד חתן:</strong> ${allGuests.filter(g => g.side === 'groom').length} | <strong>צד כלה:</strong> ${allGuests.filter(g => g.side === 'bride').length}</p>
-            </div>
-        `;
+        const pageHeight = doc.internal.pageSize.getHeight();
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const margin = 10;
+        const lineHeight = 7;
+        const headerHeight = 40;
+        const footerHeight = 15;
+        const availableHeight = pageHeight - headerHeight - footerHeight - (margin * 2);
         
-        document.body.appendChild(container);
+        // Rows per page calculation
+        const rowsPerPage = Math.floor(availableHeight / lineHeight);
         
-        // Render to canvas
-        const canvas = await html2canvas(container, {
-            scale: 2,
-            useCORS: true,
-            logging: false,
-            backgroundColor: '#ffffff'
+        let currentPage = 1;
+        let yPosition = headerHeight;
+        
+        // Add header to first page
+        const addHeader = (pageNum) => {
+            doc.setFontSize(18);
+            doc.text(`אירוע: ${currentEvent.eventName}`, pageWidth - margin, 15, { align: 'right' });
+            doc.setFontSize(12);
+            doc.text(`רשימת אורחים - ${new Date().toLocaleDateString('he-IL')}`, pageWidth - margin, 22, { align: 'right' });
+            doc.setFontSize(10);
+            doc.text(`עמוד ${pageNum}`, pageWidth - margin, 28, { align: 'right' });
+            
+            // Table header
+            doc.setFillColor(236, 72, 153); // Pink
+            doc.setTextColor(255, 255, 255);
+            doc.rect(margin, 32, pageWidth - (margin * 2), 8, 'F');
+            
+            const colWidths = [10, 60, 35, 25, 30, 30];
+            let xPos = pageWidth - margin;
+            const headers = ['#', 'שם מלא', 'טלפון', 'צד', 'קבוצה', 'הערות'];
+            
+            doc.setFontSize(9);
+            headers.forEach((header, i) => {
+                xPos -= colWidths[i];
+                doc.text(header, xPos + (colWidths[i] / 2), 37, { align: 'center' });
+            });
+            
+            doc.setTextColor(0, 0, 0);
+        };
+        
+        addHeader(currentPage);
+        yPosition = 42;
+        
+        // Add rows
+        allGuests.forEach((guest, index) => {
+            // Check if we need a new page
+            if (yPosition + lineHeight > pageHeight - footerHeight - margin) {
+                currentPage++;
+                doc.addPage();
+                addHeader(currentPage);
+                yPosition = 42;
+            }
+            
+            // Row background
+            if (index % 2 === 0) {
+                doc.setFillColor(252, 231, 243); // Light pink
+                doc.rect(margin, yPosition - 5, pageWidth - (margin * 2), lineHeight, 'F');
+            }
+            
+            // Row data
+            const colWidths = [10, 60, 35, 25, 30, 30];
+            let xPos = pageWidth - margin;
+            
+            const sideText = guest.side === 'groom' ? 'חתן' : guest.side === 'bride' ? 'כלה' : 'משותף';
+            const groupText = guest.groupLabel === 'family' ? 'משפחה' : 
+                            guest.groupLabel === 'friends' ? 'חברים' : 
+                            guest.groupLabel === 'work' ? 'עבודה' : 'אחר';
+            
+            const rowData = [
+                String(index + 1),
+                guest.fullName,
+                guest.phone || 'לא צוין',
+                sideText,
+                groupText,
+                (guest.notes || '-').substring(0, 15)
+            ];
+            
+            doc.setFontSize(8);
+            rowData.forEach((data, i) => {
+                xPos -= colWidths[i];
+                doc.text(data, xPos + (colWidths[i] / 2), yPosition, { 
+                    align: 'center',
+                    maxWidth: colWidths[i] - 2
+                });
+            });
+            
+            yPosition += lineHeight;
         });
         
-        // Remove container
-        document.body.removeChild(container);
+        // Add footer to last page
+        const addFooter = () => {
+            const footerY = pageHeight - margin - 5;
+            doc.setFontSize(10);
+            doc.text(`סה"כ אורחים: ${allGuests.length}`, pageWidth - margin, footerY, { align: 'right' });
+            doc.text(`צד חתן: ${allGuests.filter(g => g.side === 'groom').length}`, pageWidth - margin, footerY + 5, { align: 'right' });
+            doc.text(`צד כלה: ${allGuests.filter(g => g.side === 'bride').length}`, pageWidth - margin, footerY + 10, { align: 'right' });
+        };
         
-        // Create PDF
-        const doc = new jsPDF('p', 'mm', 'a4');
-        const imgData = canvas.toDataURL('image/png');
-        const pdfWidth = doc.internal.pageSize.getWidth();
-        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+        addFooter();
         
-        doc.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
         doc.save(`אורחים_${currentEvent.slug}_${Date.now()}.pdf`);
+        showToast(`PDF יוצא בהצלחה! (${currentPage} עמודים)`, 'success');
         
-        showToast('PDF יוצא בהצלחה!', 'success');
     } catch (error) {
         console.error('Error exporting PDF:', error);
         showToast(`שגיאה בייצוא PDF: ${error.message}`, 'error');
     }
 }
 
-// Export Seating to PDF - Using html2canvas for perfect Hebrew rendering
+// Export Seating to PDF - Multi-page support
 async function exportSeatingPDF() {
     try {
         const { jsPDF } = window.jspdf;
+        const doc = new jsPDF('p', 'mm', 'a4');
         
-        // Prepare table HTML rows
-        let tableRows = '';
+        const pageHeight = doc.internal.pageSize.getHeight();
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const margin = 10;
+        const lineHeight = 7;
+        const headerHeight = 40;
+        const footerHeight = 15;
+        const availableHeight = pageHeight - headerHeight - footerHeight - (margin * 2);
+        
+        let currentPage = 1;
+        let yPosition = headerHeight;
+        
+        // Add header to page
+        const addHeader = (pageNum) => {
+            doc.setFontSize(18);
+            doc.text(`אירוע: ${currentEvent.eventName}`, pageWidth - margin, 15, { align: 'right' });
+            doc.setFontSize(12);
+            doc.text(`סידור הושבה - ${new Date().toLocaleDateString('he-IL')}`, pageWidth - margin, 22, { align: 'right' });
+            doc.setFontSize(10);
+            doc.text(`עמוד ${pageNum}`, pageWidth - margin, 28, { align: 'right' });
+            
+            // Table header
+            doc.setFillColor(236, 72, 153);
+            doc.setTextColor(255, 255, 255);
+            doc.rect(margin, 32, pageWidth - (margin * 2), 8, 'F');
+            
+            const colWidths = [50, 20, 60, 35, 25];
+            let xPos = pageWidth - margin;
+            const headers = ['שם שולחן', 'מס׳', 'שם אורח', 'טלפון', 'תפוסה'];
+            
+            doc.setFontSize(9);
+            headers.forEach((header, i) => {
+                xPos -= colWidths[i];
+                doc.text(header, xPos + (colWidths[i] / 2), 37, { align: 'center' });
+            });
+            
+            doc.setTextColor(0, 0, 0);
+        };
+        
+        addHeader(currentPage);
+        yPosition = 42;
+        
+        let rowIndex = 0;
+        
+        // Add rows for each table
         allTables.forEach(table => {
             const tableSeating = allSeating.filter(s => s.tableId === table.id);
             
             if (tableSeating.length === 0) {
-                // Show empty table
-                tableRows += `
-                    <tr style="background-color: #fce7f3;">
-                        <td style="padding: 6px; border: 1px solid #ddd; text-align: right; font-weight: bold;">${table.tableName}</td>
-                        <td style="padding: 6px; border: 1px solid #ddd; text-align: center;">${table.tableNumber || '-'}</td>
-                        <td style="padding: 6px; border: 1px solid #ddd; text-align: right; color: #999;">(ריק)</td>
-                        <td style="padding: 6px; border: 1px solid #ddd; text-align: right;">-</td>
-                        <td style="padding: 6px; border: 1px solid #ddd; text-align: center;">0/${table.capacity}</td>
-                    </tr>
-                `;
+                // Check if we need a new page
+                if (yPosition + lineHeight > pageHeight - footerHeight - margin) {
+                    currentPage++;
+                    doc.addPage();
+                    addHeader(currentPage);
+                    yPosition = 42;
+                    rowIndex = 0;
+                }
+                
+                // Empty table row
+                if (rowIndex % 2 === 0) {
+                    doc.setFillColor(252, 231, 243);
+                    doc.rect(margin, yPosition - 5, pageWidth - (margin * 2), lineHeight, 'F');
+                }
+                
+                const colWidths = [50, 20, 60, 35, 25];
+                let xPos = pageWidth - margin;
+                const rowData = [
+                    table.tableName,
+                    table.tableNumber ? String(table.tableNumber) : '-',
+                    '(ריק)',
+                    '-',
+                    `0/${table.capacity}`
+                ];
+                
+                doc.setFontSize(8);
+                rowData.forEach((data, i) => {
+                    xPos -= colWidths[i];
+                    doc.text(data, xPos + (colWidths[i] / 2), yPosition, { 
+                        align: 'center',
+                        maxWidth: colWidths[i] - 2
+                    });
+                });
+                
+                yPosition += lineHeight;
+                rowIndex++;
+                
             } else {
+                // Add rows for each guest in this table
                 tableSeating.forEach((seat, idx) => {
                     const rsvp = allRsvps.find(r => r.id === seat.rsvpId);
                     const guest = allGuests.find(g => g.id === seat.guestId);
                     const person = rsvp || guest;
                     
                     if (person) {
-                        tableRows += `
-                            <tr style="background-color: ${idx % 2 === 0 ? 'white' : '#fce7f3'};">
-                                <td style="padding: 6px; border: 1px solid #ddd; text-align: right; ${idx === 0 ? 'font-weight: bold;' : ''}">${idx === 0 ? table.tableName : ''}</td>
-                                <td style="padding: 6px; border: 1px solid #ddd; text-align: center;">${idx === 0 ? (table.tableNumber || '-') : ''}</td>
-                                <td style="padding: 6px; border: 1px solid #ddd; text-align: right;">${person.fullName}</td>
-                                <td style="padding: 6px; border: 1px solid #ddd; text-align: right;">${person.phone || '-'}</td>
-                                <td style="padding: 6px; border: 1px solid #ddd; text-align: center;">${idx === 0 ? `${tableSeating.length}/${table.capacity}` : ''}</td>
-                            </tr>
-                        `;
+                        // Check if we need a new page
+                        if (yPosition + lineHeight > pageHeight - footerHeight - margin) {
+                            currentPage++;
+                            doc.addPage();
+                            addHeader(currentPage);
+                            yPosition = 42;
+                            rowIndex = 0;
+                        }
+                        
+                        // Row background
+                        if (rowIndex % 2 === 0) {
+                            doc.setFillColor(252, 231, 243);
+                            doc.rect(margin, yPosition - 5, pageWidth - (margin * 2), lineHeight, 'F');
+                        }
+                        
+                        const colWidths = [50, 20, 60, 35, 25];
+                        let xPos = pageWidth - margin;
+                        const rowData = [
+                            idx === 0 ? table.tableName : '',
+                            idx === 0 ? (table.tableNumber ? String(table.tableNumber) : '-') : '',
+                            person.fullName,
+                            person.phone || '-',
+                            idx === 0 ? `${tableSeating.length}/${table.capacity}` : ''
+                        ];
+                        
+                        doc.setFontSize(8);
+                        if (idx === 0) doc.setFont(undefined, 'bold');
+                        
+                        rowData.forEach((data, i) => {
+                            xPos -= colWidths[i];
+                            doc.text(data, xPos + (colWidths[i] / 2), yPosition, { 
+                                align: 'center',
+                                maxWidth: colWidths[i] - 2
+                            });
+                        });
+                        
+                        if (idx === 0) doc.setFont(undefined, 'normal');
+                        
+                        yPosition += lineHeight;
+                        rowIndex++;
                     }
                 });
             }
         });
         
-        // Create hidden container for rendering
-        const container = document.createElement('div');
-        container.style.cssText = 'position: absolute; left: -9999px; top: 0; width: 800px; background: white; padding: 20px; font-family: Arial, sans-serif;';
-        container.innerHTML = `
-            <div dir="rtl" style="text-align: center; margin-bottom: 20px;">
-                <h1 style="font-size: 24px; margin-bottom: 10px;">אירוע: ${currentEvent.eventName}</h1>
-                <h3 style="font-size: 16px; color: #666;">סידור הושבה - ${new Date().toLocaleDateString('he-IL')}</h3>
-            </div>
-            <table dir="rtl" style="width: 100%; border-collapse: collapse; font-size: 11px;">
-                <thead>
-                    <tr style="background-color: #ec4899; color: white;">
-                        <th style="padding: 8px; border: 1px solid #ddd; text-align: right;">שם שולחן</th>
-                        <th style="padding: 8px; border: 1px solid #ddd; text-align: center;">מספר</th>
-                        <th style="padding: 8px; border: 1px solid #ddd; text-align: right;">שם אורח</th>
-                        <th style="padding: 8px; border: 1px solid #ddd; text-align: right;">טלפון</th>
-                        <th style="padding: 8px; border: 1px solid #ddd; text-align: center;">תפוסה</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${tableRows}
-                </tbody>
-            </table>
-            <div dir="rtl" style="margin-top: 20px; text-align: right; font-size: 14px;">
-                <p><strong>סה"כ שולחנות:</strong> ${allTables.length}</p>
-                <p><strong>סה"כ מושבים:</strong> ${allSeating.length} / ${allTables.reduce((sum, t) => sum + t.capacity, 0)} מקומות</p>
-            </div>
-        `;
+        // Add footer to last page
+        const addFooter = () => {
+            const footerY = pageHeight - margin - 5;
+            doc.setFontSize(10);
+            doc.text(`סה"כ שולחנות: ${allTables.length}`, pageWidth - margin, footerY, { align: 'right' });
+            doc.text(`סה"כ מושבים: ${allSeating.length} / ${allTables.reduce((sum, t) => sum + t.capacity, 0)} מקומות`, pageWidth - margin, footerY + 5, { align: 'right' });
+        };
         
-        document.body.appendChild(container);
+        addFooter();
         
-        // Render to canvas
-        const canvas = await html2canvas(container, {
-            scale: 2,
-            useCORS: true,
-            logging: false,
-            backgroundColor: '#ffffff'
-        });
-        
-        // Remove container
-        document.body.removeChild(container);
-        
-        // Create PDF
-        const doc = new jsPDF('p', 'mm', 'a4');
-        const imgData = canvas.toDataURL('image/png');
-        const pdfWidth = doc.internal.pageSize.getWidth();
-        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-        
-        doc.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
         doc.save(`הושבה_${currentEvent.slug}_${Date.now()}.pdf`);
+        showToast(`PDF יוצא בהצלחה! (${currentPage} עמודים)`, 'success');
         
-        showToast('PDF יוצא בהצלחה!', 'success');
     } catch (error) {
         console.error('Error exporting PDF:', error);
         showToast(`שגיאה בייצוא PDF: ${error.message}`, 'error');
