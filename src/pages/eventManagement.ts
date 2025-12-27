@@ -34,6 +34,15 @@ export const eventManagementPage = () => `
         max-width: 90vw;
         animation: slideDown 0.3s ease-out;
       }
+      #toast-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 0;
+        height: 0;
+        pointer-events: none;
+        z-index: 9999;
+      }
       @keyframes slideDown {
         from { opacity: 0; transform: translate(-50%, -20px); }
         to { opacity: 1; transform: translate(-50%, 0); }
