@@ -2977,7 +2977,7 @@ async function processAutoCreateAndFill() {
     document.querySelector('.fixed')?.remove();
     
     // Confirm
-    if (!confirm(`פעולה זו תיצור שולחנות (גדלים: ${tableSizes.join(', ')}) ותושיב את כל האורחים.\n\nהאם להמשיך?')) {
+    if (!confirm(`פעולה זו תיצור שולחנות (גדלים: ${tableSizes.join(', ')}) ותושיב את כל האורחים.\n\nהאם להמשיך?`)) {
         return;
     }
     
