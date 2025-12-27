@@ -2898,7 +2898,95 @@ document.addEventListener('click', (e) => {
 
 // Auto create tables AND fill seating (combined action)
 async function autoCreateAndFill() {
-    if (!confirm('פעולה זו תיצור שולחנות אוטומטית לפי קבוצות ותמלא אותם באורחים.\n\nהאם להמשיך?')) {
+    // Show table sizes config modal first
+    showTableSizesConfigModalForAll();
+}
+
+// Show table sizes configuration modal for "do it all" mode
+function showTableSizesConfigModalForAll() {
+    // Close any previous modal
+    document.querySelector('.fixed')?.remove();
+    
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+    modal.innerHTML = `
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-8 m-4">
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 bg-gradient-to-r from-green-500 to-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-bolt text-white text-2xl"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">הכל בלחיצה אחת</h2>
+                <p class="text-gray-600 text-sm">איזה גדלי שולחנות יש באולם?</p>
+            </div>
+            
+            <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+                <div class="flex items-start">
+                    <i class="fas fa-magic text-green-500 ml-2 mt-1"></i>
+                    <p class="text-sm text-green-800">
+                        פעולה זו תיצור שולחנות אוטומטית ותושיב את כל האורחים!
+                        הזן את גדלי השולחנות הזמינים באולם.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="mb-6">
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                    גדלי שולחנות זמינים (הפרד בפסיקים)
+                </label>
+                <input type="text" 
+                       id="table-sizes-input-all" 
+                       placeholder="לדוגמה: 8, 10, 12" 
+                       class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-lg text-center"
+                       value="8, 10, 12">
+                <p class="text-xs text-gray-500 mt-2 text-center">
+                    <i class="fas fa-lightbulb text-yellow-500"></i>
+                    מומלץ: שלושה גדלים שונים לגמישות מקסימלית
+                </p>
+            </div>
+            
+            <div class="flex space-x-reverse space-x-3">
+                <button onclick="processAutoCreateAndFill()" 
+                        class="flex-1 bg-gradient-to-r from-green-500 to-blue-500 text-white px-6 py-3 rounded-xl hover:from-green-600 hover:to-blue-600 transition font-semibold">
+                    <i class="fas fa-bolt ml-2"></i>
+                    התחל!
+                </button>
+                <button onclick="this.closest('.fixed').remove()" 
+                        class="flex-1 bg-gray-200 text-gray-700 px-6 py-3 rounded-xl hover:bg-gray-300 transition font-semibold">
+                    ביטול
+                </button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+    modal.closest = function(selector) { return modal; };
+}
+
+// Process "do it all" with table sizes
+async function processAutoCreateAndFill() {
+    const input = document.getElementById('table-sizes-input-all');
+    const sizesText = input.value.trim();
+    
+    if (!sizesText) {
+        showToast('נא להזין לפחות גודל שולחן אחד', 'error');
+        return;
+    }
+    
+    // Parse table sizes
+    const tableSizes = sizesText.split(',')
+        .map(s => parseInt(s.trim()))
+        .filter(n => !isNaN(n) && n > 0)
+        .sort((a, b) => b - a); // Sort descending
+    
+    if (tableSizes.length === 0) {
+        showToast('לא זוהו גדלי שולחנות תקינים. נא להזין מספרים מופרדים בפסיקים.', 'error');
+        return;
+    }
+    
+    // Close modal
+    document.querySelector('.fixed')?.remove();
+    
+    // Confirm
+    if (!confirm(`פעולה זו תיצור שולחנות (גדלים: ${tableSizes.join(', ')}) ותושיב את כל האורחים.\n\nהאם להמשיך?')) {
         return;
     }
     
@@ -2924,17 +3012,47 @@ async function autoCreateAndFill() {
             return;
         }
         
-        showToast(`נמצאו ${groups.length} קבוצות. יוצר שולחנות...`, 'info');
+        showToast('מחשב הקצאה אופטימלית...', 'info');
         
-        // Step 2: Create tables for each group
+        // Step 2: Calculate optimal table assignment
+        const tables = [];
+        const remainingGroups = [...groups].sort((a, b) => b.count - a.count); // Largest first
+        
+        for (const group of remainingGroups) {
+            // Find the smallest table size that can fit this group
+            const suitableSize = tableSizes.find(size => size >= group.count);
+            
+            if (!suitableSize) {
+                // Group is too large for any table - split it
+                const largestTable = tableSizes[0];
+                const numTables = Math.ceil(group.count / largestTable);
+                
+                for (let i = 0; i < numTables; i++) {
+                    tables.push({
+                        name: `שולחן ${group.name} ${i + 1}`,
+                        capacity: largestTable,
+                        notes: `חלק ${i + 1}/${numTables} של קבוצת ${group.name}`
+                    });
+                }
+            } else {
+                // Group fits in a single table
+                tables.push({
+                    name: `שולחן ${group.name}`,
+                    capacity: suitableSize,
+                    notes: group.isMixed ? 'שולחן מעורב (קבוצות קטנות)' : `${group.count} אורחים מקבוצת ${group.name}`
+                });
+            }
+        }
+        
+        // Step 3: Create tables
+        showToast(`יוצר ${tables.length} שולחנות...`, 'info');
+        
         let created = 0;
-        for (const group of groups) {
-            const capacity = parseInt(calculateTableSize(group.count));
-            console.log(`Creating table for ${group.name}: ${group.count} guests, capacity: ${capacity}`);
+        for (const table of tables) {
             const tableData = {
-                tableName: `שולחן ${group.name}`,
-                capacity: capacity,
-                notes: group.isMixed ? 'שולחן מעורב (קבוצות קטנות)' : `${group.count} אורחים מקבוצת ${group.name}`
+                tableName: table.name,
+                capacity: table.capacity,
+                notes: table.notes
             };
             
             const response = await axios.post(`/api/events/${currentEvent.id}/tables`, tableData);
@@ -2945,21 +3063,21 @@ async function autoCreateAndFill() {
         
         showToast(`✅ נוצרו ${created} שולחנות! מתחיל הושבה...`, 'success');
         
-        // Step 3: Wait for tables to be created in DB
+        // Step 4: Wait for tables to be created in DB
         await new Promise(resolve => setTimeout(resolve, 1500));
         
-        // Step 4: Reload seating data (tables, guests, rsvps)
+        // Step 5: Reload seating data (tables, guests, rsvps)
         await loadSeating();
         
-        // Step 5: Wait for data to load
+        // Step 6: Wait for data to load
         await new Promise(resolve => setTimeout(resolve, 1000));
         
-        // Step 6: Auto fill seating
+        // Step 7: Auto fill seating
         showToast('מושיב אורחים...', 'info');
         await autoFillSeating();
         
     } catch (error) {
-        console.error('Error in autoCreateAndFill:', error);
+        console.error('Error in processAutoCreateAndFill:', error);
         showToast(`שגיאה בתהליך האוטומטי: ${error.message}`, 'error');
     }
 }
