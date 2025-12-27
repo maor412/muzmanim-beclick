@@ -452,28 +452,38 @@ export const eventManagementPage = () => `
 
         <!-- Tab Content: Guests -->
         <div id="content-guests" class="tab-content hidden">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-3xl font-bold text-gray-800">רשימת מוזמנים</h2>
-                <div class="flex space-x-reverse space-x-3">
-                    <button onclick="deleteAllGuests()" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition border-2 border-red-700">
-                        <i class="fas fa-trash-alt ml-2"></i>
-                        מחק הכל
-                    </button>
-                    <button onclick="showImportModal()" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition">
-                        <i class="fas fa-upload ml-2"></i>
-                        ייבוא CSV
-                    </button>
-                    <button onclick="exportGuests('csv')" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition">
-                        <i class="fas fa-file-csv ml-2"></i>
-                        CSV
-                    </button>
-                    <button onclick="exportGuestsPDF()" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition">
-                        <i class="fas fa-file-pdf ml-2"></i>
-                        PDF
-                    </button>
-                    <button onclick="showAddGuestModal()" class="bg-pink-500 text-white px-4 py-2 rounded-lg hover:bg-pink-600 transition">
+            <div class="mb-6">
+                <h2 class="text-2xl md:text-3xl font-bold text-gray-800 mb-4">רשימת מוזמנים</h2>
+                
+                <!-- Action Buttons - Mobile Optimized -->
+                <div class="grid grid-cols-2 md:flex md:flex-row-reverse gap-2 md:gap-3">
+                    <!-- Primary Action -->
+                    <button onclick="showAddGuestModal()" class="col-span-2 md:col-span-1 bg-pink-500 text-white px-4 py-3 rounded-lg hover:bg-pink-600 transition shadow-md flex items-center justify-center font-semibold">
                         <i class="fas fa-plus ml-2"></i>
                         הוסף מוזמן
+                    </button>
+                    
+                    <!-- Export Buttons -->
+                    <button onclick="exportGuestsPDF()" class="bg-red-500 text-white px-4 py-2.5 rounded-lg hover:bg-red-600 transition flex items-center justify-center">
+                        <i class="fas fa-file-pdf ml-2"></i>
+                        <span class="hidden md:inline">ייצוא </span>PDF
+                    </button>
+                    <button onclick="exportGuests('csv')" class="bg-green-500 text-white px-4 py-2.5 rounded-lg hover:bg-green-600 transition flex items-center justify-center">
+                        <i class="fas fa-file-csv ml-2"></i>
+                        <span class="hidden md:inline">ייצוא </span>CSV
+                    </button>
+                    
+                    <!-- Import Button -->
+                    <button onclick="showImportModal()" class="bg-blue-500 text-white px-4 py-2.5 rounded-lg hover:bg-blue-600 transition flex items-center justify-center">
+                        <i class="fas fa-upload ml-2"></i>
+                        <span class="hidden md:inline">ייבוא </span>CSV
+                    </button>
+                    
+                    <!-- Delete All Button -->
+                    <button onclick="deleteAllGuests()" class="bg-white text-red-600 px-4 py-2.5 rounded-lg hover:bg-red-50 transition border-2 border-red-500 flex items-center justify-center">
+                        <i class="fas fa-trash-alt ml-2"></i>
+                        <span class="hidden md:inline">מחק הכל</span>
+                        <span class="md:hidden">מחק</span>
                     </button>
                 </div>
             </div>
@@ -517,18 +527,27 @@ export const eventManagementPage = () => `
 
         <!-- Tab Content: Seating -->
         <div id="content-seating" class="tab-content hidden">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-3xl font-bold text-gray-800">הושבה</h2>
-                <div class="flex space-x-reverse space-x-3">
-                    <!-- Automation Dropdown Menu -->
-                    <div class="relative inline-block" id="automation-dropdown">
+            <div class="mb-6">
+                <h2 class="text-2xl md:text-3xl font-bold text-gray-800 mb-4">הושבה</h2>
+                
+                <!-- Action Buttons - Mobile Optimized -->
+                <div class="grid grid-cols-2 md:flex md:flex-row-reverse gap-2 md:gap-3">
+                    <!-- Primary Action -->
+                    <button onclick="showAddTableModal()" class="col-span-2 md:col-span-1 bg-pink-500 text-white px-4 py-3 rounded-lg hover:bg-pink-600 transition shadow-md flex items-center justify-center font-semibold">
+                        <i class="fas fa-plus ml-2"></i>
+                        הוסף שולחן
+                    </button>
+                    
+                    <!-- Automation Dropdown -->
+                    <div class="relative col-span-2 md:col-span-1" id="automation-dropdown">
                         <button onclick="toggleAutomationMenu()" 
-                                class="bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600 transition flex items-center">
+                                class="w-full bg-purple-500 text-white px-4 py-2.5 rounded-lg hover:bg-purple-600 transition flex items-center justify-center">
                             <i class="fas fa-magic ml-2"></i>
-                            אוטומציה
+                            <span class="hidden md:inline">אוטומציה</span>
+                            <span class="md:hidden">אוטומטי</span>
                             <i class="fas fa-chevron-down mr-2 text-sm"></i>
                         </button>
-                        <div id="automation-menu" class="hidden absolute left-0 mt-2 w-64 bg-white rounded-lg shadow-xl border border-gray-200 z-50">
+                        <div id="automation-menu" class="hidden absolute left-0 mt-2 w-full md:w-64 bg-white rounded-lg shadow-xl border border-gray-200 z-50">
                             <div class="py-2">
                                 <button onclick="showAutoTableCreationModal(); closeAutomationMenu();" 
                                         class="w-full text-right px-4 py-3 hover:bg-purple-50 transition flex items-center">
@@ -558,17 +577,14 @@ export const eventManagementPage = () => `
                         </div>
                     </div>
                     
-                    <button onclick="exportSeating()" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition">
-                        <i class="fas fa-file-excel ml-2"></i>
-                        CSV
-                    </button>
-                    <button onclick="exportSeatingPDF()" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition">
+                    <!-- Export Buttons -->
+                    <button onclick="exportSeatingPDF()" class="bg-red-500 text-white px-4 py-2.5 rounded-lg hover:bg-red-600 transition flex items-center justify-center">
                         <i class="fas fa-file-pdf ml-2"></i>
-                        PDF
+                        <span class="hidden md:inline">ייצוא </span>PDF
                     </button>
-                    <button onclick="showAddTableModal()" class="bg-pink-500 text-white px-4 py-2 rounded-lg hover:bg-pink-600 transition">
-                        <i class="fas fa-plus ml-2"></i>
-                        הוסף שולחן
+                    <button onclick="exportSeating()" class="bg-green-500 text-white px-4 py-2.5 rounded-lg hover:bg-green-600 transition flex items-center justify-center">
+                        <i class="fas fa-file-excel ml-2"></i>
+                        <span class="hidden md:inline">ייצוא </span>CSV
                     </button>
                 </div>
             </div>
