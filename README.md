@@ -7,7 +7,7 @@
 
 ## 🌐 קישורים
 
-- **Production**: `https://webapp-cio.pages.dev`
+- **Production**: `https://a2681fac.webapp-cio.pages.dev`
 - **Login**: `https://webapp-cio.pages.dev/login`
 - **Latest Deploy**: `https://fc9ab1a6.webapp-cio.pages.dev`
 - **API Health**: `/api/health`
