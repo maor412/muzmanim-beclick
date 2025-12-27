@@ -10,55 +10,65 @@ export const publicRsvpPage = (slug: string) => `
     <style>
       body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
       .honeypot { position: absolute; left: -9999px; }
+      
+      /* Mobile Responsive */
+      @media (max-width: 768px) {
+        .text-4xl { font-size: 1.75rem !important; line-height: 1.3 !important; }
+        .text-3xl { font-size: 1.5rem !important; }
+        .text-2xl { font-size: 1.25rem !important; }
+        .text-xl { font-size: 1.125rem !important; }
+        .text-5xl { font-size: 2.5rem !important; }
+        h1, h2, h3 { line-height: 1.3 !important; }
+      }
     </style>
 </head>
 <body class="bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50 min-h-screen">
-    <div class="container mx-auto px-4 py-8">
+    <div class="container mx-auto px-3 md:px-4 py-4 md:py-8">
         <div class="max-w-2xl mx-auto">
             <!-- Loading State -->
-            <div id="loading-state" class="bg-white rounded-2xl shadow-2xl p-8">
+            <div id="loading-state" class="bg-white rounded-xl md:rounded-2xl shadow-2xl p-4 md:p-8">
                 <div class="text-center">
-                    <i class="fas fa-spinner fa-spin text-5xl text-pink-500 mb-4"></i>
-                    <h1 class="text-2xl font-bold text-gray-800 mb-2">מוזמנים בקליק</h1>
-                    <p class="text-gray-600">טוען את פרטי האירוע...</p>
+                    <i class="fas fa-spinner fa-spin text-3xl md:text-5xl text-pink-500 mb-3 md:mb-4"></i>
+                    <h1 class="text-xl md:text-2xl font-bold text-gray-800 mb-2">מוזמנים בקליק</h1>
+                    <p class="text-sm md:text-base text-gray-600">טוען את פרטי האירוע...</p>
                 </div>
             </div>
 
             <!-- Error State -->
-            <div id="error-state" class="hidden bg-white rounded-2xl shadow-2xl p-8">
+            <div id="error-state" class="hidden bg-white rounded-xl md:rounded-2xl shadow-2xl p-4 md:p-8">
                 <div class="text-center">
-                    <i class="fas fa-exclamation-triangle text-5xl text-red-500 mb-4"></i>
-                    <h2 class="text-2xl font-bold text-gray-800 mb-2">שגיאה</h2>
-                    <p class="text-gray-600 mb-4" id="error-message"></p>
-                    <a href="/" class="inline-block bg-pink-500 text-white px-6 py-3 rounded-lg hover:bg-pink-600 transition">
+                    <i class="fas fa-exclamation-triangle text-3xl md:text-5xl text-red-500 mb-3 md:mb-4"></i>
+                    <h2 class="text-xl md:text-2xl font-bold text-gray-800 mb-2">שגיאה</h2>
+                    <p class="text-sm md:text-base text-gray-600 mb-4" id="error-message"></p>
+                    <a href="/" class="inline-block bg-pink-500 text-white px-4 py-2 md:px-6 md:py-3 rounded-lg hover:bg-pink-600 transition text-sm md:text-base">
                         חזרה לדף הבית
                     </a>
                 </div>
             </div>
 
             <!-- RSVP Closed State -->
-            <div id="closed-state" class="hidden bg-white rounded-2xl shadow-2xl p-8">
+            <div id="closed-state" class="hidden bg-white rounded-xl md:rounded-2xl shadow-2xl p-4 md:p-8">
                 <div class="text-center">
-                    <i class="fas fa-lock text-5xl text-gray-400 mb-4"></i>
-                    <h2 class="text-2xl font-bold text-gray-800 mb-2">אישור הגעה נסגר</h2>
-                    <p class="text-gray-600 mb-4">האפשרות לאשר הגעה לאירוע זה כבר לא פעילה.</p>
-                    <p class="text-gray-500 text-sm">לשאלות, אנא פנו לבעלי השמחה ישירות.</p>
+                    <i class="fas fa-lock text-3xl md:text-5xl text-gray-400 mb-3 md:mb-4"></i>
+                    <h2 class="text-xl md:text-2xl font-bold text-gray-800 mb-2">אישור הגעה נסגר</h2>
+                    <p class="text-sm md:text-base text-gray-600 mb-4">האפשרות לאשר הגעה לאירוע זה כבר לא פעילה.</p>
+                    <p class="text-gray-500 text-xs md:text-sm">לשאלות, אנא פנו לבעלי השמחה ישירות.</p>
                 </div>
             </div>
 
             <!-- RSVP Form -->
-            <div id="form-container" class="hidden bg-white rounded-2xl shadow-2xl p-8">
-                <div class="text-center mb-8">
-                    <i class="fas fa-heart text-pink-500 text-5xl mb-4"></i>
-                    <h1 class="text-4xl font-bold text-gray-800 mb-2" id="event-title">מוזמנים בקליק</h1>
-                    <p class="text-xl text-gray-600" id="couple-names"></p>
-                    <div class="mt-4 text-gray-600">
+            <div id="form-container" class="hidden bg-white rounded-xl md:rounded-2xl shadow-2xl p-4 md:p-8">
+                <div class="text-center mb-6 md:mb-8">
+                    <i class="fas fa-heart text-pink-500 text-3xl md:text-5xl mb-3 md:mb-4"></i>
+                    <h1 class="text-2xl md:text-4xl font-bold text-gray-800 mb-2" id="event-title">מוזמנים בקליק</h1>
+                    <p class="text-base md:text-xl text-gray-600" id="couple-names"></p>
+                    <div class="mt-3 md:mt-4 text-gray-600 text-sm md:text-base">
                         <p><i class="fas fa-calendar ml-2"></i><span id="event-date"></span></p>
                         <p id="venue-info" class="mt-1"></p>
                     </div>
                 </div>
 
-                <form id="rsvp-form" class="space-y-6">
+                <form id="rsvp-form" class="space-y-4 md:space-y-6">
                     <!-- Honeypot for spam prevention -->
                     <input type="text" name="website" class="honeypot" tabindex="-1" autocomplete="off">
 

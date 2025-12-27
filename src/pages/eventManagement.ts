@@ -31,6 +31,7 @@ export const eventManagementPage = () => `
         transform: translateX(-50%);
         z-index: 9999;
         min-width: 300px;
+        max-width: 90vw;
         animation: slideDown 0.3s ease-out;
       }
       @keyframes slideDown {
@@ -39,6 +40,40 @@ export const eventManagementPage = () => `
       }
       .dragging { opacity: 0.5; cursor: move; }
       .drag-over { border: 2px dashed #ec4899; background-color: #fdf2f8; }
+      
+      /* Mobile Responsive Fixes */
+      @media (max-width: 768px) {
+        h1, h2, h3 { 
+          font-size: 1.25rem !important; 
+          line-height: 1.5 !important;
+        }
+        .text-3xl { font-size: 1.5rem !important; }
+        .text-2xl { font-size: 1.25rem !important; }
+        .text-xl { font-size: 1.125rem !important; }
+        .px-6 { padding-left: 0.75rem !important; padding-right: 0.75rem !important; }
+        .py-4 { padding-top: 0.5rem !important; padding-bottom: 0.5rem !important; }
+        
+        /* Fix long text overflow */
+        .truncate-mobile {
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+          max-width: 100%;
+        }
+        
+        /* Make error messages wrap properly */
+        .text-red-600, .text-red-500 {
+          font-size: 0.875rem !important;
+          line-height: 1.5 !important;
+          word-wrap: break-word !important;
+          overflow-wrap: break-word !important;
+        }
+        
+        /* Fix stats cards */
+        .grid.md\\:grid-cols-4 {
+          grid-template-columns: repeat(2, 1fr) !important;
+        }
+      }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -46,23 +81,24 @@ export const eventManagementPage = () => `
     <nav class="bg-white shadow-lg sticky top-0 z-40">
         <div class="container mx-auto px-4 py-4">
             <div class="flex justify-between items-center">
-                <div class="flex items-center space-x-reverse space-x-4">
+                <div class="flex items-center space-x-reverse space-x-2 md:space-x-4">
                     <a href="/dashboard" class="text-gray-600 hover:text-pink-500">
-                        <i class="fas fa-arrow-right text-xl"></i>
+                        <i class="fas fa-arrow-right text-lg md:text-xl"></i>
                     </a>
-                    <div class="flex items-center space-x-reverse space-x-2">
-                        <i class="fas fa-heart text-pink-500 text-2xl"></i>
-                        <h1 class="text-xl font-bold text-gray-800" id="event-title">מוזמנים בקליק</h1>
+                    <div class="flex items-center space-x-reverse space-x-1 md:space-x-2">
+                        <i class="fas fa-heart text-pink-500 text-xl md:text-2xl"></i>
+                        <h1 class="text-base md:text-xl font-bold text-gray-800 truncate max-w-[150px] md:max-w-none" id="event-title">מוזמנים בקליק</h1>
                     </div>
                 </div>
-                <div class="flex items-center space-x-reverse space-x-3">
-                    <button onclick="copyRsvpLink()" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition">
-                        <i class="fas fa-link ml-2"></i>
-                        לינק RSVP
+                <div class="flex items-center space-x-reverse space-x-1 md:space-x-3">
+                    <button onclick="copyRsvpLink()" class="bg-blue-500 text-white px-2 py-1 md:px-4 md:py-2 rounded-lg hover:bg-blue-600 transition text-sm md:text-base">
+                        <i class="fas fa-link ml-1 md:ml-2"></i>
+                        <span class="hidden md:inline">לינק</span>
+                        <span class="md:hidden">RSVP</span>
                     </button>
-                    <button onclick="logout()" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition">
-                        <i class="fas fa-sign-out-alt ml-2"></i>
-                        התנתק
+                    <button onclick="logout()" class="bg-red-500 text-white px-2 py-1 md:px-4 md:py-2 rounded-lg hover:bg-red-600 transition text-sm md:text-base">
+                        <i class="fas fa-sign-out-alt ml-1 md:ml-2"></i>
+                        <span class="hidden md:inline">התנתק</span>
                     </button>
                 </div>
             </div>
@@ -70,39 +106,39 @@ export const eventManagementPage = () => `
     </nav>
 
     <!-- Tabs Navigation -->
-    <div class="bg-white border-b sticky top-[73px] z-30">
-        <div class="container mx-auto px-4">
-            <div class="flex space-x-reverse overflow-x-auto">
-                <button onclick="switchTab('overview')" id="tab-overview" class="tab-active px-6 py-4 font-semibold transition whitespace-nowrap">
-                    <i class="fas fa-chart-line ml-2"></i>
+    <div class="bg-white border-b sticky top-[57px] md:top-[73px] z-30">
+        <div class="container mx-auto px-2 md:px-4">
+            <div class="flex space-x-reverse overflow-x-auto scrollbar-hide">
+                <button onclick="switchTab('overview')" id="tab-overview" class="tab-active px-3 py-3 md:px-6 md:py-4 font-semibold transition whitespace-nowrap text-sm md:text-base">
+                    <i class="fas fa-chart-line ml-1 md:ml-2"></i>
                     סקירה
                 </button>
-                <button onclick="switchTab('rsvps')" id="tab-rsvps" class="tab-inactive px-6 py-4 font-semibold transition whitespace-nowrap">
-                    <i class="fas fa-envelope ml-2"></i>
+                <button onclick="switchTab('rsvps')" id="tab-rsvps" class="tab-inactive px-3 py-3 md:px-6 md:py-4 font-semibold transition whitespace-nowrap text-sm md:text-base">
+                    <i class="fas fa-envelope ml-1 md:ml-2 hidden md:inline"></i>
                     אישורי הגעה
                 </button>
-                <button onclick="switchTab('guests')" id="tab-guests" class="tab-inactive px-6 py-4 font-semibold transition whitespace-nowrap">
-                    <i class="fas fa-users ml-2"></i>
-                    רשימת מוזמנים
+                <button onclick="switchTab('guests')" id="tab-guests" class="tab-inactive px-3 py-3 md:px-6 md:py-4 font-semibold transition whitespace-nowrap text-sm md:text-base">
+                    <i class="fas fa-users ml-1 md:ml-2 hidden md:inline"></i>
+                    מוזמנים
                 </button>
-                <button onclick="switchTab('seating')" id="tab-seating" class="tab-inactive px-6 py-4 font-semibold transition whitespace-nowrap">
-                    <i class="fas fa-chair ml-2"></i>
+                <button onclick="switchTab('seating')" id="tab-seating" class="tab-inactive px-3 py-3 md:px-6 md:py-4 font-semibold transition whitespace-nowrap text-sm md:text-base">
+                    <i class="fas fa-chair ml-1 md:ml-2"></i>
                     הושבה
                 </button>
-                <button onclick="switchTab('checkin')" id="tab-checkin" class="tab-inactive px-6 py-4 font-semibold transition whitespace-nowrap">
-                    <i class="fas fa-clipboard-check ml-2"></i>
+                <button onclick="switchTab('checkin')" id="tab-checkin" class="tab-inactive px-3 py-3 md:px-6 md:py-4 font-semibold transition whitespace-nowrap text-sm md:text-base">
+                    <i class="fas fa-clipboard-check ml-1 md:ml-2 hidden md:inline"></i>
                     צ'ק-אין
                 </button>
-                <button onclick="switchTab('walkins')" id="tab-walkins" class="tab-inactive px-6 py-4 font-semibold transition whitespace-nowrap">
-                    <i class="fas fa-person-walking ml-2"></i>
+                <button onclick="switchTab('walkins')" id="tab-walkins" class="tab-inactive px-3 py-3 md:px-6 md:py-4 font-semibold transition whitespace-nowrap text-sm md:text-base">
+                    <i class="fas fa-person-walking ml-1 md:ml-2 hidden md:inline"></i>
                     Walk-ins
                 </button>
-                <button onclick="switchTab('messages')" id="tab-messages" class="tab-inactive px-6 py-4 font-semibold transition whitespace-nowrap">
-                    <i class="fas fa-comment-dots ml-2"></i>
+                <button onclick="switchTab('messages')" id="tab-messages" class="tab-inactive px-3 py-3 md:px-6 md:py-4 font-semibold transition whitespace-nowrap text-sm md:text-base">
+                    <i class="fas fa-comment-dots ml-1 md:ml-2 hidden md:inline"></i>
                     הודעות
                 </button>
-                <button onclick="switchTab('settings')" id="tab-settings" class="tab-inactive px-6 py-4 font-semibold transition whitespace-nowrap">
-                    <i class="fas fa-cog ml-2"></i>
+                <button onclick="switchTab('settings')" id="tab-settings" class="tab-inactive px-3 py-3 md:px-6 md:py-4 font-semibold transition whitespace-nowrap text-sm md:text-base">
+                    <i class="fas fa-cog ml-1 md:ml-2"></i>
                     הגדרות
                 </button>
             </div>
@@ -129,47 +165,47 @@ export const eventManagementPage = () => `
 
         <!-- Tab Content: Overview -->
         <div id="content-overview" class="tab-content hidden">
-            <h2 class="text-3xl font-bold text-gray-800 mb-6">סקירת אירוע</h2>
+            <h2 class="text-xl md:text-3xl font-bold text-gray-800 mb-4 md:mb-6">סקירת אירוע</h2>
             
             <!-- Stats Cards -->
-            <div class="grid md:grid-cols-4 gap-6 mb-8">
-                <div class="bg-white rounded-xl shadow-lg p-6">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6 mb-6 md:mb-8">
+                <div class="bg-white rounded-lg md:rounded-xl shadow-lg p-3 md:p-6">
                     <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-gray-500 text-sm mb-1">אישורי הגעה</p>
-                            <p class="text-3xl font-bold text-green-600" id="stat-rsvps">0</p>
+                        <div class="flex-1">
+                            <p class="text-gray-500 text-xs md:text-sm mb-1">אישורי הגעה</p>
+                            <p class="text-xl md:text-3xl font-bold text-green-600" id="stat-rsvps">0</p>
                         </div>
-                        <i class="fas fa-check-circle text-4xl text-green-200"></i>
+                        <i class="fas fa-check-circle text-2xl md:text-4xl text-green-200"></i>
                     </div>
                 </div>
                 
-                <div class="bg-white rounded-xl shadow-lg p-6">
+                <div class="bg-white rounded-lg md:rounded-xl shadow-lg p-3 md:p-6">
                     <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-gray-500 text-sm mb-1">אורחים מוזמנים</p>
-                            <p class="text-3xl font-bold text-blue-600" id="stat-guests">0</p>
+                        <div class="flex-1">
+                            <p class="text-gray-500 text-xs md:text-sm mb-1">אורחים מוזמנים</p>
+                            <p class="text-xl md:text-3xl font-bold text-blue-600" id="stat-guests">0</p>
                         </div>
-                        <i class="fas fa-users text-4xl text-blue-200"></i>
+                        <i class="fas fa-users text-2xl md:text-4xl text-blue-200"></i>
                     </div>
                 </div>
                 
-                <div class="bg-white rounded-xl shadow-lg p-6">
+                <div class="bg-white rounded-lg md:rounded-xl shadow-lg p-3 md:p-6">
                     <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-gray-500 text-sm mb-1">שולחנות</p>
-                            <p class="text-3xl font-bold text-purple-600" id="stat-tables">0</p>
+                        <div class="flex-1">
+                            <p class="text-gray-500 text-xs md:text-sm mb-1">שולחנות</p>
+                            <p class="text-xl md:text-3xl font-bold text-purple-600" id="stat-tables">0</p>
                         </div>
-                        <i class="fas fa-chair text-4xl text-purple-200"></i>
+                        <i class="fas fa-chair text-2xl md:text-4xl text-purple-200"></i>
                     </div>
                 </div>
                 
-                <div class="bg-white rounded-xl shadow-lg p-6">
+                <div class="bg-white rounded-lg md:rounded-xl shadow-lg p-3 md:p-6">
                     <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-gray-500 text-sm mb-1">הגיעו לאירוע</p>
-                            <p class="text-3xl font-bold text-orange-600" id="stat-checkins">0</p>
+                        <div class="flex-1">
+                            <p class="text-gray-500 text-xs md:text-sm mb-1">הגיעו לאירוע</p>
+                            <p class="text-xl md:text-3xl font-bold text-orange-600" id="stat-checkins">0</p>
                         </div>
-                        <i class="fas fa-clipboard-check text-4xl text-orange-200"></i>
+                        <i class="fas fa-clipboard-check text-2xl md:text-4xl text-orange-200"></i>
                     </div>
                 </div>
             </div>
