@@ -1,4 +1,5 @@
 // Global variables
+console.log('🚀 Event Management JS loaded at:', new Date().toISOString());
 let currentEvent = null;
 let currentTab = 'overview';
 let allRsvps = [];
@@ -3573,5 +3574,6 @@ async function createTablesFromManualSizes() {
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('🎯 DOMContentLoaded fired, calling loadEvent()...');
     loadEvent();
 });

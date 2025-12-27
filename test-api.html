@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+    <h1>Testing API Endpoints</h1>
+    <div id="results"></div>
+    
+    <script>
+        const eventId = prompt("Enter Event ID:", "");
+        const resultsDiv = document.getElementById('results');
+        
+        async function testEndpoint(name, url) {
+            resultsDiv.innerHTML += `<p>Testing ${name}...</p>`;
+            const start = Date.now();
+            try {
+                const response = await axios.get(url, { 
+                    timeout: 5000,
+                    withCredentials: true 
+                });
+                const duration = Date.now() - start;
+                resultsDiv.innerHTML += `<p style="color: green;">✅ ${name}: ${duration}ms - ${JSON.stringify(response.data).substring(0, 100)}</p>`;
+            } catch (error) {
+                const duration = Date.now() - start;
+                resultsDiv.innerHTML += `<p style="color: red;">❌ ${name}: ${duration}ms - ${error.message}</p>`;
+            }
+        }
+        
+        async function runTests() {
+            if (!eventId) {
+                resultsDiv.innerHTML = '<p>No event ID provided</p>';
+                return;
+            }
+            
+            await testEndpoint('Event', `/api/events/${eventId}`);
+            await testEndpoint('RSVPs', `/api/events/${eventId}/rsvps`);
+            await testEndpoint('Guests', `/api/events/${eventId}/guests`);
+            await testEndpoint('Tables', `/api/events/${eventId}/tables`);
+            await testEndpoint('Checkins', `/api/events/${eventId}/checkins`);
+            await testEndpoint('Seating', `/api/events/${eventId}/seating`);
+            
+            resultsDiv.innerHTML += '<p><strong>All tests completed!</strong></p>';
+        }
+        
+        runTests();
+    </script>
+</body>
+</html>
