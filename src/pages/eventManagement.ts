@@ -80,17 +80,17 @@ export const eventManagementPage = () => `
     <!-- Header -->
     <nav class="bg-white shadow-lg sticky top-0 z-40">
         <div class="container mx-auto px-2 md:px-4 py-2 md:py-4">
-            <div class="flex justify-between items-center">
-                <div class="flex items-center gap-2 md:gap-4">
-                    <a href="/dashboard" class="text-gray-600 hover:text-pink-500 flex items-center">
+            <div class="flex justify-between items-center gap-2">
+                <div class="flex items-center gap-2 md:gap-4 flex-shrink min-w-0">
+                    <a href="/dashboard" class="text-gray-600 hover:text-pink-500 flex items-center flex-shrink-0">
                         <i class="fas fa-arrow-right text-base md:text-xl"></i>
                     </a>
-                    <div class="flex items-center gap-1 md:gap-2">
-                        <i class="fas fa-heart text-pink-500 text-lg md:text-2xl"></i>
-                        <h1 class="text-sm md:text-xl font-bold text-gray-800 truncate max-w-[120px] md:max-w-none" id="event-title">מוזמנים בקליק</h1>
+                    <div class="flex items-center gap-1 md:gap-2 min-w-0 flex-shrink">
+                        <i class="fas fa-heart text-pink-500 text-lg md:text-2xl flex-shrink-0"></i>
+                        <h1 class="text-sm md:text-xl font-bold text-gray-800 truncate" id="event-title">מוזמנים בקליק</h1>
                     </div>
                 </div>
-                <div class="flex items-center gap-1 md:gap-3">
+                <div class="flex items-center gap-1 md:gap-3 flex-shrink-0">
                     <button onclick="copyRsvpLink()" class="bg-blue-500 text-white px-2 py-1 md:px-4 md:py-2 rounded-lg hover:bg-blue-600 transition text-sm md:text-base flex items-center gap-1">
                         <span class="hidden md:inline">לינק</span>
                         <span class="md:hidden text-xs">RSVP</span>
