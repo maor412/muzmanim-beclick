@@ -157,12 +157,12 @@ app.get('/', (c) => {
                     מערכת מתקדמת לניהול אירועים: RSVP, רשימות מוזמנים, סידורי הושבה, צ'ק-אין ועוד
                 </p>
                 <div class="flex flex-col md:flex-row justify-center gap-3 md:gap-4 px-4">
-                    <a href="/signup" class="bg-pink-500 text-white px-6 py-3 md:px-8 md:py-4 rounded-full text-base md:text-lg font-semibold hover:bg-pink-600 transition shadow-lg">
-                        <i class="fas fa-rocket mr-2"></i>
-                        התחל עכשיו בחינם
+                    <a href="/login" class="bg-pink-500 text-white px-6 py-3 md:px-8 md:py-4 rounded-full text-base md:text-lg font-semibold hover:bg-pink-600 transition shadow-lg">
+                        <i class="fas fa-sign-in-alt mr-2"></i>
+                        התחל עכשיו - התחברות
                     </a>
-                    <a href="#features" class="bg-white text-gray-800 px-6 py-3 md:px-8 md:py-4 rounded-full text-base md:text-lg font-semibold hover:bg-gray-100 transition shadow-lg">
-                        <i class="fas fa-info-circle ml-2"></i>
+                    <a href="#features" class="hidden md:flex bg-white text-gray-800 px-6 py-3 md:px-8 md:py-4 rounded-full text-base md:text-lg font-semibold hover:bg-gray-100 transition shadow-lg items-center justify-center">
+                        <i class="fas fa-info-circle mr-2"></i>
                         למד עוד
                     </a>
                 </div>
