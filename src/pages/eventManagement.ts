@@ -364,13 +364,19 @@ export const eventManagementPage = () => `
             <!-- Action Buttons - Mobile Optimized -->
             <div class="grid grid-cols-2 md:flex md:flex-row-reverse gap-2 md:gap-3 mb-6">
                 <!-- Export Buttons -->
-                <button onclick="exportRsvpsPDF()" class="bg-red-500 text-white px-4 py-2.5 rounded-lg hover:bg-red-600 transition shadow-md flex items-center justify-center">
-                    <i class="fas fa-file-pdf ml-2"></i>
-                    <span class="hidden md:inline">ייצוא לקובץ </span>PDF
+                <button onclick="exportRsvpsPDF()" class="bg-red-500 text-white px-4 py-3 rounded-lg hover:bg-red-600 transition shadow-md flex flex-col items-center justify-center">
+                    <div class="flex items-center">
+                        <i class="fas fa-file-pdf text-xl ml-2"></i>
+                        <span class="font-semibold">הורד PDF</span>
+                    </div>
+                    <span class="text-xs mt-1 opacity-90 hidden md:block">להדפסה או שמירה</span>
                 </button>
-                <button onclick="exportRsvps('excel')" class="bg-green-500 text-white px-4 py-2.5 rounded-lg hover:bg-green-600 transition shadow-md flex items-center justify-center">
-                    <i class="fas fa-file-excel ml-2"></i>
-                    <span class="hidden md:inline">ייצוא ל-</span>Excel
+                <button onclick="exportRsvps('excel')" class="bg-green-500 text-white px-4 py-3 rounded-lg hover:bg-green-600 transition shadow-md flex flex-col items-center justify-center">
+                    <div class="flex items-center">
+                        <i class="fas fa-file-excel text-xl ml-2"></i>
+                        <span class="font-semibold">הורד Excel</span>
+                    </div>
+                    <span class="text-xs mt-1 opacity-90 hidden md:block">לעריכה במחשב</span>
                 </button>
             </div>
 
@@ -455,19 +461,28 @@ export const eventManagementPage = () => `
                     </button>
                     
                     <!-- Export Buttons -->
-                    <button onclick="exportGuestsPDF()" class="bg-red-500 text-white px-4 py-2.5 rounded-lg hover:bg-red-600 transition flex items-center justify-center">
-                        <i class="fas fa-file-pdf ml-2"></i>
-                        <span class="hidden md:inline">ייצוא לקובץ </span>PDF
+                    <button onclick="exportGuestsPDF()" class="bg-red-500 text-white px-4 py-3 rounded-lg hover:bg-red-600 transition flex flex-col items-center justify-center">
+                        <div class="flex items-center">
+                            <i class="fas fa-file-pdf text-lg ml-2"></i>
+                            <span class="font-semibold text-sm md:text-base">הורד PDF</span>
+                        </div>
+                        <span class="text-xs mt-0.5 opacity-90 hidden md:block">להדפסה</span>
                     </button>
-                    <button onclick="exportGuests('csv')" class="bg-green-500 text-white px-4 py-2.5 rounded-lg hover:bg-green-600 transition flex items-center justify-center">
-                        <i class="fas fa-file-excel ml-2"></i>
-                        <span class="hidden md:inline">ייצוא ל-</span>Excel
+                    <button onclick="exportGuests('csv')" class="bg-green-500 text-white px-4 py-3 rounded-lg hover:bg-green-600 transition flex flex-col items-center justify-center">
+                        <div class="flex items-center">
+                            <i class="fas fa-file-excel text-lg ml-2"></i>
+                            <span class="font-semibold text-sm md:text-base">הורד Excel</span>
+                        </div>
+                        <span class="text-xs mt-0.5 opacity-90 hidden md:block">לעריכה</span>
                     </button>
                     
                     <!-- Import Button -->
-                    <button onclick="showImportModal()" class="bg-blue-500 text-white px-4 py-2.5 rounded-lg hover:bg-blue-600 transition flex items-center justify-center">
-                        <i class="fas fa-upload ml-2"></i>
-                        <span class="hidden md:inline">ייבוא מ-</span>Excel
+                    <button onclick="showImportModal()" class="bg-blue-500 text-white px-4 py-3 rounded-lg hover:bg-blue-600 transition flex flex-col items-center justify-center">
+                        <div class="flex items-center">
+                            <i class="fas fa-file-upload text-lg ml-2"></i>
+                            <span class="font-semibold text-sm md:text-base">העלה Excel</span>
+                        </div>
+                        <span class="text-xs mt-0.5 opacity-90 hidden md:block">ייבוא רשימה</span>
                     </button>
                     
                     <!-- Delete All Button -->
@@ -567,13 +582,19 @@ export const eventManagementPage = () => `
                     </div>
                     
                     <!-- Export Buttons -->
-                    <button onclick="exportSeatingPDF()" class="bg-red-500 text-white px-4 py-2.5 rounded-lg hover:bg-red-600 transition flex items-center justify-center">
-                        <i class="fas fa-file-pdf ml-2"></i>
-                        <span class="hidden md:inline">ייצוא לקובץ </span>PDF
+                    <button onclick="exportSeatingPDF()" class="bg-red-500 text-white px-4 py-3 rounded-lg hover:bg-red-600 transition flex flex-col items-center justify-center">
+                        <div class="flex items-center">
+                            <i class="fas fa-file-pdf text-lg ml-2"></i>
+                            <span class="font-semibold text-sm md:text-base">הורד PDF</span>
+                        </div>
+                        <span class="text-xs mt-0.5 opacity-90 hidden md:block">סידור ישיבה</span>
                     </button>
-                    <button onclick="exportSeating()" class="bg-green-500 text-white px-4 py-2.5 rounded-lg hover:bg-green-600 transition flex items-center justify-center">
-                        <i class="fas fa-file-excel ml-2"></i>
-                        <span class="hidden md:inline">ייצוא ל-</span>Excel
+                    <button onclick="exportSeating()" class="bg-green-500 text-white px-4 py-3 rounded-lg hover:bg-green-600 transition flex flex-col items-center justify-center">
+                        <div class="flex items-center">
+                            <i class="fas fa-file-excel text-lg ml-2"></i>
+                            <span class="font-semibold text-sm md:text-base">הורד Excel</span>
+                        </div>
+                        <span class="text-xs mt-0.5 opacity-90 hidden md:block">לעריכה</span>
                     </button>
                 </div>
             </div>
