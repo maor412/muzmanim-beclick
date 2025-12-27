@@ -35,6 +35,29 @@
 
 ## 🔑 Environment Variables & Secrets
 
+### ⚠️ Cloudflare API Token (Required for Deploy)
+**לפני שניתן לעשות deploy, צריך להגדיר Cloudflare API Token:**
+
+1. **צור Token ב-Cloudflare Dashboard:**
+   - לך ל: https://dash.cloudflare.com/profile/api-tokens
+   - לחץ על "Create Token"
+   - בחר **"Edit Cloudflare Workers"** template
+   - או **Custom Token** עם הרשאות:
+     - Account - Cloudflare Pages: Edit
+     - Account - D1: Edit
+     - Zone - Workers Routes: Edit
+
+2. **הגדר ב-Sandbox Environment:**
+   - פתח את לשונית **Deploy** בממשק
+   - הדבק את ה-Token
+   - שמור
+
+3. **לאחר ההגדרה:**
+   - קרא ל-`setup_cloudflare_api_key` tool
+   - אז תוכל לעשות `npm run deploy`
+
+**ללא API Token:** אי אפשר לעשות deploy, רק build מקומי.
+
 ### Local Development (`.dev.vars`)
 ```env
 APP_URL=http://localhost:3000
