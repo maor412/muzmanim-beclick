@@ -254,6 +254,81 @@ async function loadOverview() {
         // Generate insights
         generateInsights(rsvps, guests, seating, tables);
         
+        // START: Real-time DOM monitor for white square creation
+        console.log('🚨 [WHITE SQUARE HUNT] Starting real-time monitor...');
+        const createdElements = [];
+        const domObserver = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                mutation.addedNodes.forEach(node => {
+                    if (node.nodeType === 1) { // Element node
+                        const rect = node.getBoundingClientRect();
+                        const styles = window.getComputedStyle(node);
+                        
+                        // Check for white/empty elements anywhere on screen
+                        const isWhite = styles.backgroundColor === 'rgb(255, 255, 255)' || 
+                                       styles.backgroundColor === 'white';
+                        const isEmpty = node.children.length === 0 && 
+                                       (!node.textContent || node.textContent.trim().length < 3);
+                        const isVisible = rect.width > 10 && rect.height > 10 &&
+                                         styles.display !== 'none' &&
+                                         styles.visibility !== 'hidden' &&
+                                         parseFloat(styles.opacity) > 0.5;
+                        
+                        if (isWhite && isEmpty && isVisible) {
+                            const info = {
+                                tag: node.tagName,
+                                id: node.id || 'NO_ID',
+                                classes: node.className || 'NO_CLASS',
+                                bg: styles.backgroundColor,
+                                position: styles.position,
+                                zIndex: styles.zIndex,
+                                top: Math.round(rect.top),
+                                left: Math.round(rect.left),
+                                right: Math.round(rect.right),
+                                bottom: Math.round(rect.bottom),
+                                width: Math.round(rect.width),
+                                height: Math.round(rect.height),
+                                html: node.outerHTML?.substring(0, 200),
+                                parentTag: node.parentElement?.tagName,
+                                parentId: node.parentElement?.id || 'NO_ID',
+                                parentClass: node.parentElement?.className?.substring(0, 50) || 'NO_CLASS'
+                            };
+                            createdElements.push(info);
+                            console.error('🚨🚨🚨 [WHITE SQUARE] FOUND NEW WHITE EMPTY ELEMENT:', info);
+                            
+                            // Highlight it with red border for debugging
+                            node.style.border = '3px solid red';
+                            node.style.outline = '3px solid blue';
+                            
+                            // Send to API
+                            axios.post('/api/debug/log', {
+                                type: 'white_square_created',
+                                element: info,
+                                timestamp: new Date().toISOString(),
+                                stackTrace: new Error().stack
+                            }).catch(err => console.error('Failed to log:', err));
+                        }
+                    }
+                });
+            });
+        });
+        
+        // Observe everything
+        domObserver.observe(document.body, { 
+            childList: true, 
+            subtree: true 
+        });
+        
+        // Stop after 10 seconds
+        setTimeout(() => {
+            domObserver.disconnect();
+            console.log(`🚨 [WHITE SQUARE HUNT] Monitor stopped. Found ${createdElements.length} white empty elements`);
+            if (createdElements.length > 0) {
+                console.table(createdElements);
+            }
+        }, 10000);
+        // END: Real-time DOM monitor
+        
         // CRITICAL DEBUG: Monitor DOM changes and find white square
         setTimeout(async () => {
             console.log('🔍 [DEBUG] Scanning for white square element...');
