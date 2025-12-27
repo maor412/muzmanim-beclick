@@ -9,7 +9,7 @@
 
 - **Production**: `https://webapp-cio.pages.dev`
 - **Login**: `https://webapp-cio.pages.dev/login`
-- **Latest Deploy**: `https://c1d2cbdd.webapp-cio.pages.dev`
+- **Latest Deploy**: `https://095d498c.webapp-cio.pages.dev`
 - **API Health**: `/api/health`
 - **Dev Login** (for development): `/dev-login`
 - **Public RSVP Demo**: `/e/wedding-demo-abc123`
