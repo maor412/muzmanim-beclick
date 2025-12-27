@@ -8,7 +8,7 @@
 ## 🌐 קישורים
 
 - **GitHub**: https://github.com/maor412/muzmanim-beclick
-- **Production**: `https://7aef2ffe.webapp-cio.pages.dev`
+- **Production**: `https://9404ebe2.webapp-cio.pages.dev`
 - **Login**: `https://webapp-cio.pages.dev/login`
 - **Latest Deploy**: `https://fc9ab1a6.webapp-cio.pages.dev`
 - **API Health**: `/api/health`
