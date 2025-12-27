@@ -669,6 +669,24 @@ npm run test             # Health check
   - ✅ RSVPs עם מלווים רבים מושבים רק בשולחנות עם מספיק מקום
   - ✅ אזהרה אם יש אורחים שלא ניתן להושיב
 
+### ✅ Auto-Create Tables with attendingCount (דצמבר 2024)
+- **בעיה**: כפתור "בנה והושב" התעלם מ-attendingCount של RSVPs בבניית שולחנות
+- **דוגמה**: 
+  - "שפחת חתן" עם 4 RSVPs שכל אחד עם 2 מלווים (סה״כ 12 אנשים)
+  - הקוד ישן יצר שולחן: `count=4` (רק מספר ה-RSVPs) → capacity=5 (עם buffer 15%)
+  - אבל הייתה צריכה להיות: `count=12` (סה״כ אנשים) → capacity=14!
+- **פתרון**: תיקון פונקציית `analyzeGroups`:
+  - לולאה על כל חבר בקבוצה
+  - אם RSVP עם `status=confirmed` ו-`attendingCount`: `actualCount += attendingCount`
+  - אחרת (אורח או RSVP ללא attendingCount): `actualCount += 1`
+  - שימוש ב-`count: actualCount` במקום `count: members.length`
+  - אותו תיקון גם לקבוצות קטנות שמתמזגות ל"מעורב"
+- **תוצאה**:
+  - ✅ שולחנות נבנים לפי מספר אנשים אמיתי (כולל מלווים)
+  - ✅ שפחת חתן עם 12 אנשים → שולחן capacity=14 (עם buffer 15%)
+  - ✅ buffer של 15% עובד על הספירה האמיתית
+  - ✅ אורחים שאישרו הגעה + מלווים נכללים בחישוב הקיבולת
+
 ## 📝 תכונות שהושלמו
 
 - [x] ✅ **Authentication System (Magic Link + Google OAuth)**
