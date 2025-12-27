@@ -7,6 +7,7 @@
 
 ## 🌐 קישורים
 
+- **GitHub**: https://github.com/maor412/muzmanim-beclick
 - **Production**: `https://a2681fac.webapp-cio.pages.dev`
 - **Login**: `https://webapp-cio.pages.dev/login`
 - **Latest Deploy**: `https://fc9ab1a6.webapp-cio.pages.dev`
@@ -142,7 +143,7 @@
 ### 1. Clone והתקנה
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/maor412/muzmanim-beclick.git
 cd webapp
 npm install
 ```
