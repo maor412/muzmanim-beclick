@@ -207,29 +207,73 @@ async function loadOverview() {
         // Generate insights
         generateInsights(rsvps, guests, seating, tables);
         
-        // Clean up any rogue white divs (mobile fix for white square bug)
+        // Clean up any rogue white elements (mobile fix for white square bug)
         setTimeout(() => {
-            document.querySelectorAll('div').forEach(el => {
+            console.log('🔍 Starting element detection in top-right corner...');
+            let found = [];
+            
+            // Check ALL elements, not just divs
+            document.querySelectorAll('*').forEach(el => {
                 const rect = el.getBoundingClientRect();
                 const styles = window.getComputedStyle(el);
                 
-                // Remove suspicious white divs in top-right corner
+                // Log ALL elements in top-right area (for debugging)
+                // Exact position based on your screenshot: top 0-150px, right edge
                 if (
-                    (styles.backgroundColor === 'rgb(255, 255, 255)' || 
-                     styles.backgroundColor === 'white' ||
-                     styles.backgroundColor === '#ffffff') &&
-                    rect.top >= 0 && rect.top < 200 &&
+                    rect.top >= 0 && rect.top < 150 &&
                     rect.right > window.innerWidth - 100 &&
-                    rect.width > 10 && rect.width < 100 &&
-                    rect.height > 10 && rect.height < 200 &&
-                    !el.id && !el.className.includes('bg-white') &&
-                    el.children.length === 0 &&
-                    (!el.textContent || el.textContent.trim() === '')
+                    rect.width > 5 && rect.height > 5
                 ) {
-                    console.warn('🐛 Removing suspicious white div:', el, rect);
-                    el.remove();
+                    found.push({
+                        tag: el.tagName,
+                        id: el.id || 'NO_ID',
+                        class: el.className || 'NO_CLASS',
+                        bg: styles.backgroundColor,
+                        display: styles.display,
+                        position: styles.position,
+                        zIndex: styles.zIndex,
+                        coords: `top:${rect.top.toFixed(0)} right:${rect.right.toFixed(0)} w:${rect.width.toFixed(0)} h:${rect.height.toFixed(0)}`,
+                        children: el.children.length,
+                        text: el.textContent?.substring(0, 30) || 'EMPTY'
+                    });
+                }
+                
+                // SUPER AGGRESSIVE: Remove ANY suspicious white element in that area
+                const isWhiteBg = styles.backgroundColor === 'rgb(255, 255, 255)' || 
+                                  styles.backgroundColor === 'white' ||
+                                  styles.backgroundColor === '#ffffff' ||
+                                  styles.backgroundColor === '#fff';
+                
+                const isInTopRight = rect.top >= 0 && rect.top < 150 &&
+                                     rect.right > window.innerWidth - 100;
+                
+                const isSuspiciousSize = rect.width > 5 && rect.width < 150 &&
+                                         rect.height > 5 && rect.height < 250;
+                
+                const hasNoMeaningfulContent = el.children.length === 0 &&
+                                               (!el.textContent || el.textContent.trim().length < 3);
+                
+                const isNotKnownElement = !el.id && 
+                                         !el.className?.includes('fas fa-') &&
+                                         !el.className?.includes('text-') &&
+                                         el.tagName !== 'SCRIPT' &&
+                                         el.tagName !== 'STYLE';
+                
+                if (isWhiteBg && isInTopRight && isSuspiciousSize && hasNoMeaningfulContent && isNotKnownElement) {
+                    console.warn('🐛 REMOVING SUSPICIOUS WHITE ELEMENT:', {
+                        tag: el.tagName,
+                        id: el.id,
+                        class: el.className,
+                        rect: rect,
+                        element: el
+                    });
+                    el.style.display = 'none'; // Hide first
+                    setTimeout(() => el.remove(), 100); // Then remove
                 }
             });
+            
+            console.table(found);
+            console.log(`📊 Found ${found.length} elements in top-right area (0-150px from top)`);
         }, 500);
     } catch (error) {
         console.error('❌ Error loading overview:', error);
