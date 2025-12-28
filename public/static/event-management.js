@@ -3047,16 +3047,25 @@ async function processAutoCreateAndFill() {
             console.log(`🔍 [TABLE CREATION] Group "${group.name}" (${group.count} people) → Table size: ${suitableSize || 'SPLIT'}`);
             
             if (!suitableSize) {
-                // Group is too large for any table - split it
-                const largestTable = tableSizes[0];
-                const numTables = Math.ceil(group.count / largestTable);
+                // Group is too large for any table - split it optimally
+                let remainingPeople = group.count;
+                let tableIndex = 1;
                 
-                for (let i = 0; i < numTables; i++) {
+                // Sort sizes from largest to smallest for optimal filling
+                const sizesDescending = [...tableSizes].sort((a, b) => b - a);
+                
+                while (remainingPeople > 0) {
+                    // Find the largest table that can fit some of the remaining people
+                    const bestSize = sizesDescending.find(size => size <= remainingPeople) || sizesDescending[sizesDescending.length - 1];
+                    
                     tables.push({
-                        name: `שולחן ${group.name} ${i + 1}`,
-                        capacity: largestTable,
-                        notes: `חלק ${i + 1}/${numTables} של קבוצת ${group.name}`
+                        name: `שולחן ${group.name} ${tableIndex}`,
+                        capacity: bestSize,
+                        notes: `חלק ${tableIndex} של קבוצת ${group.name} (${Math.min(bestSize, remainingPeople)} מתוך ${group.count} אורחים)`
                     });
+                    
+                    remainingPeople -= bestSize;
+                    tableIndex++;
                 }
             } else {
                 // Group fits in a single table
@@ -3365,16 +3374,25 @@ async function autoCreateTablesWithSizes(tableSizes) {
             console.log(`🔍 [AUTO-CREATE] Group "${group.name}" (${group.count} people) → Table size: ${suitableSize || 'SPLIT'}`);
             
             if (!suitableSize) {
-                // Group is too large for any table - split it
-                const largestTable = tableSizes[0];
-                const numTables = Math.ceil(group.count / largestTable);
+                // Group is too large for any table - split it optimally
+                let remainingPeople = group.count;
+                let tableIndex = 1;
                 
-                for (let i = 0; i < numTables; i++) {
+                // Sort sizes from largest to smallest for optimal filling
+                const sizesDescending = [...tableSizes].sort((a, b) => b - a);
+                
+                while (remainingPeople > 0) {
+                    // Find the largest table that can fit some of the remaining people
+                    const bestSize = sizesDescending.find(size => size <= remainingPeople) || sizesDescending[sizesDescending.length - 1];
+                    
                     tables.push({
-                        name: `שולחן ${group.name} ${i + 1}`,
-                        capacity: largestTable,
-                        notes: `חלק ${i + 1}/${numTables} של קבוצת ${group.name}`
+                        name: `שולחן ${group.name} ${tableIndex}`,
+                        capacity: bestSize,
+                        notes: `חלק ${tableIndex} של קבוצת ${group.name} (${Math.min(bestSize, remainingPeople)} מתוך ${group.count} אורחים)`
                     });
+                    
+                    remainingPeople -= bestSize;
+                    tableIndex++;
                 }
             } else {
                 // Group fits in a single table
