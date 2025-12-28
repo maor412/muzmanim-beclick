@@ -659,6 +659,11 @@ async function loadSeating() {
         }
         
         renderUnseatedGuests();
+        
+        // Refresh Overview tab to update charts and insights
+        loadOverview().catch(err => {
+            console.error('Error refreshing overview after seating:', err);
+        });
     } catch (error) {
         console.error('❌ Error loading seating:', error);
         console.error('Error details:', {
@@ -2370,10 +2375,10 @@ function renderAnalyticsCharts(rsvps, guests, seating, tables) {
         }
     });
     
-    // Seating Progress Chart - use attendingCount for total guests
-    const totalGuests = confirmedCount + guests.length;
-    const seated = seating.length;
-    const unseated = totalGuests - seated;
+    // Seating Progress Chart - calculate correctly using confirmedCount
+    const totalGuestsForSeating = confirmedCount + guests.length;
+    const seatedCount = seating.length;
+    const unseatedCount = totalGuestsForSeating - seatedCount;
     
     const seatingCtx = document.getElementById('seating-chart');
     seatingChart = new Chart(seatingCtx, {
@@ -2381,7 +2386,7 @@ function renderAnalyticsCharts(rsvps, guests, seating, tables) {
         data: {
             labels: ['הושבו', 'לא הושבו'],
             datasets: [{
-                data: [seated, unseated],
+                data: [seatedCount, unseatedCount],
                 backgroundColor: ['#3b82f6', '#e5e7eb'],
                 borderWidth: 2,
                 borderColor: '#ffffff'
@@ -2467,8 +2472,11 @@ function renderAnalyticsCharts(rsvps, guests, seating, tables) {
 function generateInsights(rsvps, guests, seating, tables) {
     const insights = [];
     
-    const confirmed = rsvps.filter(r => r.status === 'confirmed').length;
-    const totalGuests = confirmed + guests.length;
+    // Calculate confirmed count using attendingCount (same as in charts)
+    const confirmedCount = rsvps
+        .filter(r => r.status === 'confirmed')
+        .reduce((sum, r) => sum + (r.attendingCount || 1), 0);
+    const totalGuests = confirmedCount + guests.length;
     const seated = seating.length;
     const unseated = totalGuests - seated;
     
