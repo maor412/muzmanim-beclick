@@ -2484,8 +2484,9 @@ function generateInsights(rsvps, guests, seating, tables) {
     const seated = seating.length;
     const unseated = totalGuests - seated;
     
-    // Response rate
-    const responseRate = rsvps.length > 0 ? ((rsvps.filter(r => r.status !== 'pending').length / rsvps.length) * 100).toFixed(0) : 0;
+    // Response rate - calculate based on people who confirmed vs total invited
+    const totalInvited = rsvps.reduce((sum, r) => sum + (r.attendingCount || 1), 0) + guests.length;
+    const responseRate = totalInvited > 0 ? ((confirmedCount / totalInvited) * 100).toFixed(0) : 0;
     insights.push({
         icon: 'fa-chart-line',
         color: 'text-green-600',
