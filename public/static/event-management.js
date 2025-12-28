@@ -891,6 +891,9 @@ async function unseatGuest(seatingId) {
 async function autoFillSeating() {
     if (!confirm('פעולה זו תמלא אוטומטית את השולחנות הפנויים לפי קבוצות וצדדים. האם להמשיך?')) return;
     
+    console.log('🔍 [AUTO-FILL] Starting auto-fill seating...');
+    console.log('🔍 [AUTO-FILL] allRsvps:', allRsvps.length, 'allGuests:', allGuests.length, 'allSeating:', allSeating.length);
+    
     // Get seated RSVP and Guest IDs
     const seatedRsvpIds = allSeating.filter(s => s.rsvpId).map(s => s.rsvpId);
     const seatedGuestIds = allSeating.filter(s => s.guestId).map(s => s.guestId);
@@ -916,6 +919,10 @@ async function autoFillSeating() {
             name: g.fullName,
             attendingCount: 1 // Guests always count as 1
         }));
+    
+    console.log('🔍 [AUTO-FILL] unseatedRsvps:', unseatedRsvps.length, 'unseatedGuests:', unseatedGuests.length);
+    console.log('🔍 [AUTO-FILL] Sample unseated RSVP:', unseatedRsvps[0]);
+    console.log('🔍 [AUTO-FILL] Sample unseated Guest:', unseatedGuests[0]);
     
     // Combine and group by side and group
     const unseated = [...unseatedRsvps, ...unseatedGuests];
@@ -1034,6 +1041,9 @@ async function autoFillSeating() {
         }
     }
     
+    console.log('🔍 [AUTO-FILL] After Phase 1 (group matching):', seatings.length, 'seatings planned');
+    console.log('🔍 [AUTO-FILL] Remaining unseated:', sortedGroups.reduce((sum, g) => sum + g.people.length, 0));
+    
     // Phase 2: Fill remaining seats with any unseated guests
     for (const table of allTables) {
         const tableSeating = allSeating.filter(s => s.tableId === table.id);
@@ -1098,6 +1108,9 @@ async function autoFillSeating() {
             }
         }
     }
+    
+    console.log('🔍 [AUTO-FILL] After Phase 2 (fill remaining):', seatings.length, 'total seatings planned');
+    console.log('🔍 [AUTO-FILL] Still unseated:', sortedGroups.reduce((sum, g) => sum + g.people.length, 0), 'people');
     
     if (seatings.length === 0) {
         showToast('לא ניתן להושיב אורחים נוספים', 'warning');
@@ -3023,8 +3036,10 @@ async function processAutoCreateAndFill() {
         const remainingGroups = [...groups].sort((a, b) => b.count - a.count); // Largest first
         
         for (const group of remainingGroups) {
-            // Find the smallest table size that can fit this group
-            const suitableSize = tableSizes.find(size => size >= group.count);
+            // Find the SMALLEST table size that can fit this group
+            // Sort ascending to find smallest suitable size
+            const sortedSizes = [...tableSizes].sort((a, b) => a - b);
+            const suitableSize = sortedSizes.find(size => size >= group.count);
             
             if (!suitableSize) {
                 // Group is too large for any table - split it
@@ -3334,8 +3349,10 @@ async function autoCreateTablesWithSizes(tableSizes) {
         const remainingGroups = [...groups].sort((a, b) => b.count - a.count); // Largest first
         
         for (const group of remainingGroups) {
-            // Find the smallest table size that can fit this group
-            const suitableSize = tableSizes.find(size => size >= group.count);
+            // Find the SMALLEST table size that can fit this group
+            // Sort ascending to find smallest suitable size
+            const sortedSizes = [...tableSizes].sort((a, b) => a - b);
+            const suitableSize = sortedSizes.find(size => size >= group.count);
             
             if (!suitableSize) {
                 // Group is too large for any table - split it
