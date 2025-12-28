@@ -166,8 +166,12 @@ function showError(message) {
 // Load overview
 async function loadOverview() {
     console.log('🔵 Loading overview for event:', currentEvent?.id);
-    document.getElementById('loading').classList.add('hidden');
-    document.getElementById('content-overview').classList.remove('hidden');
+    
+    // Only hide loading and show content if we're currently on the overview tab
+    if (currentTab === 'overview') {
+        document.getElementById('loading').classList.add('hidden');
+        document.getElementById('content-overview').classList.remove('hidden');
+    }
     
     if (!currentEvent) {
         console.error('❌ No current event!');
