@@ -178,9 +178,9 @@ app.get('/', (c) => {
                         <i class="fas fa-heart text-pink-500 text-2xl md:text-3xl"></i>
                         <h1 class="text-lg md:text-2xl font-bold text-gray-800">מוזמנים בקליק</h1>
                     </div>
-                    <div class="nav-links flex gap-4">
-                        <a href="/about" class="text-gray-600 hover:text-pink-500">אודות</a>
-                        <a href="/contact" class="text-gray-600 hover:text-pink-500">צור קשר</a>
+                    <div class="nav-links flex gap-4 items-center">
+                        <a href="/about" class="text-gray-600 hover:text-pink-500 py-2">אודות</a>
+                        <a href="/contact" class="text-gray-600 hover:text-pink-500 py-2">צור קשר</a>
                         <a href="/login" class="bg-pink-500 text-white px-6 py-2 rounded-full hover:bg-pink-600 transition">התחברות</a>
                     </div>
                 </div>
