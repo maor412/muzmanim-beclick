@@ -978,6 +978,13 @@ async function autoFillSeating() {
         const tableNameLower = tableName.toLowerCase().trim();
         const groupNameLower = groupName.toLowerCase().trim();
         
+        // Special case: "מעורב" table should accept ANY group
+        // (it's designed for small groups and singles)
+        if (tableNameLower.includes('מעורב') || tableNameLower.includes('mixed')) {
+            console.log(`🔍 [MATCH] Table "${tableName}" is MIXED → accepting group "${groupName}" ✅`);
+            return true;  // מעורב מקבל כולם!
+        }
+        
         // Direct exact match
         if (tableNameLower.includes(groupNameLower) || groupNameLower.includes(tableNameLower)) {
             return true;
