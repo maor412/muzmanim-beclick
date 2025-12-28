@@ -3031,6 +3031,9 @@ async function processAutoCreateAndFill() {
         
         showToast('מחשב הקצאה אופטימלית...', 'info');
         
+        console.log('🔍 [TABLE CREATION] tableSizes:', tableSizes);
+        console.log('🔍 [TABLE CREATION] groups:', groups.map(g => ({name: g.name, count: g.count})));
+        
         // Step 2: Calculate optimal table assignment
         const tables = [];
         const remainingGroups = [...groups].sort((a, b) => b.count - a.count); // Largest first
@@ -3040,6 +3043,8 @@ async function processAutoCreateAndFill() {
             // Sort ascending to find smallest suitable size
             const sortedSizes = [...tableSizes].sort((a, b) => a - b);
             const suitableSize = sortedSizes.find(size => size >= group.count);
+            
+            console.log(`🔍 [TABLE CREATION] Group "${group.name}" (${group.count} people) → Table size: ${suitableSize || 'SPLIT'}`);
             
             if (!suitableSize) {
                 // Group is too large for any table - split it
@@ -3344,6 +3349,9 @@ async function autoCreateTablesWithSizes(tableSizes) {
         
         showToast('מחשב הקצאה אופטימלית...', 'info');
         
+        console.log('🔍 [AUTO-CREATE] tableSizes:', tableSizes);
+        console.log('🔍 [AUTO-CREATE] groups:', groups.map(g => ({name: g.name, count: g.count})));
+        
         // Algorithm: Assign groups to tables optimally
         const tables = [];
         const remainingGroups = [...groups].sort((a, b) => b.count - a.count); // Largest first
@@ -3353,6 +3361,8 @@ async function autoCreateTablesWithSizes(tableSizes) {
             // Sort ascending to find smallest suitable size
             const sortedSizes = [...tableSizes].sort((a, b) => a - b);
             const suitableSize = sortedSizes.find(size => size >= group.count);
+            
+            console.log(`🔍 [AUTO-CREATE] Group "${group.name}" (${group.count} people) → Table size: ${suitableSize || 'SPLIT'}`);
             
             if (!suitableSize) {
                 // Group is too large for any table - split it
