@@ -910,6 +910,19 @@ async function autoFillSeating() {
         attendingCount: r.attendingCount || 1 // CRITICAL: track how many seats needed
     }));
     
+    // Also check how many RSVPs were filtered out
+    const confirmedNotSeated = allRsvps.filter(r => r.status === 'confirmed' && !seatedRsvpIds.includes(r.id)).length;
+    const pendingRsvps = allRsvps.filter(r => r.status === 'pending').length;
+    const declinedRsvps = allRsvps.filter(r => r.status === 'declined').length;
+    
+    console.log(`🔍 [AUTO-FILL] RSVP Status Breakdown:`, {
+        total: allRsvps.length,
+        confirmed: confirmedNotSeated,
+        pending: pendingRsvps,
+        declined: declinedRsvps,
+        alreadySeated: seatedRsvpIds.length
+    });
+    
     const unseatedGuests = allGuests.filter(g => !seatedGuestIds.includes(g.id))
         .map(g => ({
             type: 'guest',
@@ -962,12 +975,33 @@ async function autoFillSeating() {
     
     // Helper function to check if table name matches group
     const tableMatchesGroup = (tableName, groupName) => {
-        const tableNameLower = tableName.toLowerCase();
-        const groupNameLower = groupName.toLowerCase();
+        const tableNameLower = tableName.toLowerCase().trim();
+        const groupNameLower = groupName.toLowerCase().trim();
         
-        // Direct match
+        // Direct exact match
         if (tableNameLower.includes(groupNameLower) || groupNameLower.includes(tableNameLower)) {
             return true;
+        }
+        
+        // Fuzzy match: check if they share significant words (3+ chars)
+        const getSignificantWords = (str) => {
+            return str.split(/\s+/)
+                .filter(word => word.length >= 3)  // Only words with 3+ chars
+                .map(word => word.toLowerCase());
+        };
+        
+        const tableWords = getSignificantWords(tableNameLower);
+        const groupWords = getSignificantWords(groupNameLower);
+        
+        // If at least 50% of group words appear in table name
+        if (groupWords.length > 0) {
+            const matchCount = groupWords.filter(word => 
+                tableWords.some(tw => tw.includes(word) || word.includes(tw))
+            ).length;
+            
+            if (matchCount / groupWords.length >= 0.5) {
+                return true;
+            }
         }
         
         // Hebrew translations
@@ -1012,7 +1046,10 @@ async function autoFillSeating() {
             if (groupData.people.length === 0) continue;
             
             // Check if table name matches group
-            if (!tableMatchesGroup(table.tableName, groupData.group)) continue;
+            const matches = tableMatchesGroup(table.tableName, groupData.group);
+            console.log(`🔍 [PHASE 1] Table "${table.tableName}" vs Group "${groupData.group}" → ${matches ? 'MATCH ✅' : 'NO MATCH ❌'}`);
+            
+            if (!matches) continue;
             
             // Try to seat people from this group
             while (groupData.people.length > 0 && availableSeats > 0) {
